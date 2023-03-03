@@ -172,7 +172,9 @@ handcode <- function(data, start = 1, newname = "data_new") {
           }
 
           # Print
-          print(final)
+          if (nrow(final) <= 20){
+            print(final)
+          }
 
           # Write final to global environment
           assign(newname, final, envir = .GlobalEnv)
@@ -181,7 +183,7 @@ handcode <- function(data, start = 1, newname = "data_new") {
 
 
         # Stop the shiny app
-        shiny::stopApp("Done")
+        shiny::stopApp(paste0("The output has been written to a new object ", newname))
       }
 
       # Update the counter value by adding 1
@@ -223,14 +225,17 @@ handcode <- function(data, start = 1, newname = "data_new") {
         }
 
         # Print output
+        if (nrow(final) <= 20){
         print(final)
+        }
+
 
         # Write final to global environment
         assign(newname, final, envir = .GlobalEnv)
       }, once = TRUE)
 
       # Stop the shiny app
-      shiny::stopApp("Done")
+      shiny::stopApp(paste0("The output has been written to a new object ", newname))
     })
 
   }
