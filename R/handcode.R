@@ -181,7 +181,7 @@ handcode <- function(data, start = 1, newname = "data_new") {
 
 
         # Stop the shiny app
-        session$close()
+        shiny::stopApp("Done")
       }
 
       # Update the counter value by adding 1
@@ -230,7 +230,7 @@ handcode <- function(data, start = 1, newname = "data_new") {
       }, once = TRUE)
 
       # Stop the shiny app
-      session$close()
+      shiny::stopApp("Done")
     })
 
   }
