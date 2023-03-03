@@ -16,7 +16,7 @@ handcode <- function(data, start = 1, newname = "data_new") {
   # Checks -----------------------------------------------------------------------
 
   # Check if shiny is installed
-  if (!"shiny" %in% rownames(installed.packages())) stop("handcode needs the package shiny installed. You can run install.packages(\"shiny\") to install shiny.")
+  if (!"shiny" %in% rownames(installed.packages())) stop("handcode() needs the package shiny installed. You can run install.packages(\"shiny\") to install shiny.")
 
   # Check if data is dataframe
   if(!is.data.frame(data)) stop("data must be a dataframe initialized via the init_data() function.")
@@ -41,6 +41,9 @@ handcode <- function(data, start = 1, newname = "data_new") {
 
   # check if newname is a single input
   if(length(newname) > 1) stop("newname must be a single input")
+
+  # Check if interactive
+  if(!interactive()) stop("handcode() can only be used in an interactive R session.")
 
 
   # Initialize -------------------------------------------------------------------
