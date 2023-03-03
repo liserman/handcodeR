@@ -25,7 +25,7 @@ handcode <- function(data, start = 1, newname = "data_new") {
   if(names(data)[1] != "texts" | !is.character(data[,1]) ) stop("First column of data must be character vector named texts. You can initialize your dataframe via the init_data() function.")
 
   # Check if there is more than one category to code
-  if(ncol(data < 4)) stop("Too few categories provided. You can initialize your dataframe via the init_data() function.")
+  if(ncol(data) < 4) stop("Too few categories provided. You can initialize your dataframe via the init_data() function.")
 
   # Check if last column of data is classification and character
   if(names(data)[ncol(data)] != "classification" | !is.character(data[,ncol(data)]) ) stop("Last column of data must be character vector named classification. You can initialize your dataframe via the init_data() function.")
