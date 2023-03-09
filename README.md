@@ -77,14 +77,11 @@ The `init_data` function initializes a dataframe with the texts in the
 first column and one column for each of the variables you wish to
 classify.
 
-``` r
-data
-#>    texts var1
-#> 1 Text 1     
-#> 2 Text 2     
-#> 3 Text 3     
-#> 4 Text 4
-```
+    #>    texts var1
+    #> 1 Text 1     
+    #> 2 Text 2     
+    #> 3 Text 3     
+    #> 4 Text 4
 
 The classification variables are saved as empty factor variables with
 the different categories for each variable as factor levels. Here, the
@@ -101,20 +98,64 @@ dataframe as follows:
 
 ``` r
 # Initalize dataframe with three classification variables
-init_data(texts = texts, var1 = c("cat 1", "cat 2"), var2 = c("cat a", "cat b", "cat c"), var3 = c("cat I", "cat II"))
-#>    texts var1 var2 var3
-#> 1 Text 1               
-#> 2 Text 2               
-#> 3 Text 3               
-#> 4 Text 4
+data_3cat <- init_data(texts = texts, var1 = c("cat 1", "cat 2"), var2 = c("cat a", "cat b", "cat c"), var3 = c("cat I", "cat II"))
 ```
+
+    #>    texts var1 var2 var3
+    #> 1 Text 1               
+    #> 2 Text 2               
+    #> 3 Text 3               
+    #> 4 Text 4
 
 ### handcode
 
 The main function of the handcodeR package is `handcode`. `handcode`
 takes the initialized dataset from `init_data` as input and starts a
-shiny app that
+shiny app that allows users to classify texts into the in `init_data`
+pre-defined categories.
 
 ``` r
-handcode(data)
+data_new <- handcode(data)
 ```
+
+![](man/figures/shinyApp.PNG)
+
+After finishing the classification process you can click on ‘Save and
+exit’ to returns a dataframe with your classifications.
+
+    #>    texts           var1
+    #> 1 Text 1          cat 1
+    #> 2 Text 2          cat 1
+    #> 3 Text 3          cat 2
+    #> 4 Text 4 Not applicable
+
+#### Classifying more than one variable
+
+Dependent on the number of variables you gave in the initialization of
+the input data via `init_data`, you can classify up to three variables
+with handcode.
+
+``` r
+data_3cat_new <- handcode(data_3cat)
+```
+
+![](man/figures/shinyApp3.PNG)
+
+    #>    texts           var1  var2           var3
+    #> 1 Text 1          cat 1 cat b         cat II
+    #> 2 Text 2          cat 1 cat c Not applicable
+    #> 3 Text 3          cat 2 cat b         cat II
+    #> 4 Text 4 Not applicable cat a          cat I
+
+#### Beyond the basics
+
+By default, `handcode` uses the first uncoded line in the input data as
+start value. However, the option `start` allows users to specify with
+which observation they want to start their coding process. To
+fascilitate the classification process, `handcode` takes the keyboard
+shortcuts `space` for ‘previous’ and `enter` for ‘next’. If you go back
+to already coded lines of your data, the app automatically displays your
+previous coding, if you go to new lines of your data, the default values
+for your variables always are ““. If the last row of your data is
+reached, ‘next’ automatically leads to the saving of the data and exit
+from the shiny app.

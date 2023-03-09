@@ -1,6 +1,5 @@
 ---
-output: html_document
-runtime: shiny
+output: github_document
 ---
 
 ```{r, include = FALSE}
@@ -99,112 +98,9 @@ The main function of the handcodeR package is `handcode`. `handcode` takes the i
 data_new <- handcode(data)
 ```
 
-```{R, echo = FALSE, width = 2000}
+![](man/figures/shinyApp.PNG)
 
-  # List to store classifications and their categories
-  classifications <- vector("list", length = ncol(data)-1)
-
-  # Name list
-  names(classifications) <- names(data)[-1]
-
-  # Fill with categories
-  for (i in seq_along(classifications)) {
-    classifications[[i]] <- levels(data[,i+1])
-  }
-
-  # Initialize container for classification
-  container <- data.frame(var1 = data[,2])
-
-shinyApp(
-server = function(input, output){
-current_text <- reactive({
-      data$texts[values$counter]
-    })
-
-    output$statement <- renderText({
-      current_text()
-    })
-    
-values <- shiny::reactiveValues(
-      # Set counter to start
-      counter = 1,
-      
-      # Initialize coding as existing classification
-      code1 = container[,1]
-    )
-
-shiny::observeEvent(input$previouspage, {
-      
-      # Save current coding
-      values$code1[values$counter] <- input$code1
-      
-      # Update the counter value by substracting 1 but only if page is bigger 1
-      if (values$counter > 1) {
-        values$counter <- values$counter - 1
-      }
-      
-      # Set the selected value of radioButtons to "" or already coded category
-      shiny::updateRadioButtons(session, "code1", selected = "")
-})
-
-shiny::observeEvent(input$nextpage, {
-      
-      # Save current coding
-      values$code1[values$counter] <- input$code1
-      
-      # Update the counter value by substracting 1 but only if page is bigger 1
-      if (values$counter < 4) {
-        values$counter <- values$counter + 1
-      }
-      
-      # Set the selected value of radioButtons to "" or already coded category
-      shiny::updateRadioButtons(session, "code1", selected = "")
-})},
-
-
-  # UI ---------------------------------------------------------------------------
-ui = shiny::fluidPage(
-    # Main Panel
-    shiny::mainPanel(
-
-      # Text Statement
-      shiny::h3("Statement:"),
-      shiny::verbatimTextOutput("statement"),
-
-      # Coding Categories
-      shiny::fluidRow(
-        shiny::column(width = 3,
-                      shiny::radioButtons(
-                        "code1",
-                        names(classifications)[1],
-                        c(classifications[[1]]),
-                        selected = ""
-                      )
-        )
-          ),
-        
-
-      # Buttons for next and previous
-      shiny::actionButton(
-        "previouspage",
-        "Previous",
-        class = "btn btn-primary",
-        style = "position: absolute; bottom: 20px; right: 80px;"
-      ),
-      shiny::actionButton("nextpage", "Next", class = "btn btn-primary",
-                          style = "position: absolute; bottom: 20px; right: 20px;"),
-
-
-      # Button for save and exit
-      shiny::actionButton("save", "Save and exit", class = "btn btn-primary",
-                          style = "position: absolute; bottom: 100px; right: 20px;")
-    )),
-    
-    options = list(height = 350))
-```
-
-
-After finishing the classification process, the function returns a dataframe.
+After finishing the classification process you can click on 'Save and exit' to returns a dataframe with your classifications.
 
 ```{R, echo = FALSE}
 data[,2] <- factor(c("cat 1", "cat 1", "cat 2", "Not applicable"), levels = c("", "Not applicable", "cat 1", "cat 2"))
@@ -212,6 +108,27 @@ data[,2] <- factor(c("cat 1", "cat 1", "cat 2", "Not applicable"), levels = c(""
 data
 ```
 
+
+#### Classifying more than one variable
+
+Dependent on the number of variables you gave in the initialization of the input data via `init_data`, you can classify up to three variables with handcode.
+
+```{r, eval = FALSE}
+data_3cat_new <- handcode(data_3cat)
+```
+
+![](man/figures/shinyApp3.PNG)
+
+```{R, echo = FALSE}
+data_3cat[,2] <- factor(c("cat 1", "cat 1", "cat 2", "Not applicable"), levels = c("", "Not applicable", "cat 1", "cat 2"))
+data_3cat[,3] <- factor(c("cat b", "cat c", "cat b", "cat a"), levels = c("", "Not applicable", "cat a", "cat b", "cat c"))
+data_3cat[,4] <- factor(c("cat II", "Not applicable", "cat II", "cat I"), levels = c("", "Not applicable", "cat I", "cat II"))
+
+data_3cat
+```
+
+
+#### Beyond the basics
 
 By default, `handcode` uses the first uncoded line in the input data as start value. However, the option `start` allows users to specify with which observation they want to start their coding process. To fascilitate the classification process, `handcode` takes the keyboard shortcuts `space` for 'previous' and `enter` for 'next'. If you go back to already coded lines of your data, the app automatically displays your previous coding, if you go to new lines of your data, the default values for your variables always are "". If the last row of your data is reached, 'next' automatically leads to the saving of the data and exit from the shiny app.  
 
