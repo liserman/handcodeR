@@ -4,15 +4,13 @@
 \alias{handcode}
 \title{handcode: Classifying text into pre-defined categories.}
 \usage{
-handcode(data, start = 1, newname = "data_new")
+handcode(data, start = "first_empty")
 }
 \arguments{
-\item{data}{A dataframe initialized via the init_data() function.}
+\item{data}{A dataframe initialized via the init_data() function. If you want to continue an ongoing handcoding process, you can also load your most recent handcode() output.}
 
 \item{start}{A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet.}
-
-\item{newname}{A character string indicating a name for a new object that saves the handcoding to your global environment}
 }
 \description{
-`handcode` opens a Shiny app which allows for handcoding of texts into pre-defined categories. The results will be saved as a new object to the global environment.
+`handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your handcoded classifications.
 }

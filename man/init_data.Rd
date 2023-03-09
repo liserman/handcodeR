@@ -4,13 +4,13 @@
 \alias{init_data}
 \title{init_data: Initialize dataframe for handcode().}
 \usage{
-init_data(texts, categories)
+init_data(texts, ...)
 }
 \arguments{
 \item{texts}{A vector of character strings you want to classify by hand.}
 
-\item{categories}{A vector of character strings giving names for different categories you want to classify.}
+\item{...}{Between one and three named character vectors indicating different variables and categories that you whish to classify.}
 }
 \description{
-`init_data` initializes a dataframe to be passed to handcode(). The function takes a vector of texts and a number of categories by which you want to classify the texts as input and returns a dataframe that can be used as data input in handcode().
+`init_data` initializes a dataframe to be passed to handcode(). The function takes a vector of texts and between one and three named vectors of categories as input. It returns a dataframe that can be used as data input in handcode().
 }

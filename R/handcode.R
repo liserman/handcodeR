@@ -1,22 +1,21 @@
 #' handcode: Classifying text into pre-defined categories.
 #'
-#' `handcode` opens a Shiny app which allows for handcoding of texts into pre-defined categories. The results will be saved as a new object to the global environment.
+#' `handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your handcoded classifications.
 #'
-#' @param data A dataframe initialized via the init_data() function.
+#' @param data A dataframe initialized via the init_data() function. If you want to continue an ongoing handcoding process, you can also load your most recent handcode() output.
 #' @param start A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet.
-#' @param newname A character string indicating a name for a new object that saves the handcoding to your global environment
 #'
 # Importing dependencies with roxygen2
 #' @import shiny
 # Export function
 #' @export
 
-handcode <- function(data, start = 1, newname = "data_new") {
+handcode <- function(data, start = "first_empty") {
 
   # Checks -----------------------------------------------------------------------
 
   # Check if shiny is installed
-  if (!"shiny" %in% rownames(installed.packages())) stop("handcode() needs the package shiny installed. You can run install.packages(\"shiny\") to install shiny.")
+  if (system.file(package="shiny") == "") stop("handcode() needs the package shiny installed. You can run install.packages(\"shiny\") to install shiny.")
 
   # Check if data is dataframe
   if(!is.data.frame(data)) stop("data must be a dataframe initialized via the init_data() function.")
@@ -24,44 +23,72 @@ handcode <- function(data, start = 1, newname = "data_new") {
   # Check if first column of data is texts and character
   if(names(data)[1] != "texts" | !is.character(data[,1]) ) stop("First column of data must be character vector named texts. You can initialize your dataframe via the init_data() function.")
 
-  # Check if there is more than one category to code
-  if(ncol(data) < 4) stop("Too few categories provided. You can initialize your dataframe via the init_data() function.")
+  # Check if all columns except the first one are factors
+  if(!all(sapply(data[, -1], is.factor))) stop("All columns except the first one in the dataframe must be factors.")
 
-  # Check if last column of data is classification and character
-  if(names(data)[ncol(data)] != "classification" | !is.character(data[,ncol(data)]) ) stop("Last column of data must be character vector named classification. You can initialize your dataframe via the init_data() function.")
+  # Check if there is at least one classification
+  if (ncol(data) == 1) stop("The dataframe must contain at least one classification.")
+
+  # Check if there are at max three classifications
+  if (ncol(data) > 4) stop("The dataframe can have at most three classifications.")
 
   # Check if start is numeric or "first_empty"
   if(!is.numeric(start) & start!="first_empty") stop("start must be numeric or 'first_empty'.")
 
+  # Check if there is uncoded data when start = "first_empty"
+  if(all(!do.call(paste0,data.frame(data[,-1], helper=""))=="")) stop("All your data is already classified. Please provide unclassified data if you want to proceed.")
+
   # check if start is a single value
   if(length(start) > 1) stop("start must be a single value.")
-
-  # Check if newname is character
-  if(!is.character(newname)) stop("newname must be character. newname gives the name of a new object in your environment that saves your classifications.")
-
-  # check if newname is a single input
-  if(length(newname) > 1) stop("newname must be a single input")
 
   # Check if interactive
   if(!interactive()) stop("handcode() can only be used in an interactive R session.")
 
 
-  # Initialize -------------------------------------------------------------------
+# Initialize -------------------------------------------------------------------
+
+  # Initialize environment e
+  e <- new.env()
 
   # Set start to first empty row of data
-  if(start == "first_empty")
-    start <- min((1:nrow(data))[data$classification == ""])
+  if(start == "first_empty"){
+    start <- min((1:nrow(data))[do.call(paste0,data.frame(data[,-1], helper=""))==""])
+  }
 
-  # Object texts to store texts
-  texts <- data$texts
 
-  # Object categories to store categories
-  categories <- names(data)[2:(ncol(data)-1)]
+  # List to store classifications and their categories
+  classifications <- vector("list", length = ncol(data)-1)
+
+  # Name list
+  names(classifications) <- names(data)[-1]
+
+  # Fill with categories
+  for (i in seq_along(classifications)) {
+    classifications[[i]] <- levels(data[,i+1])
+  }
+
+  # Initialize container for classification
+  container <- data.frame(kat1 = factor(rep("", nrow(data))), kat2 = factor(""), kat3 = factor(""))
+
+  for (i in seq_along(classifications)){
+    container[,i] <- data[,i+1]
+    names(container)[i] <- names(classifications)[[i]]
+    levels(container[,i]) <- c(classifications[[i]])
+  }
+
 
 
   # UI ---------------------------------------------------------------------------
 
   ui <- shiny::fluidPage(
+
+    # Generate html-class that hides output
+    shiny::tags$head(
+      shiny::tags$style(
+        shiny::HTML(".hide-checkbox {display: none;}")
+      )
+    ),
+
 
     # Title
     shiny::titlePanel("Text Annotation App"),
@@ -70,15 +97,53 @@ handcode <- function(data, start = 1, newname = "data_new") {
     shiny::mainPanel(
 
       # Text Statement
-      h3("Statement:"),
+      shiny::h3("Statement:"),
       shiny::verbatimTextOutput("statement"),
 
       # Coding Categories
-      shiny::radioButtons(
-        "code",
-        "Coding for the current text sample:",
-        c("", "Not applicable", categories),
-        selected = ""
+      shiny::fluidRow(
+        shiny::column(width = 3,
+                      shiny::radioButtons(
+                        "code1",
+                        names(classifications)[1],
+                        c(classifications[[1]]),
+                        selected = ""
+                      )
+        ),
+        # Invisible checkbox for optional categories
+        shiny::div(shiny::checkboxInput(
+          "add2",
+          "Add second classification",
+          value = length(classifications)>1),
+          class = "hide-checkbox"
+        ),
+        shiny::conditionalPanel(
+          condition = "input.add2",
+        shiny::column(width = 3,
+                      shiny::radioButtons(
+                        "code2",
+                        try(names(classifications)[2], silent = TRUE),
+                        try(c(classifications[[2]]), silent = TRUE),
+                        selected = ""
+                      )
+        )),
+        shiny::div(shiny::checkboxInput(
+          "add3",
+          "Add third classification",
+          value = length(classifications)>2),
+          class = "hide-checkbox"
+        ),
+        shiny::conditionalPanel(
+          condition = "input.add3",
+          shiny::column(width = 3,
+                        shiny::radioButtons(
+                          "code3",
+                          try(names(classifications)[3], silent = TRUE),
+                          try(c(classifications[[3]]), silent = TRUE),
+                          selected = ""
+                        )
+          )
+        )
       ),
 
       # Space and Enter to press next and previous
@@ -118,9 +183,29 @@ handcode <- function(data, start = 1, newname = "data_new") {
 
 
 
+
   # Server -----------------------------------------------------------------------
 
   server <- function(input, output, session) {
+
+    # Function for output generation
+    gen_output <- function(data, values){
+
+      # Generate final data.frame to be displayed as output
+      final <- data.frame(texts = data$texts, kat1 = values$code1, kat2 = values$code2, kat3 = values$code3)
+
+      # Reduce to size of original dataframe
+      final <- final[,1:ncol(data)]
+
+      # Take names from original dataframe
+      names(final) <- names(data)
+
+      # Make sure all NA is saved as ""
+      final[is.na(final)] <- ""
+
+      # Return
+      return(final)
+    }
 
     # Initialize reactiveValues
     values <- shiny::reactiveValues(
@@ -128,15 +213,26 @@ handcode <- function(data, start = 1, newname = "data_new") {
       counter = start,
 
       # Initialize coding as existing classification
-      coding = data$classification
+      code1 = container[,1],
+      code2 = container[,2],
+      code3 = container[,3]
     )
+
+    # Initialize radioButtons
+    observe({
+      shiny::updateRadioButtons(session, "code1", selected = values$code1[values$counter])
+      shiny::updateRadioButtons(session, "code2", selected = values$code2[values$counter])
+      shiny::updateRadioButtons(session, "code3", selected = values$code3[values$counter])
+    })
 
 
     # Behaviour when previous is clicked
     shiny::observeEvent(input$previouspage, {
 
       # Save current coding
-      values$coding[values$counter] <- input$code
+      values$code1[values$counter] <- input$code1
+      try(values$code2[values$counter] <- input$code2, silent = TRUE)
+      try(values$code3[values$counter] <- input$code3, silent = TRUE)
 
       # Update the counter value by substracting 1 but only if page is bigger 1
       if (values$counter > 1) {
@@ -144,58 +240,54 @@ handcode <- function(data, start = 1, newname = "data_new") {
       }
 
       # Set the selected value of radioButtons to "" or already coded category
-      shiny::updateRadioButtons(session, "code", selected = values$coding[values$counter])
+      shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
+      shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
+      shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
     })
 
     # Behaviour when next is clicked
     shiny::observeEvent(input$nextpage, {
 
       # Save current coding
-      values$coding[values$counter] <- input$code
+      values$code1[values$counter] <- input$code1
+      try(values$code2[values$counter] <- input$code2, silent = TRUE)
+      try(values$code3[values$counter] <- input$code3, silent = TRUE)
 
       # If max pages reached, save and exit
-      if (values$counter == length(texts)) {
+      if (values$counter == length(data$texts)) {
 
         # Print the coding for all text samples when the app is closed
         shiny::observeEvent(session$onSessionEnded, {
 
-          # Generate final data.frame to be displayed as output
-          final <- data
-
-          # Overwrite classification with coded content
-          final$classification <- values$coding
-
-          # Overwrite categories with TRUE/FALSE
-          for (i in 2:(ncol(data)-1)) {
-            final[,i] <- names(final)[i] == values$coding
-            final[values$coding == "", i] <- NA
-          }
+          final <- gen_output(data, values)
 
           # Print
           if (nrow(final) <= 20){
             print(final)
           }
 
-          # Write final to global environment
-          assign(newname, final, envir = .GlobalEnv)
+          # Write final to e
+          e$output <- final
 
         }, once = TRUE)
 
 
         # Stop the shiny app
-        shiny::stopApp(paste0("The output has been written to a new object ", newname))
+        shiny::stopApp()
       }
 
       # Update the counter value by adding 1
       values$counter <- values$counter + 1
 
       # Set the selected value of radioButtons to "" or already coded category
-      shiny::updateRadioButtons(session, "code", selected = values$coding[values$counter])
+      shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
+      shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
+      shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
     })
 
     # Update text displayed
     current_text <- reactive({
-      texts[values$counter]
+      data$texts[values$counter]
     })
 
     output$statement <- renderText({
@@ -206,40 +298,36 @@ handcode <- function(data, start = 1, newname = "data_new") {
     # Behaviour when save is clicked
     shiny::observeEvent(input$save, {
 
-      # Save the coding for the current text sample
-      values$coding[values$counter] <- input$code
+      # Save current coding
+      values$code1[values$counter] <- input$code1
+      try(values$code2[values$counter] <- input$code2, silent = TRUE)
+      try(values$code3[values$counter] <- input$code3, silent = TRUE)
 
       # Print the coding for all text samples when the app is closed
       shiny::observeEvent(session$onSessionEnded, {
 
-        # Generate final data.frame to be displayed as output
-        final <- data
-
-        # Overwrite classification with coded content
-        final$classification <- values$coding
-
-        # Overwrite categories with TRUE/FALSE
-        for (i in 2:(ncol(data)-1)) {
-          final[,i] <- names(final)[i] == values$coding
-          final[values$coding == "", i] <- NA
-        }
+        final <- gen_output(data, values)
 
         # Print output
         if (nrow(final) <= 20){
         print(final)
         }
 
-
-        # Write final to global environment
-        assign(newname, final, envir = .GlobalEnv)
+        # Write final to e
+        e$output <- final
       }, once = TRUE)
 
       # Stop the shiny app
-      shiny::stopApp(paste0("The output has been written to a new object ", newname))
+      shiny::stopApp()
     })
 
   }
 
   # Run App ----------------------------------------------------------------------
-  shiny::runApp(shiny::shinyApp(ui = ui, server = server))
+
+  app <- shiny::shinyApp(ui = ui, server = server)
+
+  shiny::runApp(app)
+
+  return(e$output)
 }
