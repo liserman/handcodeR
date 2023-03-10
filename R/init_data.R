@@ -28,6 +28,19 @@ init_data <- function(texts, ...) {
   }
 
 
+
+
+  # Check if "" and "Not applicable" are in list of categories
+  if(TRUE %in% sapply(sapply(arg_list, function(x) x %in% c("", "Not applicable")), function(x) TRUE %in% x)) stop("The default categories \"\" and \"Not applicable\" are automatically added by init_data(). You cannot add them as input to the function.")
+
+  # Check for duplicate categories
+  for (i in seq_along(arg_list)) {
+    if(length(unique(arg_list[[i]]))<length(arg_list[[i]])) stop("You cannot set duplicate categories for a variable. Please provide unique categories for classification.")
+  }
+
+
+
+
 # Main function ----------------------------------------------------------------
 
   # Initialize empty dataframe

@@ -1,4 +1,3 @@
-context("check-init_data")
 library(testthat)
 library(handcodeR)
 
@@ -113,16 +112,103 @@ test_that("init_data function correctly initializes dataframe with two categoriz
 
 
 
-# Check with empty vector for categories
+# Check with empty vector for variables
+test_that("init_data function throws an error when empty vector as variable is given", {
+  # Arrange
+  texts <- c()
+  categories <- c("cat1a", "cat1b")
+
+  # Act and Assert
+  expect_error(init_data(texts, categories), "texts must be character vector indicating the texts you whish to classify")
+})
+
+
+
+# Check with empty vector for texts
+test_that("init_data function throws an error when empty texts vector is given", {
+  # Arrange
+  texts <- c("text1", "text2", "text3")
+  categories <- c()
+
+  # Act and Assert
+  expect_error(init_data(texts, categories), "All arguments in ... must be named character vectors")
+})
+
+
+# Check with duplicate names for variables
+test_that("init_data function gives dataframe if duplicate names for variables are given", {
+  # Arrange
+  texts <- c("text1", "text2", "text3")
+  categories1 <- c("cat1a", "cat1b")
+  categories2 <- c("cat2a", "cat2b", "cat2c")
+
+  # Act
+  output <- init_data(texts = texts, categories = categories1, categories = categories2)
+
+  # Assert
+  expect_s3_class(output, "data.frame")
+  expect_equal(ncol(output), 3)
+
+})
+
+
+
+# Check with duplicate categories
+test_that("init_data function throws an error when duplicate categories are given", {
+  # Arrange
+  texts <- c("text1", "text2", "text3")
+  categories <- c("cat1", "cat1", "cat2")
+
+  # Act and Assert
+  expect_error(init_data(texts, categories), "You cannot set duplicate categories for a variable. Please provide unique categories for classification")
+})
+
+
+
+# Check with "" or "Not applicable" as categories
+test_that("init_data function throws an error when \"\" or \"Not applicable\" are given as categories", {
+  # Arrange
+  texts <- c("text1", "text2", "text3")
+  categories1 <- c("", "cat1", "cat2")
+  categories2 <- c("Not applicable", "cat1", "cat2")
+
+  # Act and Assert
+  expect_error(init_data(texts, categories1), "The default categories")
+  expect_error(init_data(texts, categories2), "The default categories")
+})
+
+
 
 # Check with longer vector of texts
+test_that("init_data function gives dataframe when longer vector of texts is given", {
+  # Arrange
+  texts <- rep(c("text1", "text2", "text3"), 10000)
+  categories1 <- c("cat1a", "cat1b")
+  categories2 <- c("cat2a", "cat2b", "cat2c")
 
-# Check with duplicate names for categories
+  # Act
+  output <- init_data(texts = texts, categories1, categories2)
 
-# Check without names for categories
+  # Assert
+  expect_s3_class(output, "data.frame")
+  expect_equal(dim(output), c(30000,3))
 
-# Check with non-alphanumeric characters in category names
+})
+
 
 # Check with empty strings in texts
+test_that("init_data function gives dataframe when texts contains empty strings", {
+  # Arrange
+  texts <- c("", "text2", "text3")
+  categories1 <- c("cat1a", "cat1b")
+  categories2 <- c("cat2a", "cat2b", "cat2c")
 
+  # Act
+  output <- init_data(texts = texts, categories1, categories2)
+
+  # Assert
+  expect_s3_class(output, "data.frame")
+  expect_equal(dim(output), c(3,3))
+
+})
 
