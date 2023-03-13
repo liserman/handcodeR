@@ -23,11 +23,14 @@ handcode <- function(data, start = "first_empty") {
   # Check if all columns except the first one are factors
   if(!all(sapply(data[, -1], is.factor))) stop("All columns except the first one in the dataframe must be factors.")
 
-  # Check if there is at least one classification
-  if (ncol(data) == 1) stop("The dataframe must contain at least one classification.")
+  # Check if there is at least one classification variable
+  if (ncol(data) < 2) stop("The dataframe must contain at least one classification variable.")
 
-  # Check if there are at max three classifications
-  if (ncol(data) > 4) stop("The dataframe can have at most three classifications.")
+  # Check if there are at max three classification variables
+  if (ncol(data) > 4) stop("The dataframe can have at most three classification variables.")
+
+  # check if start is a single value
+  if(length(start) > 1) stop("start must be a single value.")
 
   # Check if start is numeric or "first_empty"
   if(!is.numeric(start) & start!="first_empty") stop("start must be numeric or 'first_empty'.")
@@ -35,14 +38,11 @@ handcode <- function(data, start = "first_empty") {
   # Check if there is uncoded data when start = "first_empty"
   if(all(!do.call(paste0,data.frame(data[,-1], helper=""))=="")) stop("All your data is already classified. Please provide unclassified data if you want to proceed.")
 
-  # check if start is a single value
-  if(length(start) > 1) stop("start must be a single value.")
+  # Check if interactive
+  if(!interactive()) stop("handcode() can only be used in an interactive R session.")
 
   # Check if shiny is installed
   if (system.file(package="shiny") == "") stop("handcode() needs the package shiny installed. You can run install.packages(\"shiny\") to install shiny.")
-
-  # Check if interactive
-  if(!interactive()) stop("handcode() can only be used in an interactive R session.")
 
 
 # Initialize -------------------------------------------------------------------
