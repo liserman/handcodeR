@@ -85,7 +85,7 @@ handcode <- function(data, start = "first_empty") {
     # Generate html-class that hides output
     shiny::tags$head(
       shiny::tags$style(
-        shiny::HTML(".hide-checkbox {display: none;}")
+        shiny::HTML(".hide-checkbox {display: none;}"),
       )
     ),
 
@@ -98,7 +98,7 @@ handcode <- function(data, start = "first_empty") {
 
       # Text Statement
       shiny::h3("Statement:"),
-      shiny::verbatimTextOutput("statement"),
+      shiny::textOutput("statement"),
 
       # Coding Categories
       shiny::fluidRow(
