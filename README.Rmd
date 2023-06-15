@@ -17,10 +17,9 @@ knitr::opts_chunk$set(
 R-Package to fascilitate the classification of textdata by hand in R.
 
 
-The goal of the handcodeR package is to provide an easy to use app to classify text data by hand. Oftentimes when we work with textdata, we rely on handcoded classifications of texts either as unit of analysis in itself, or as training and text samples for supervised machine learning tools to classify text data. handcodeR offers a shiny app that can be run within R to classify individual texts one by one in up to three different variables. To do so, the package currently includes the following two functions:
+The goal of the handcodeR package is to provide an easy to use app to annotate text data by hand. Oftentimes when we work with textdata, we rely on handcoded annotations of texts either as unit of analysis in itself, or as training and text samples for supervised machine learning tools to classify text data. handcodeR offers a shiny app that can be run within R to annotate individual texts one by one in up to three different variables. To do so, the package uses the function:
 
-- `init_data` initializes a dataframe to be passed to handcode(). The function takes a vector of texts and between one and three named vectors of categories as input. It returns a dataframe that can be used as data input in handcode().
-- `handcode` opens a shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated dataframe with your handcoded classifications.
+- `handcode` opens a shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns a data.frame with your handcoded annotations.
 
 
 I present a short step-by-step guide as well as the functions in more detail below.
@@ -46,53 +45,19 @@ In the following, we are going to exemplify the workflow of the package using a 
 
 The workflow of the package follows a simple rule:
 
-1. Initialize the dataset via `init_data`
+1. If you start the coding process, initialize the coding with `handcode()` by providing a text vector of texts you whish to annotate as *data* input, and up to three named character vectors of categories you want to code. Handcode as much data as you would like and return the output data.frame via the "save and exit"-button.
 
-2. Handcode your data via `handcode`
+2. If you want to resume coding that you have already been working on, continue the coding with `handcode()` by providing the data.frame you received as output from your last call of `handcode()` as *data* input.
 
-These two steps where devided into two separate functions, in order to fascilitate the classification of you texts in multiple sessions. Initially, the function `handcode` takes the output of `init` data as input. If you want to pause and resume your classification process, you can save your classifications and use the output of `handcode` as input to a new `handcode` command. 
-
-
-### init_data
-
-With `init_data` we initialize the texts and variables we want to classify. The function takes your vector of texts and between one and three named character vectors that indicate different variables and their categories you wish to classify. 
-
-
-
-```{R}
-# Textvector to classify
-texts <- c("Text 1", "Text 2", "Text 3", "Text 4")
-
-# Initialize dataframe
-data <- init_data(texts = texts, var1 = c("category 1", "category 2", "category 3"))
-```
-
-The `init_data` function initializes a dataframe with the texts in the first column and one column for each of the variables you wish to classify.  
-
-```{R, echo = FALSE}
-data
-```
-
-The classification variables are saved as empty factor variables with the different categories for each variable as factor levels. Here, the function automatically adds the levels "" and "not applicable".
-
-```{R}
-levels(data$var1)
-```
-
-If you want to classify more than one variable, you can initalize your dataframe as follows:
-
-```{R}
-# Initalize dataframe with three classification variables
-data_3cat <- init_data(texts = texts, var1 = c("cat 1", "cat 2"), var2 = c("cat a", "cat b", "cat c"), var3 = c("cat I", "cat II"))
-```
-
-```{R, echo = FALSE}
-data_3cat
-```
 
 ### handcode
 
-The main function of the handcodeR package is `handcode`. `handcode` takes the initialized dataset from `init_data` as input and starts a shiny app that allows users to classify texts into the in `init_data` pre-defined categories. 
+The main function of the handcodeR package is `handcode()`. `handcode()` takes either a vector of texts and up to 3 named character vectors with classification categories, or a data.frame already initialized by `handcode()` as input. The function allows users to annotate texts using the pre-defined categories in an interactive ShinyApp and returns a data.frame of the texts with their annotations.
+
+
+
+**Ab hier fertig überarbeiten!!!**
+
 
 ```{R, eval = FALSE}
 data_new <- handcode(data)

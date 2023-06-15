@@ -4,13 +4,19 @@
 \alias{handcode}
 \title{handcode: Classifying text into pre-defined categories.}
 \usage{
-handcode(data, start = "first_empty")
+handcode(data, ..., start = "first_empty", randomize = FALSE, context = FALSE)
 }
 \arguments{
-\item{data}{A dataframe initialized via the init_data() function. If you want to continue an ongoing handcoding process, you can also load your most recent handcode() output.}
+\item{data}{A character vector of texts you want to annotate or a data.frame returned from the handcode() function.}
 
-\item{start}{A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet.}
+\item{...}{Between one and three named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
+
+\item{start}{A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet, or to "all_empty" to automatically handcode all lines that have not been handcoded yet.}
+
+\item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
+
+\item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray.}
 }
 \description{
-`handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your handcoded classifications.
+`handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
 }
