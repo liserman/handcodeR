@@ -98,7 +98,7 @@ server <- function(input, output, session) {
   })
 
   # Update text displayed
-  if(context_app){
+  if(e$context_app){
     current_text <- reactive({
       paste0("<font color =\"#D3D3D3\">", e$data_app$before[values$counter], "</font> <b>", e$data_app$texts[values$counter], "</b> <font color =\"#D3D3D3\">", e$data_app$after[values$counter], "</font>")
   })} else {

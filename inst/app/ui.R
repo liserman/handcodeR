@@ -43,8 +43,8 @@ ui <- shiny::fluidPage(
       shiny::column(width = 3,
                     shiny::radioButtons(
                       "code1",
-                      names(classifications)[1],
-                      c(classifications[[1]]),
+                      names(e$classifications)[1],
+                      c(e$classifications[[1]]),
                       selected = ""
                     )
       ),
@@ -52,7 +52,7 @@ ui <- shiny::fluidPage(
       shiny::div(shiny::checkboxInput(
         "add2",
         "Add second classification",
-        value = length(classifications)>1),
+        value = length(e$classifications)>1),
         class = "hide-checkbox"
       ),
       shiny::conditionalPanel(
@@ -60,15 +60,15 @@ ui <- shiny::fluidPage(
         shiny::column(width = 3,
                       shiny::radioButtons(
                         "code2",
-                        try(names(classifications)[2], silent = TRUE),
-                        try(c(classifications[[2]]), silent = TRUE),
+                        try(names(e$classifications)[2], silent = TRUE),
+                        try(c(e$classifications[[2]]), silent = TRUE),
                         selected = ""
                       )
         )),
       shiny::div(shiny::checkboxInput(
         "add3",
         "Add third classification",
-        value = length(classifications)>2),
+        value = length(e$classifications)>2),
         class = "hide-checkbox"
       ),
       shiny::conditionalPanel(
@@ -76,8 +76,8 @@ ui <- shiny::fluidPage(
         shiny::column(width = 3,
                       shiny::radioButtons(
                         "code3",
-                        try(names(classifications)[3], silent = TRUE),
-                        try(c(classifications[[3]]), silent = TRUE),
+                        try(names(e$classifications)[3], silent = TRUE),
+                        try(c(e$classifications[[3]]), silent = TRUE),
                         selected = ""
                       )
         )

@@ -4,22 +4,17 @@
 R-Package to fascilitate the classification of textdata by hand in R.
 
 The goal of the handcodeR package is to provide an easy to use app to
-classify text data by hand. Oftentimes when we work with textdata, we
-rely on handcoded classifications of texts either as unit of analysis in
+annotate text data by hand. Oftentimes when we work with textdata, we
+rely on handcoded annotations of texts either as unit of analysis in
 itself, or as training and text samples for supervised machine learning
 tools to classify text data. handcodeR offers a shiny app that can be
-run within R to classify individual texts one by one in up to three
-different variables. To do so, the package currently includes the
-following two functions:
+run within R to annotate individual texts one by one in up to three
+different variables. To do so, the package uses the function:
 
-- `init_data` initializes a dataframe to be passed to handcode(). The
-  function takes a vector of texts and between one and three named
-  vectors of categories as input. It returns a dataframe that can be
-  used as data input in handcode().
-- `handcode` opens a shiny app which allows for handcoding strings of
+- `handcode()` opens a shiny app which allows for handcoding strings of
   text into pre-defined categories. You can code between one and three
-  variables at a time. It returns an updated dataframe with your
-  handcoded classifications.
+  variables at a time. It returns a data.frame with your handcoded
+  annotations.
 
 I present a short step-by-step guide as well as the functions in more
 detail below.
@@ -47,115 +42,156 @@ using a minimal working example.
 
 The workflow of the package follows a simple rule:
 
-1.  Initialize the dataset via `init_data`
+1.  If you start the coding process, initialize the coding with
+    `handcode()` by providing a text vector of texts you whish to
+    annotate as `data` input, and up to three named character vectors of
+    categories you want to code. Handcode as much data as you would like
+    and return the output data.frame via the `save and exit`-button.
 
-2.  Handcode your data via `handcode`
-
-These two steps where devided into two separate functions, in order to
-fascilitate the classification of you texts in multiple sessions.
-Initially, the function `handcode` takes the output of `init` data as
-input. If you want to pause and resume your classification process, you
-can save your classifications and use the output of `handcode` as input
-to a new `handcode` command.
-
-### init_data
-
-With `init_data` we initialize the texts and variables we want to
-classify. The function takes your vector of texts and between one and
-three named character vectors that indicate different variables and
-their categories you wish to classify.
-
-``` r
-# Textvector to classify
-texts <- c("Text 1", "Text 2", "Text 3", "Text 4")
-
-# Initialize dataframe
-data <- init_data(texts = texts, var1 = c("category 1", "category 2", "category 3"))
-```
-
-The `init_data` function initializes a dataframe with the texts in the
-first column and one column for each of the variables you wish to
-classify.
-
-    #>    texts var1
-    #> 1 Text 1     
-    #> 2 Text 2     
-    #> 3 Text 3     
-    #> 4 Text 4
-
-The classification variables are saved as empty factor variables with
-the different categories for each variable as factor levels. Here, the
-function automatically adds the levels “” and “not applicable”.
-
-``` r
-levels(data$var1)
-#> [1] ""               "Not applicable" "category 1"     "category 2"    
-#> [5] "category 3"
-```
-
-If you want to classify more than one variable, you can initalize your
-dataframe as follows:
-
-``` r
-# Initalize dataframe with three classification variables
-data_3cat <- init_data(texts = texts, var1 = c("cat 1", "cat 2"), var2 = c("cat a", "cat b", "cat c"), var3 = c("cat I", "cat II"))
-```
-
-    #>    texts var1 var2 var3
-    #> 1 Text 1               
-    #> 2 Text 2               
-    #> 3 Text 3               
-    #> 4 Text 4
+2.  If you want to resume coding that you have already been working on,
+    continue the coding with `handcode()` by providing the data.frame
+    you received as output from your last call of `handcode()` as `data`
+    input.
 
 ### handcode
 
-The main function of the handcodeR package is `handcode`. `handcode`
-takes the initialized dataset from `init_data` as input and starts a
-shiny app that allows users to classify texts into the in `init_data`
-pre-defined categories.
+The main function of the handcodeR package is `handcode()`. `handcode()`
+takes either a vector of texts and up to 3 named character vectors with
+classification categories, or a data.frame already initialized by
+`handcode()` as input. The function allows users to annotate texts using
+the pre-defined categories in an interactive ShinyApp and returns a
+data.frame of the texts with their annotations.
+
+In order to demonstrate the functionality of `handcode()`, we first use
+the R-package `archiveRetriever` (Gavras and Isermann 2022) to download
+a New York Times article on the presidential debate between Joe Biden
+and Donald Trump in the 2020 American presidential campaign. We split
+the article in individual sentences which we can then annotate with
+`handcode()`.
 
 ``` r
-data_new <- handcode(data)
+# Install pacman if not already installed
+if(!require(pacman)) install.packages("pacman")
+
+# Use pacman to install and load archiveRetriever and stringr
+pacman::p_load(archiveRetriever,
+               stringr)
+
+# Use the archiveRetriever to download article
+nytimes_article <- scrape_urls(Urls = "http://web.archive.org/web/20201001004918/https://www.nytimes.com/2020/09/30/opinion/biden-trump-2020-debate.html",
+                               Paths = c(title = "//h1[@itemprop='headline']",
+                                         author = "//span[@itemprop='name']",
+                                         date = "//time//text()",
+                                         article = "//section[@itemprop='articleBody']//p"))
+
+# Split up the article in different sentences
+sentences <- unlist(str_split(nytimes_article$article, pattern = "(?<=\\.)\\s"))
+
+head(sentences)
+#> [1] "I wasn’t in the crowd of people who believed Joe Biden shouldn’t deign to debate President Trump, but put me in the crowd that believes he shouldn’t debate him again."                                                                                                                                                                                                                                                                                                                                                                                  
+#> [2] "Not after Tuesday night’s horror show: a disgrace to the format, an insult to the country, a nearly pointless 90 minutes."                                                                                                                                                                                                                                                                                                                                                                                                                               
+#> [3] "And, I should add, a degradation of the presidency itself, which Trump had degraded so thoroughly already."                                                                                                                                                                                                                                                                                                                                                                                                                                              
+#> [4] "He put on a performance so contemptuous, so puerile, so dishonest and so across-the-board repellent that the moderator, Chris Wallace, morphed into some amalgam of elementary-school principal, child psychologist, traffic cop and roadkill."                                                                                                                                                                                                                                                                                                          
+#> [5] "No matter how Wallace pleaded with Trump or admonished him, he couldn’t make him behave."                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+#> [6] "But then why should Wallace have an experience any different from that of Trump’s chiefs of staff, of all the other former administration officials who have fled for the hills, of the Republican lawmakers who just threw up their hands and threw away any scruples they had? Trump runs roughshod over everyone and everything, and on Tuesday night in Cleveland he ran roughshod over the idea that two presidential candidates presenting rival visions for America should do so with at least a small measure of dignity and an iota of decorum."
 ```
 
-![](man/figures/shinyApp.PNG)
-
-After finishing the classification process you can click on ‘Save and
-exit’ to returns a dataframe with your classifications.
-
-    #>    texts           var1
-    #> 1 Text 1          cat 1
-    #> 2 Text 2          cat 1
-    #> 3 Text 3          cat 2
-    #> 4 Text 4 Not applicable
-
-#### Classifying more than one variable
-
-Dependent on the number of variables you gave in the initialization of
-the input data via `init_data`, you can classify up to three variables
-with handcode.
+We can now use these sentences as input in `handcode()` to annotate the
+individual sentences of the New York Times article. We will annotate two
+variables measuring the candidate a sentence talks about and the
+sentiment of the statement.
 
 ``` r
-data_3cat_new <- handcode(data_3cat)
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"))
 ```
 
-![](man/figures/shinyApp3.PNG)
+<img src="man/figures/App_1.PNG" width="350px" />
 
-    #>    texts           var1  var2           var3
-    #> 1 Text 1          cat 1 cat b         cat II
-    #> 2 Text 2          cat 1 cat c Not applicable
-    #> 3 Text 3          cat 2 cat b         cat II
-    #> 4 Text 4 Not applicable cat a          cat I
+If we want to see not only the sentence we are currently coding, but
+also the surrounding sentences, we can use the option `context = TRUE`.
+This gives us our current sentence alongside its previous and following
+sentence. To not generate any confusion about which sentence is
+currently evaluated, the surrounding sentences are displayed in grey.
+
+``` r
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"),
+                      context = TRUE)
+```
+
+<img src="man/figures/App_2.PNG" width="350px" />
+
+We can stop the annotation process at any point by clicking on the
+button `save and exit`. Once we click this button, the app will close
+and the function returns a data.frame with our texts and annotations.
+
+``` r
+annotated
+#> # A tibble: 58 × 3
+#>    texts                                                     candidate sentiment
+#>    <chr>                                                     <fct>     <fct>    
+#>  1 I wasn’t in the crowd of people who believed Joe Biden s… "Joe Bid… "negativ…
+#>  2 Not after Tuesday night’s horror show: a disgrace to the… "Not app… "negativ…
+#>  3 And, I should add, a degradation of the presidency itsel… ""        ""       
+#>  4 He put on a performance so contemptuous, so puerile, so … ""        ""       
+#>  5 No matter how Wallace pleaded with Trump or admonished h… ""        ""       
+#>  6 But then why should Wallace have an experience any diffe… ""        ""       
+#>  7 Almost from the start, he talked over Biden, taunting hi… ""        ""       
+#>  8 He interrupted him and interrupted him and then interrup… ""        ""       
+#>  9 “Mr.                                                      ""        ""       
+#> 10 President, I’m the moderator of this debate, and I would… ""        ""       
+#> # ℹ 48 more rows
+```
+
+We can resume the annotation process at any point by using the returned
+data.frame from our last execution of `handcode()` as input to a new
+`handcode()` command. By default, the function will resume the
+annotation at the first text that has not been annotated yet.
+
+``` r
+annotated <- handcode(data = annotated,
+                      context = TRUE)
+```
+
+<img src="man/figures/App_3.PNG" width="350px" />
+
+To fascilitate the classification process, `handcode()` takes the
+keyboard shortcuts `space` for ‘previous’ and `enter` for ‘next’. If you
+go back to already coded lines of your data, the app automatically
+displays your previous coding, if you go to new lines of your data, the
+default values for your variables always are ““. If the last row of your
+data is reached, ‘next’ automatically leads to the saving of the data
+and exit from the shiny app.
 
 #### Beyond the basics
 
 By default, `handcode` uses the first uncoded line in the input data as
 start value. However, the option `start` allows users to specify with
-which observation they want to start their coding process. To
-fascilitate the classification process, `handcode` takes the keyboard
-shortcuts `space` for ‘previous’ and `enter` for ‘next’. If you go back
-to already coded lines of your data, the app automatically displays your
-previous coding, if you go to new lines of your data, the default values
-for your variables always are ““. If the last row of your data is
-reached, ‘next’ automatically leads to the saving of the data and exit
-from the shiny app.
+which observation they want to start their coding process. If we have
+uncoded lines of data within coded lines of data, we can also specify
+`start = "all_empty"` to annotate all lines that have not been coded yet
+in the order in which they appear.
+
+Sometimes, we explicitly want to display texts in a random order to rule
+out that the context of a text within the larger body of texts
+influences our annotations. If we want to randomize the order in which
+texts are displayed, we can set the option `randomize = TRUE`. This
+will, however, not influence the order in which texts are sorted in the
+resulting output.
+
+### Bibliography
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-Gavras2022" class="csl-entry">
+
+Gavras, Konstantin, and Lukas Isermann. 2022. *archiveRetriever:
+Retrieve Archived Web Pages from the ’Internet Archive’*.
+<https://CRAN.R-project.org/package=archiveRetriever>.
+
+</div>
+
+</div>
