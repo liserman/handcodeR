@@ -36,6 +36,7 @@ ui <- shiny::fluidPage(
     shiny::div(
     shiny::htmlOutput("statement"),
     class = "statement-output"),
+    shiny::HTML("<br>"),
 
     # Coding Categories
     shiny::fluidRow(
@@ -92,16 +93,23 @@ ui <- shiny::fluidPage(
         });'
       )
     ),
+    shiny::HTML("<br><br>"),
+
+
 
     # Buttons for next and previous
-    shiny::actionButton(
-      "previouspage",
-      "Previous",
-      class = "btn btn-primary",
-      style = "position: absolute; bottom: 20px; right: 80px;"
-    ),
+    shiny::actionButton("previouspage","Previous", class = "btn btn-primary",
+                        style = "position: absolute; bottom: 60px; right: 90px;",
+                        icon = shiny::icon("backward")),
+
     shiny::actionButton("nextpage", "Next", class = "btn btn-primary",
-                        style = "position: absolute; bottom: 20px; right: 20px;"),
+                        style = "position: absolute; bottom: 60px; right: 10px;",
+                        icon = shiny::icon("forward")),
+
+    # Button for save and exit
+    shiny::actionButton("save", "Save and exit", class = "btn btn-primary",
+                        style = "position: absolute; bottom: 60px; left: 10px;",
+                        icon = shiny::icon("floppy-disk")),
 
     # Help Text
     shiny::helpText(
@@ -112,8 +120,17 @@ ui <- shiny::fluidPage(
       )
     ),
 
-    # Button for save and exit
-    shiny::actionButton("save", "Save and exit", class = "btn btn-primary",
-                        style = "position: absolute; bottom: 100px; right: 20px;")
+    # Progress bar
+    shinyWidgets::progressBar(
+      id = "progress",
+      value = e$start_app,
+      total = nrow(e$data_app),
+      size = "xxs"
+    ),
+    tags$head(tags$style(HTML('.progress-number {position: absolute; bottom: -10px; right: -10px; color: white;}'))),
+    tags$head(tags$style(HTML('.progress {height: 6px; margin-top: -21px;}')))
   )
 )
+
+
+

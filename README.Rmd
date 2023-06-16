@@ -1,10 +1,13 @@
 ---
 output: github_document
+bibliography: library.bib
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
   comment = "#>",
   fig.path = "man/figures/",
   out.width = "100%"
@@ -54,47 +57,89 @@ The workflow of the package follows a simple rule:
 
 The main function of the handcodeR package is `handcode()`. `handcode()` takes either a vector of texts and up to 3 named character vectors with classification categories, or a data.frame already initialized by `handcode()` as input. The function allows users to annotate texts using the pre-defined categories in an interactive ShinyApp and returns a data.frame of the texts with their annotations.
 
+In order to demonstrate the functionality of `handcode()`, we first use the R-package `archiveRetriever` [@Gavras2022] to download a New York Times article on the presidential debate between Joe Biden and Donald Trump in the 2020 American presidential campaign. We split the article in individual sentences which we can then annotate with `handcode()`. 
 
+```{r download data}
+# Install pacman if not already installed
+if(!require(pacman)) install.packages("pacman")
 
-**Ab hier fertig überarbeiten!!!**
+# Use pacman to install and load archiveRetriever and stringr
+pacman::p_load(archiveRetriever,
+               stringr)
 
+# Use the archiveRetriever to download article
+nytimes_article <- scrape_urls(Urls = "http://web.archive.org/web/20201001004918/https://www.nytimes.com/2020/09/30/opinion/biden-trump-2020-debate.html",
+                               Paths = c(title = "//h1[@itemprop='headline']",
+                                         author = "//span[@itemprop='name']",
+                                         date = "//time//text()",
+                                         article = "//section[@itemprop='articleBody']//p"))
 
-```{R, eval = FALSE}
-data_new <- handcode(data)
+# Split up the article in different sentences
+sentences <- unlist(str_split(nytimes_article$article, pattern = "(?<=\\.)\\s"))
+
+head(sentences)
 ```
-
-![](man/figures/shinyApp.PNG)
-
-After finishing the classification process you can click on 'Save and exit' to returns a dataframe with your classifications.
-
-```{R, echo = FALSE}
-data[,2] <- factor(c("cat 1", "cat 1", "cat 2", "Not applicable"), levels = c("", "Not applicable", "cat 1", "cat 2"))
-
-data
-```
-
-
-#### Classifying more than one variable
-
-Dependent on the number of variables you gave in the initialization of the input data via `init_data`, you can classify up to three variables with handcode.
+We can now use these sentences as input in `handcode()` to annotate the individual sentences of the New York Times article. We will annotate two variables measuring the candidate a sentence talks about and the sentiment of the statement.
 
 ```{r, eval = FALSE}
-data_3cat_new <- handcode(data_3cat)
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"))
 ```
 
-![](man/figures/shinyApp3.PNG)
 
-```{R, echo = FALSE}
-data_3cat[,2] <- factor(c("cat 1", "cat 1", "cat 2", "Not applicable"), levels = c("", "Not applicable", "cat 1", "cat 2"))
-data_3cat[,3] <- factor(c("cat b", "cat c", "cat b", "cat a"), levels = c("", "Not applicable", "cat a", "cat b", "cat c"))
-data_3cat[,4] <- factor(c("cat II", "Not applicable", "cat II", "cat I"), levels = c("", "Not applicable", "cat I", "cat II"))
+![](man/figures/App_1.PNG)
 
-data_3cat
+
+If we want to see not only the sentence we are currently coding, but also the surrounding sentences, we can use the option `context = TRUE`. This gives us our current sentence alongside its previous and following sentence. To not generate any confusion about which sentence is currently evaluated, the surrounding sentences are displayed in grey.
+
+```{r, eval = FALSE}
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"),
+                      context = TRUE)
 ```
+
+![](man/figures/App_2.PNG)
+
+
+We can stop the annotation process at any point by clicking on the button `save and exit`. Once we click this button, the app will close and the function returns a data.frame with our texts and annotations. 
+
+```{r, echo=FALSE}
+annotated <- tidyr::tibble(texts = sentences, candidate = factor("", levels = c("", "Not applicable", "Joe Biden", "Donald Trump")), sentiment = factor("", levels = c("", "Not applicable", "positive", "negative")))
+
+annotated$candidate[1:2] <- c("Joe Biden", "Not applicable")
+annotated$sentiment[1:2] <- c("negative", "negative")
+```
+
+```{r}
+annotated
+```
+
+
+We can resume the annotation process at any point by using the returned data.frame from our last execution of `handcode()` as input to a new `handcode()` command. By default, the function will resume the annotation at the first text that has not been annotated yet. 
+
+```{r, eval = FALSE}
+annotated <- handcode(data = annotated,
+                      context = TRUE)
+```
+
+![](man/figures/App_3.PNG)
+
+
+To fascilitate the classification process, `handcode()` takes the keyboard shortcuts `space` for 'previous' and `enter` for 'next'. If you go back to already coded lines of your data, the app automatically displays your previous coding, if you go to new lines of your data, the default values for your variables always are "". If the last row of your data is reached, 'next' automatically leads to the saving of the data and exit from the shiny app.  
 
 
 #### Beyond the basics
 
-By default, `handcode` uses the first uncoded line in the input data as start value. However, the option `start` allows users to specify with which observation they want to start their coding process. To fascilitate the classification process, `handcode` takes the keyboard shortcuts `space` for 'previous' and `enter` for 'next'. If you go back to already coded lines of your data, the app automatically displays your previous coding, if you go to new lines of your data, the default values for your variables always are "". If the last row of your data is reached, 'next' automatically leads to the saving of the data and exit from the shiny app.  
+By default, `handcode` uses the first uncoded line in the input data as start value. However, the option `start` allows users to specify with which observation they want to start their coding process. If we have uncoded lines of data within coded lines of data, we can also specify `start = "all_empty"` to annotate all lines that have not been coded yet in the order in which they appear.
+
+Sometimes, we explicitly want to display texts in a random order to rule out that the context of a text within the larger body of texts influences our annotations. If we want to randomize the order in which texts are displayed, we can set the option `randomize = TRUE`. This will, however, not influence the order in which texts are sorted in the resulting output.
+
+
+
+
+
+
 
 

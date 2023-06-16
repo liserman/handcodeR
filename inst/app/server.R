@@ -22,12 +22,12 @@ server <- function(input, output, session) {
   # Initialize reactiveValues
   values <- shiny::reactiveValues(
     # Set counter to start
-    counter = start_app,
+    counter = e$start_app,
 
     # Initialize coding as existing classification
-    code1 = container[,1],
-    code2 = container[,2],
-    code3 = container[,3]
+    code1 = e$container[,1],
+    code2 = e$container[,2],
+    code3 = e$container[,3]
   )
 
   # Initialize radioButtons
@@ -55,6 +55,9 @@ server <- function(input, output, session) {
     shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
     shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
     shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
+
+    # Update progress bar
+    shinyWidgets::updateProgressBar(id = "progress", value = values$counter, total = nrow(e$data_app))
   })
 
   # Behaviour when next is clicked
@@ -66,12 +69,12 @@ server <- function(input, output, session) {
     try(values$code3[values$counter] <- input$code3, silent = TRUE)
 
     # If max pages reached, save and exit
-    if (values$counter == length(data_app$texts)) {
+    if (values$counter == length(e$data_app$texts)) {
 
       # Print the coding for all text samples when the app is closed
       shiny::observeEvent(session$onSessionEnded, {
 
-        final <- gen_output(data_app, values)
+        final <- gen_output(e$data_app, values)
 
         # Write final to e
         e$output <- final
@@ -90,15 +93,17 @@ server <- function(input, output, session) {
     shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
     shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
     shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
+
+    shinyWidgets::updateProgressBar(id = "progress", value = values$counter, total = nrow(e$data_app))
   })
 
   # Update text displayed
   if(context_app){
     current_text <- reactive({
-      paste0("<font color =\"#D3D3D3\">", data_app$before[values$counter], "</font> <b>", data_app$texts[values$counter], "</b> <font color =\"#D3D3D3\">", data_app$after[values$counter], "</font>")
+      paste0("<font color =\"#D3D3D3\">", e$data_app$before[values$counter], "</font> <b>", e$data_app$texts[values$counter], "</b> <font color =\"#D3D3D3\">", e$data_app$after[values$counter], "</font>")
   })} else {
     current_text <- reactive({
-      data_app$texts[values$counter]
+      e$data_app$texts[values$counter]
     })
   }
 
@@ -118,7 +123,7 @@ server <- function(input, output, session) {
     # Print the coding for all text samples when the app is closed
     shiny::observeEvent(session$onSessionEnded, {
 
-      final <- gen_output(data_app, values)
+      final <- gen_output(e$data_app, values)
 
       # Write final to e
       e$output <- final

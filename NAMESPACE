@@ -2,3 +2,5 @@
 
 export(handcode)
 import(shiny)
+importFrom(shinyWidgets,progressBar)
+importFrom(shinyWidgets,updateProgressBar)

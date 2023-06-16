@@ -10,6 +10,8 @@
 #'
 # Importing dependencies with roxygen2
 #' @import shiny
+#' @importFrom shinyWidgets progressBar
+#' @importFrom shinyWidgets updateProgressBar
 # Export function
 #' @export
 
@@ -150,11 +152,11 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   }
 
   # Pass to app
-  container <<- container
-  data_app <<- data
-  start_app <<- start
-  classifications <<- classifications
-  context_app <<- context
+  e$container <- container
+  e$data_app <- data
+  e$start_app <- start
+  e$classifications <- classifications
+  e$context_app <- context
 
 
   # Run App ----------------------------------------------------------------------
@@ -166,6 +168,8 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
 
   # Delete id
   e$output <- e$output[,-1]
+
+  cat("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.0. https://github.com/liserman/handcodeR")
 
   return(e$output)
 }
