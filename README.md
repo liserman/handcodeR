@@ -21,6 +21,35 @@ different variables. To do so, the package uses the function:
 I present a short step-by-step guide as well as the functions in more
 detail below.
 
+## How to cite this package
+
+To cite the handcodeR package, you can use:
+
+> Isermann, Lukas. (2019). handcodeR: Text annotation app. R package
+> version 0.1.0. <http://doi.org/10.5281/zenodo.8075101>.
+
+You can also access the preferred citation as well as the bibtex entry
+for the handcodeR Package via R:
+
+``` r
+citation("handcodeR")
+#> To cite handcodeR in publications, please use:
+#> 
+#>   Isermann, Lukas. 2023. handcodeR: Text annotation app. R package
+#>   version 0.1.0. https://github.com/liserman/handcodeR
+#> 
+#> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+#> 
+#>   @Misc{,
+#>     title = {handcodeR: Text annotation app},
+#>     author = {Lukas Isermann},
+#>     year = {2023},
+#>     note = {R package version 0.1.0},
+#>     doi = {10.5281/zenodo.8075101},
+#>     url = {https://github.com/liserman/handcodeR},
+#>   }
+```
+
 ## Installation
 
 The `handcodeR` Package can be installed directly from

@@ -1,0 +1,16 @@
+citHeader("To cite handcodeR in publications, please use:")
+
+note <- sprintf("R package version %s", meta$Version)
+
+citEntry(
+  entry  = "Misc",
+  title    = "handcodeR: Text annotation app",
+  author   = as.person("Lukas Isermann"),
+  year     = "2023",
+  note     = note,
+  doi      = "10.5281/zenodo.8075101",
+  url      = "https://github.com/liserman/handcodeR",
+  textVersion = paste0("Isermann, Lukas. 2023. handcodeR: Text annotation app. ", note, ". https://doi.org/10.5281/zenodo.8075101")
+)
+
+
