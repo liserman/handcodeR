@@ -1,4 +1,6 @@
 
+[![DOI](https://zenodo.org/badge/608736610.svg)](https://zenodo.org/badge/latestdoi/608736610)
+
 # handcodeR
 
 R-Package to fascilitate the classification of textdata by hand in R.
