@@ -15,8 +15,19 @@ handcode(data, ..., start = "first_empty", randomize = FALSE, context = FALSE)
 
 \item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
 
-\item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray.}
+\item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.}
+}
+\value{
+The function returns a data.frame containing all annotations that have been made in the shiny app.
 }
 \description{
 `handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
+}
+\examples{
+\dontrun{
+reviews <- c("Good Quality Dog Food", "Not as Advertised", ""Delight" says it all", "Great! Just as good as the expensive brands")
+annotated <- handcode(reviews, evaluation = c("positive", "negative"))
+}
+
+
 }
