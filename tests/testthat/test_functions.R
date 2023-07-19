@@ -124,7 +124,7 @@ test_that("Test 2 data_for_app", {
   randomize <- TRUE
   context <- TRUE
 
-  a <- data_for_app(data, start, randomize, context)
+  a <- handcodeR:::data_for_app(data, start, randomize, context)
 
   # Output is list
   expect_equal(class(a), "list")
@@ -150,7 +150,7 @@ test_that("Test 2 data_for_app", {
   expect_equal(a$context_app, context)
 
   # Randomize
-  expect_false(all(a$data_app$id == seq_len(a$data_app)))
+  expect_false(all(a$data_app$id == seq_len(nrow(a$data_app))))
 })
 
 
