@@ -241,7 +241,7 @@ test_that("Test 3 categories",{
 # Test Server -------------------------------------------------------------
 
 
-test_that("Test shiny server",{
+test_that("Test shiny server nextpage",{
   shiny::testServer(shiny_app, {
     # First Text displayed is first Text
     expect_equal(output$statement, a$data_app$texts[1])
@@ -254,15 +254,25 @@ test_that("Test shiny server",{
     session$setInputs(nextpage = input$nextpage + 1)
     expect_equal(output$statement, a$data_app$texts[2])
 
-    # Clicking save leads to stop of app
-    session$setInputs(save = input$save + 1)
-    expect_false(shiny::isRunning())
+    # Clicking previouspage leads back to first text
+    session$setInputs(previouspage = input$previouspage + 1)
+    expect_equal(output$statement, a$data_app$texts[1])
+
+    # Clicking nextpage until last page leads to exit
+    session$setInputs(nextpage = input$nextpage + 1)
+    session$setInputs(nextpage = input$nextpage + 1)
+    expect_equal(values$counter, 3)
+
   })
 })
 
 
-
-
+test_that("Test shiny server context",{
+  shiny::testServer(shiny_app2, {
+    # First Text displayed is second Text (Start value is 2)
+    expect_equal(output$statement, paste0("<font color =\"#D3D3D3\">", b$data_app$before[2], "</font> <b>", b$data_app$texts[2], "</b> <font color =\"#D3D3D3\">", b$data_app$after[2], "</font>"))
+  })
+})
 
 
 

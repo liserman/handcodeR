@@ -247,6 +247,7 @@ if(!interactive()){
 # check if output is dataframe
 if(interactive()){
 test_that("handcode() output is dataframe with dimensions and variable names identical to input", {
+  skip_on_cran()
   data <- data.frame(texts = c("Text 1", "Text 2"),
                      cat1 = factor("", levels = c("cat1a", "cat1b", "", "Not applicable")))
   out <- handcode(data)

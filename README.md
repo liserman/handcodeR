@@ -1,6 +1,5 @@
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://codecov.io/gh/liserman/handcodeR)
-
 [![DOI](https://zenodo.org/badge/608736610.svg)](https://zenodo.org/badge/latestdoi/608736610)
 
 # handcodeR
