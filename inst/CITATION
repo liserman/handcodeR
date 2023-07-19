@@ -2,7 +2,7 @@ citHeader("To cite handcodeR in publications, please use:")
 
 note <- sprintf("R package version %s", meta$Version)
 
-citEntry(
+bibentry(
   entry  = "Misc",
   title    = "handcodeR: Text annotation app",
   author   = as.person("Lukas Isermann"),

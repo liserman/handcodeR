@@ -387,7 +387,10 @@ data_for_app <- function(data, start, randomize, context) {
 #' @return The function returns a data.frame containing all annotations that have been made in the shiny app.
 #' @examples
 #' \dontrun{
-#' reviews <- c("Good Quality Dog Food", "Not as Advertised", ""Delight" says it all", "Great! Just as good as the expensive brands")
+#' reviews <- c("Good Quality Dog Food",
+#'              "Not as Advertised",
+#'              "Delight" says it all",
+#'              "Great! Just as good as the expensive brands")
 #' annotated <- handcode(reviews, evaluation = c("positive", "negative"))
 #' }
 #'
