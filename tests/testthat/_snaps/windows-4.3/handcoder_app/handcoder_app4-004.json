@@ -1,0 +1,18 @@
+{
+  "input": {
+    "add2": true,
+    "add3": true,
+    "code1": "",
+    "code2": "",
+    "code3": "",
+    "nextpage": 1,
+    "previouspage": 0,
+    "save": 0
+  },
+  "output": {
+    "statement": "<font color =\"#D3D3D3\">Text 2<\/font> <b>Text 3<\/b> <font color =\"#D3D3D3\"><\/font>"
+  },
+  "export": {
+
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "input": {
+    "add2": false,
+    "add3": false,
+    "code1": "category 1",
+    "code2": null,
+    "code3": null,
+    "nextpage": 0,
+    "previouspage": 0,
+    "save": 0
+  },
+  "output": {
+    "statement": "Text 1"
+  },
+  "export": {
+
+  }
+}

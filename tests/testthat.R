@@ -7,6 +7,7 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
+library(shinytest2)
 library(handcodeR)
 
 test_check("handcodeR")
