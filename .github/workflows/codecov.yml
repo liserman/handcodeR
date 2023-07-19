@@ -6,6 +6,7 @@ on:
 
 jobs:
   upload:
+    runs-on: ubuntu-20.04
     steps:
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
