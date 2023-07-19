@@ -6,6 +6,11 @@
 \usage{
 character_to_data(data, arg_list)
 }
+\arguments{
+\item{data}{A character vector of texts which has been given as data input to `handcode`.}
+
+\item{arg_list}{A list of additional arguments which have been given as input to `handcode`. These must be named character vectors of categories that will be used to annotate the given texts.}
+}
 \description{
-character_to_data: Transform text vector and arg_list to dataframe.
+`character_to_data` is an internal function to `handcode`. It takes a character vector of texts as well as an arg_list of named character vectors as inputs and returns a dataframe which can be used as input to `data_for_app`.
 }

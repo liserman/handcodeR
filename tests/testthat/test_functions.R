@@ -80,9 +80,9 @@ test_that("Test 1 data_for_app", {
   data <- data.frame(texts = c("Text 1", "Text 2", "Text 3"),
                      fruits = factor("", levels = c("", "Not applicable", "apple", "banana", "pear")),
                      colors = factor("", levels = c("", "Not applicable ", "green", "yellow")))
-  start = "first_empty"
-  randomize = FALSE
-  context = FALSE
+  start <- "first_empty"
+  randomize <- FALSE
+  context <- FALSE
 
   a <- data_for_app(data, start, randomize, context)
 
@@ -109,7 +109,7 @@ test_that("Test 1 data_for_app", {
   expect_equal(a$context_app, context)
 
   # Ranomize
-  expect_true(all(a$data_app$id == c(1:nrow(a$data_app))))
+  expect_true(all(a$data_app$id == seq_len(nrow(a$data_app))))
 })
 
 
@@ -120,9 +120,9 @@ test_that("Test 2 data_for_app", {
                      fruits = factor(c("", "apple", "", ""), levels = c("", "Not applicable", "apple", "banana", "pear")),
                      colors = factor(c("", "green", "", ""), levels = c("", "Not applicable ", "green", "yellow")),
                      taste = factor(c("", "sour", "", ""), levels = c("", "Not applicable", "sweet", "sour")))
-  start = "all_empty"
-  randomize = TRUE
-  context = TRUE
+  start <- "all_empty"
+  randomize <- TRUE
+  context <- TRUE
 
   a <- data_for_app(data, start, randomize, context)
 
@@ -150,7 +150,7 @@ test_that("Test 2 data_for_app", {
   expect_equal(a$context_app, context)
 
   # Randomize
-  expect_false(all(a$data_app$id == c(1:nrow(a$data_app))))
+  expect_false(all(a$data_app$id == seq_len(a$data_app))))
 })
 
 
