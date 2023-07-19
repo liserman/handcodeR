@@ -23,11 +23,3 @@ The function returns a data.frame containing all annotations that have been made
 \description{
 `handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
 }
-\examples{
-\dontrun{
-reviews <- c("Good Quality Dog Food", "Not as Advertised", ""Delight" says it all", "Great! Just as good as the expensive brands")
-annotated <- handcode(reviews, evaluation = c("positive", "negative"))
-}
-
-
-}
