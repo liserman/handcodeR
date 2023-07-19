@@ -249,7 +249,7 @@ if(interactive()){
 test_that("handcode() output is dataframe with dimensions and variable names identical to input", {
   skip_on_cran()
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("cat1a", "cat1b", "", "Not applicable")))
+                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
   out <- handcode(data)
 
   expect_s3_class(out, "data.frame")

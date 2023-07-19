@@ -319,10 +319,10 @@ data_for_app <- function(data, start, randomize, context) {
   a <- list()
 
   # Add context to dataframe
-  data <- data.frame(before = c("", data$texts[seq_len(nrow(data)-1)]), after = c(data$texts[2:nrow(data)], ""), data)
+  data <- data.frame(before = c("", data$texts[seq_len(nrow(data)-1)]), after = c(data$texts[seq(2, nrow(data))], ""), data)
 
   # Add id variable to data
-  data <- cbind(id = (seq_len(nrow(data))), data)
+  data <- cbind(id = seq_len(nrow(data)), data)
 
   # if start == "all_empty", reorder data
   if(start == "all_empty"){
@@ -332,7 +332,7 @@ data_for_app <- function(data, start, randomize, context) {
 
   # Set start to first empty row of data
   if(start %in% c("first_empty", "all_empty")){
-    start <- min((seq_len(nrow(data)))[do.call(paste0,data.frame(data[,-c(1:4)], helper=""))==""])
+    start <- min(seq_len(nrow(data))[do.call(paste0,data.frame(data[,-c(1:4)], helper=""))==""])
   }
 
   # If randomize is TRUE, randomize order after start value

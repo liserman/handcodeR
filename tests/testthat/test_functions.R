@@ -150,7 +150,7 @@ test_that("Test 2 data_for_app", {
   expect_equal(a$context_app, context)
 
   # Randomize
-  expect_false(all(a$data_app$id == seq_len(a$data_app))))
+  expect_false(all(a$data_app$id == seq_len(a$data_app)))
 })
 
 
