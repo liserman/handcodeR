@@ -235,3 +235,47 @@ test_that("Test 3 categories",{
   app$click("previouspage")
   app$expect_values()
 })
+
+
+
+# Test Server -------------------------------------------------------------
+
+
+test_that("Test shiny server",{
+  shiny::testServer(shiny_app, {
+    # First Text displayed is first Text
+    expect_equal(output$statement, a$data_app$texts[1])
+
+    # Clicking categories generates codes
+    session$setInputs(code1 = "category 1")
+    expect_equal(input$code1, "category 1")
+
+    # Clicking nextpage leads to next text and resets code
+    session$setInputs(nextpage = input$nextpage + 1)
+    expect_equal(output$statement, a$data_app$texts[2])
+
+    # Clicking save leads to stop of app
+    session$setInputs(save = input$save + 1)
+    expect_false(shiny::isRunning())
+  })
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

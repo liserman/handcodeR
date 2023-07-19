@@ -1,4 +1,6 @@
 
+[![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://codecov.io/gh/liserman/handcodeR)
+
 [![DOI](https://zenodo.org/badge/608736610.svg)](https://zenodo.org/badge/latestdoi/608736610)
 
 # handcodeR
@@ -36,7 +38,7 @@ citation("handcodeR")
 #> To cite handcodeR in publications, please use:
 #> 
 #>   Isermann, Lukas. 2023. handcodeR: Text annotation app. R package
-#>   version 0.1.0. https://github.com/liserman/handcodeR
+#>   version 0.1.0. https://doi.org/10.5281/zenodo.8075101
 #> 
 #> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
 #> 
