@@ -7,7 +7,7 @@ Authors@R: person(given = "Lukas",
                   role = c("aut", "cre"),
                   email = "lukas.isermann@uni-mannheim.de",
                   comment = c(ORCID = "https://orcid.org/0000-0002-7195-9302"))
-Description: This package allows you to annotate vectors of texts to predefined categories by hand, using a shiny application. 
+Description: Shiny app that allows to annotate vectors of texts to predefined categories by hand. 
 License: Apache License (>= 2.0)
 URL: https://github.com/liserman/handcodeR/
 BugReports: https://github.com/liserman/handcodeR/issues
