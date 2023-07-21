@@ -7,11 +7,11 @@
 handcode(data, ..., start = "first_empty", randomize = FALSE, context = FALSE)
 }
 \arguments{
-\item{data}{A character vector of texts you want to annotate or a data.frame returned from the handcode() function.}
+\item{data}{A character vector of texts you want to annotate or a dataframe returned from the handcode() function.}
 
 \item{...}{Between one and three named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
 
-\item{start}{A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet, or to "all_empty" to automatically handcode all lines that have not been handcoded yet.}
+\item{start}{A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.}
 
 \item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
 
@@ -21,5 +21,16 @@ handcode(data, ..., start = "first_empty", randomize = FALSE, context = FALSE)
 The function returns a data.frame containing all annotations that have been made in the shiny app.
 }
 \description{
-`handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
+`handcode` opens a Shiny app which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
+}
+\examples{
+\dontrun{
+reviews <- c("Good Quality Dog Food",
+             "Not as Advertised",
+             "Delight says it all",
+             "Great! Just as good as the expensive brands")
+annotated <- handcode(reviews, evaluation = c("positive", "negative"))
+}
+
+
 }

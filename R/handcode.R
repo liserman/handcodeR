@@ -376,11 +376,11 @@ data_for_app <- function(data, start, randomize, context) {
 
 #' handcode: Classifying text into pre-defined categories.
 #'
-#' `handcode` opens a Shiny app which allows for handcoding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
+#' `handcode` opens a Shiny app which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
 #'
-#' @param data A character vector of texts you want to annotate or a data.frame returned from the handcode() function.
+#' @param data A character vector of texts you want to annotate or a dataframe returned from the handcode() function.
 #' @param ... Between one and three named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.
-#' @param start A numeric value indicating the line in which you want to start handcoding. Alternatively, you can set start to "first_empty" to automatically start handcoding in the first line that has not been handcoded yet, or to "all_empty" to automatically handcode all lines that have not been handcoded yet.
+#' @param start A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.
 #' @param randomize A logical value indicating whether you want to randomize the order in which texts are shown to the coder.
 #' @param context A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.
 #'
@@ -389,7 +389,7 @@ data_for_app <- function(data, start, randomize, context) {
 #' \dontrun{
 #' reviews <- c("Good Quality Dog Food",
 #'              "Not as Advertised",
-#'              "Delight" says it all",
+#'              "Delight says it all",
 #'              "Great! Just as good as the expensive brands")
 #' annotated <- handcode(reviews, evaluation = c("positive", "negative"))
 #' }

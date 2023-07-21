@@ -4,20 +4,20 @@
 
 # handcodeR
 
-R-Package to fascilitate the annotation of textdata by hand in R.
+R-Package to facilitate the annotation of text data by hand in R.
 
 The goal of the handcodeR package is to provide an easy to use app to
-annotate text data by hand. Oftentimes when we work with textdata, we
-rely on handcoded annotations of texts either as unit of analysis in
+annotate text data by hand. Often times when we work with text data, we
+rely on hand coded annotations of texts either as unit of analysis in
 itself, or as training and test samples for supervised machine learning
 tools to classify text data. handcodeR offers a shiny app that can be
 run within R to annotate individual texts one by one in up to three
 different variables. To do so, the package uses the function
 `handcode()`:
 
-- `handcode()` opens a shiny app which allows for handcoding strings of
+- `handcode()` opens a shiny app which allows for hand-coding strings of
   text into pre-defined categories. You can code between one and three
-  variables at a time. It returns a dataframe with your handcoded
+  variables at a time. It returns a dataframe with your coded
   annotations.
 
 I present a short step-by-step guide as well as the functions in more
@@ -76,10 +76,11 @@ using a minimal working example.
 The workflow of the package follows a simple rule:
 
 1.  If you start the coding process, initialize the coding with
-    `handcode()` by providing a text vector of texts you whish to
+    `handcode()` by providing a text vector of texts you wish to
     annotate as `data` input, and up to three named character vectors of
-    categories you want to code. Handcode as much data as you would like
-    and return the output data.frame via the `save and exit`-button.
+    categories you want to code. Hand code as much data as you would
+    like and return the output data.frame via the
+    `save and exit`-button.
 
 2.  If you want to resume coding that you have already been working on,
     continue the coding with `handcode()` by providing the data.frame
@@ -146,7 +147,7 @@ If we want to see not only the sentence we are currently coding, but
 also the surrounding sentences, we can use the option `context = TRUE`.
 This gives us our current sentence alongside its previous and following
 sentence. To not generate any confusion about which sentence is
-currently evaluated, the surrounding sentences are displayed in grey.
+currently evaluated, the surrounding sentences are shown in grey.
 
 ``` r
 annotated <- handcode(data = sentences, 
@@ -159,7 +160,7 @@ annotated <- handcode(data = sentences,
 
 We can stop the annotation process at any point by clicking on the
 button `save and exit`. Once we click this button, the app will close
-and the function returns a data.frame with our texts and annotations.
+and the function returns a dataframe with our texts and annotations.
 
 ``` r
 annotated
@@ -180,7 +181,7 @@ annotated
 ```
 
 We can resume the annotation process at any point by using the returned
-data.frame from our last execution of `handcode()` as input to a new
+dataframe from our last execution of `handcode()` as input to a new
 `handcode()` command. By default, the function will resume the
 annotation at the first text that has not been annotated yet.
 
@@ -191,12 +192,12 @@ annotated <- handcode(data = annotated,
 
 <img src="man/figures/App_3.PNG" width="350px" />
 
-To fascilitate the classification process, `handcode()` takes the
-keyboard shortcuts `space` for ‘previous’ and `enter` for ‘next’. If you
+To facilitate the classification process, `handcode()` takes the
+keyboard shortcuts `space` for `previous` and `enter` for `next`. If you
 go back to already coded lines of your data, the app automatically
 displays your previous coding, if you go to new lines of your data, the
 default values for your variables always are ““. If the last row of your
-data is reached, ‘next’ automatically leads to the saving of the data
+data is reached, `next` automatically leads to the saving of the data
 and exit from the shiny app.
 
 #### Beyond the basics
@@ -204,9 +205,9 @@ and exit from the shiny app.
 By default, `handcode` uses the first uncoded line in the input data as
 start value. However, the option `start` allows users to specify with
 which observation they want to start their coding process. If we have
-uncoded lines of data spreaded out in between already coded lines of
-data, we can also specify `start = "all_empty"` to annotate all lines
-that have not been coded yet in the order in which they appear.
+uncoded lines of data that lie between already coded lines of data, we
+can also specify `start = "all_empty"` to annotate all lines that have
+not been coded yet in the order in which they appear.
 
 Sometimes, we explicitly want to display texts in a random order to rule
 out that the context of a text within the larger body of texts
