@@ -4,19 +4,20 @@
 
 # handcodeR
 
-R-Package to fascilitate the classification of textdata by hand in R.
+R-Package to fascilitate the annotation of textdata by hand in R.
 
 The goal of the handcodeR package is to provide an easy to use app to
 annotate text data by hand. Oftentimes when we work with textdata, we
 rely on handcoded annotations of texts either as unit of analysis in
-itself, or as training and text samples for supervised machine learning
+itself, or as training and test samples for supervised machine learning
 tools to classify text data. handcodeR offers a shiny app that can be
 run within R to annotate individual texts one by one in up to three
-different variables. To do so, the package uses the function:
+different variables. To do so, the package uses the function
+`handcode()`:
 
 - `handcode()` opens a shiny app which allows for handcoding strings of
   text into pre-defined categories. You can code between one and three
-  variables at a time. It returns a data.frame with your handcoded
+  variables at a time. It returns a dataframe with your handcoded
   annotations.
 
 I present a short step-by-step guide as well as the functions in more
@@ -203,9 +204,9 @@ and exit from the shiny app.
 By default, `handcode` uses the first uncoded line in the input data as
 start value. However, the option `start` allows users to specify with
 which observation they want to start their coding process. If we have
-uncoded lines of data within coded lines of data, we can also specify
-`start = "all_empty"` to annotate all lines that have not been coded yet
-in the order in which they appear.
+uncoded lines of data spreaded out in between already coded lines of
+data, we can also specify `start = "all_empty"` to annotate all lines
+that have not been coded yet in the order in which they appear.
 
 Sometimes, we explicitly want to display texts in a random order to rule
 out that the context of a text within the larger body of texts
