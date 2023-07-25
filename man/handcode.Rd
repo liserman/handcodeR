@@ -4,18 +4,30 @@
 \alias{handcode}
 \title{handcode: Classifying text into pre-defined categories.}
 \usage{
-handcode(data, ..., start = "first_empty", randomize = FALSE, context = FALSE)
+handcode(
+  data,
+  ...,
+  start = "first_empty",
+  randomize = FALSE,
+  context = FALSE,
+  pre = NULL,
+  post = NULL
+)
 }
 \arguments{
 \item{data}{A character vector of texts you want to annotate or a dataframe returned from the handcode() function.}
 
-\item{...}{Between one and three named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
+\item{...}{Between one and six named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
 
 \item{start}{A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.}
 
 \item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
 
 \item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.}
+
+\item{pre}{Optional vector of custom texts that come as previous text before each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
+
+\item{post}{Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
 }
 \value{
 The function returns a data.frame containing all annotations that have been made in the shiny app.

@@ -90,11 +90,11 @@ The workflow of the package follows a simple rule:
 ### handcode
 
 The main function of the handcodeR package is `handcode()`. `handcode()`
-takes either a vector of texts and up to 3 named character vectors with
+takes either a vector of texts and up to 6 named character vectors with
 classification categories, or a data.frame already initialized by
 `handcode()` as input. The function allows users to annotate texts using
 the pre-defined categories in an interactive ShinyApp and returns a
-data.frame of the texts with their annotations.
+dataframe of the texts with their annotations.
 
 In order to demonstrate the functionality of `handcode()`, we first use
 the R-package `archiveRetriever` (Gavras and Isermann 2022) to download
@@ -157,6 +157,24 @@ annotated <- handcode(data = sentences,
 ```
 
 <img src="man/figures/App_2.PNG" width="350px" />
+
+If our text vector does not form a continuous text, but you nonetheless
+want to provide a previous and next sentence as context, you can also
+specify a vector with all previous and a vector with all next sentences
+as `pre` and `post` inputs.
+
+``` r
+# Vectors of all previous and all subsequent sentences
+previous <- c("", sentences[2:length(sentences)])
+subsequent <- c(sentences[2:length(sentences)-1])
+
+annotated <- handcode(data = sentences,
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"),
+                      context = TRUE,
+                      pre = previous,
+                      post = subsequent)
+```
 
 We can stop the annotation process at any point by clicking on the
 button `save and exit`. Once we click this button, the app will close

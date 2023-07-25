@@ -4,7 +4,7 @@
 \alias{data_for_app}
 \title{data_for_app: Prepare inputs for shiny app}
 \usage{
-data_for_app(data, start, randomize, context)
+data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
 }
 \arguments{
 \item{data}{A dataframe that has been prepared by `character_to_data` or that has previously already been returned from `handcode`.}
@@ -14,6 +14,10 @@ data_for_app(data, start, randomize, context)
 \item{randomize}{The logical value that has been given as randomize to `handcode`.}
 
 \item{context}{The logical value that has been given as context to `handcode`.}
+
+\item{pre}{Optional vector of texts that come before each respective text to be coded.}
+
+\item{post}{Optional vector of texts that come after each respective text to be coded.}
 }
 \description{
 `data_for_app` is an internal function to `handcode`. It takes the inputs data, start, randomize and context to generate a list of inputs which can then be passed to `handcoder_app`.
