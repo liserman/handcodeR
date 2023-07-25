@@ -58,7 +58,8 @@ handcoder_app <- function(a) {
                         shiny::radioButtons(
                           "code1",
                           names(a$classifications)[1],
-                          c(a$classifications[[1]]),
+                          choiceNames = beautify(c(a$classifications[[1]])),
+                          choiceValues = c(a$classifications[[1]]),
                           selected = ""
                         )
           ),
@@ -75,8 +76,9 @@ handcoder_app <- function(a) {
                           shiny::radioButtons(
                             "code2",
                             try(names(a$classifications)[2], silent = TRUE),
-                            try(c(a$classifications[[2]]), silent = TRUE),
-                            selected = ""
+                            selected = "",
+                            choiceNames = beautify(try(c(a$classifications[[2]]), silent = TRUE)),
+                            choiceValues = try(c(a$classifications[[2]]), silent = TRUE)
                           )
             )),
           shiny::div(shiny::checkboxInput(
@@ -91,8 +93,9 @@ handcoder_app <- function(a) {
                           shiny::radioButtons(
                             "code3",
                             try(names(a$classifications)[3], silent = TRUE),
-                            try(c(a$classifications[[3]]), silent = TRUE),
-                            selected = ""
+                            selected = "",
+                            choiceNames = beautify(try(c(a$classifications[[3]]), silent = TRUE)),
+                            choiceValues = try(c(a$classifications[[3]]), silent = TRUE)
                           )
             )),
           shiny::div(shiny::checkboxInput(
@@ -107,8 +110,9 @@ handcoder_app <- function(a) {
                           shiny::radioButtons(
                             "code4",
                             try(names(a$classifications)[4], silent = TRUE),
-                            try(c(a$classifications[[4]]), silent = TRUE),
-                            selected = ""
+                            selected = "",
+                            choiceNames = beautify(try(c(a$classifications[[4]]), silent = TRUE)),
+                            choiceValues = try(c(a$classifications[[4]]), silent = TRUE)
                           )
             )),
           shiny::div(shiny::checkboxInput(
@@ -123,8 +127,9 @@ handcoder_app <- function(a) {
                           shiny::radioButtons(
                             "code5",
                             try(names(a$classifications)[5], silent = TRUE),
-                            try(c(a$classifications[[5]]), silent = TRUE),
-                            selected = ""
+                            selected = "",
+                            choiceNames = beautify(try(c(a$classifications[[5]]), silent = TRUE)),
+                            choiceValues = try(c(a$classifications[[5]]), silent = TRUE)
                           )
             )),
           shiny::div(shiny::checkboxInput(
@@ -139,8 +144,9 @@ handcoder_app <- function(a) {
                           shiny::radioButtons(
                             "code6",
                             try(names(a$classifications)[6], silent = TRUE),
-                            try(c(a$classifications[[6]]), silent = TRUE),
-                            selected = ""
+                            selected = "",
+                            choiceNames = beautify(try(c(a$classifications[[6]]), silent = TRUE)),
+                            choiceValues = try(c(a$classifications[[6]]), silent = TRUE)
                           )
             ))
         ),
@@ -282,7 +288,7 @@ handcoder_app <- function(a) {
       # Update text displayed
       if(a$context_app){
         current_text <- reactive({
-          paste0("<font color =\"#979797\">", a$data_app$before[values$counter], "</font> <b>", a$data_app$texts[values$counter], "</b> <font color =\"#979797\">", a$data_app$after[values$counter], "</font>")
+          paste0("<font color =\"#C0C0C0\">", a$data_app$before[values$counter], "</font> <b>", a$data_app$texts[values$counter], "</b> <font color =\"#C0C0C0\">", a$data_app$after[values$counter], "</font>")
         })} else {
           current_text <- reactive({
             a$data_app$texts[values$counter]
@@ -292,10 +298,6 @@ handcoder_app <- function(a) {
       output$statement <- renderText({
         current_text()
       })
-"#D3D3D3"
-"#AEAEAE"
-"#979797"
-"#808080"
 
       # Behaviour when save is clicked
       shiny::observeEvent(input$save, {
@@ -314,6 +316,17 @@ handcoder_app <- function(a) {
 
     }
   )
+}
+
+#' beautify: Formatting of output for RadioButtons
+#'
+#' `beautify` is an internal function to `handcode`. It works within the shiny app `handcoder_app` to format the look of the radioButtons.
+#' @param input Choice character for radioButton
+
+beautify <- function(input) {
+  input <- as.list(input)
+  input[[2]] <- HTML("<p style = 'color:#C0C0C0; margin-bottom:12pt'>Not applicable</p>")
+  return(input)
 }
 
 
@@ -595,7 +608,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
 
 # Output results ----------------------------------------------------------
 
-  cat("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.0. https://github.com/liserman/handcodeR")
+  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.0. https://github.com/liserman/handcodeR")
 
   return(ret)
 
