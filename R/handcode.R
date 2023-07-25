@@ -54,7 +54,7 @@ handcoder_app <- function(a) {
 
         # Coding Categories
         shiny::fluidRow(
-          shiny::column(width = 2,
+          shiny::column(width = floor(12/length(a$classifications)),
                         shiny::radioButtons(
                           "code1",
                           names(a$classifications)[1],
@@ -71,7 +71,7 @@ handcoder_app <- function(a) {
           ),
           shiny::conditionalPanel(
             condition = "input.add2",
-            shiny::column(width = 2,
+            shiny::column(width = floor(12/length(a$classifications)),
                           shiny::radioButtons(
                             "code2",
                             try(names(a$classifications)[2], silent = TRUE),
@@ -87,7 +87,7 @@ handcoder_app <- function(a) {
           ),
           shiny::conditionalPanel(
             condition = "input.add3",
-            shiny::column(width = 2,
+            shiny::column(width = floor(12/length(a$classifications)),
                           shiny::radioButtons(
                             "code3",
                             try(names(a$classifications)[3], silent = TRUE),
@@ -103,7 +103,7 @@ handcoder_app <- function(a) {
           ),
           shiny::conditionalPanel(
             condition = "input.add4",
-            shiny::column(width = 2,
+            shiny::column(width = floor(12/length(a$classifications)),
                           shiny::radioButtons(
                             "code4",
                             try(names(a$classifications)[4], silent = TRUE),
@@ -119,7 +119,7 @@ handcoder_app <- function(a) {
           ),
           shiny::conditionalPanel(
             condition = "input.add5",
-            shiny::column(width = 2,
+            shiny::column(width = floor(12/length(a$classifications)),
                           shiny::radioButtons(
                             "code5",
                             try(names(a$classifications)[5], silent = TRUE),
@@ -135,7 +135,7 @@ handcoder_app <- function(a) {
           ),
           shiny::conditionalPanel(
             condition = "input.add6",
-            shiny::column(width = 2,
+            shiny::column(width = floor(12/length(a$classifications)),
                           shiny::radioButtons(
                             "code6",
                             try(names(a$classifications)[6], silent = TRUE),
