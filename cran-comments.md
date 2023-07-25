@@ -6,9 +6,11 @@
 
 ## R CMD check results
 
-There were no ERRORS or WARNINGS. 
+```
+0 errors ✔ | 0 warnings ✔ | 6 notes ✖
+```
 
-There were 6 NOTES, 3 of which are "New submission". The other three notes relate to the README.rmd file being written in Rmarkdown and therefore resulting in a non-standard file at the top level, a likely bug in miktex (see https://github.com/r-hub/rhub/issues/503) that can be ignored, and a likely issue on the ubuntu testing machine (see https://github.com/r-hub/rhub/issues/548) that I have no power to fix. 
+There were no ERRORS or WARNINGS. There were 6 NOTES, 3 of which are "New submission". 
 
 ```
 ❯ On windows-x86_64-devel (r-devel)
@@ -16,32 +18,43 @@ There were 6 NOTES, 3 of which are "New submission". The other three notes relat
   Maintainer: 'Lukas Isermann <lukas.isermann@uni-mannheim.de>'
   
   New submission
+  
+❯ On ubuntu-gcc-release (r-release)
+  checking CRAN incoming feasibility ... [5s/11s] NOTE
+  Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
+  
+  New submission
+  
+❯ On fedora-clang-devel (r-devel)
+  checking CRAN incoming feasibility ... [6s/13s] NOTE
+  Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
+  
+  New submission
+```
 
-❯ On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
-  checking top-level files ... NOTE
-  Non-standard file/directory found at top level:
-    'README.Rmd'
+The other three notes relate to a likely bug in miktex (see https://github.com/r-hub/rhub/issues/503) that can be ignored,
 
+```
 ❯ On windows-x86_64-devel (r-devel)
   checking for detritus in the temp directory ... NOTE
   Found the following files/directories:
     'lastMiKTeXException'
+```
 
-❯ On ubuntu-gcc-release (r-release)
-  checking CRAN incoming feasibility ... [6s/21s] NOTE
-  Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
-  
-  New submission
+a likely issue on the ubuntu and fedora testing machine (see https://github.com/r-hub/rhub/issues/548) that I have no power to fix,
 
+```
 ❯ On ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
   checking HTML version of manual ... NOTE
   Skipping checking HTML validation: no command 'tidy' found
+```
 
-❯ On fedora-clang-devel (r-devel)
-  checking CRAN incoming feasibility ... [6s/23s] NOTE
-  Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
-  
-  New submission
+and a bug in rhub that can be ignored (https://github.com/r-hub/rhub/issues/560). 
 
-0 errors ✔ | 0 warnings ✔ | 6 notes ✖
+
+```
+❯ On windows-x86_64-devel (r-devel)
+  checking for non-standard things in the check directory ... NOTE
+  Found the following files/directories:
+    ''NULL''
 ```

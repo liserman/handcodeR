@@ -426,7 +426,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
 
     # Check that there are between 1 and 3 named character vectors given
     if(length(arg_list) < 1 | length(arg_list) > 3) {
-      stop("If data is a character vector of texts to annotate, you must provide between 1 and 3 named character vectors of annotation categories.")
+      stop("If data is a character vector of texts to annotate, you must provide between 1 and 5 named character vectors of annotation categories.")
     }
 
     # Check if "" and "Not applicable" are in list of categories

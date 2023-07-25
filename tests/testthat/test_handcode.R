@@ -115,17 +115,19 @@ test_that("handcode() throws error when arg_list is not a named character vector
 })
 
 
-# Between 1 and 3 arguments are given in ...
-test_that("handcode() throws error when there are more than 3 named character vectors", {
+# Between 1 and 5 arguments are given in ...
+test_that("handcode() throws error when there are more than 5 named character vectors", {
   # Arrange
   data <- c("text1", "text2", "text3")
   categories1 <- c("cat1a", "cat1b")
   categories2 <- c("cat2a", "cat2b", "cat2c")
   categories3 <- c("cat3a", "cat3b", "cat3c")
   categories4 <- c("cat4a", "cat4b", "cat4c")
+  categories5 <- c("cat5a", "cat5b", "cat5c")
+  categories6 <- c("cat6a", "cat6b", "cat6c")
 
   # Act and Assert
-  expect_error(handcode(data, cat1 = categories1, cat2 = categories2, cat3 = categories3, cat4 = categories4), "If data is a character vector of texts to annotate, you must provide between 1 and 3 named")
+  expect_error(handcode(data, cat1 = categories1, cat2 = categories2, cat3 = categories3, cat4 = categories4, cat5 = categories5, cat6 = categories6), "If data is a character vector of texts to annotate, you must provide between 1 and 5 named")
 })
 
 test_that("handcode() throws error when there are fewer than 1 named character vectors", {
@@ -133,7 +135,7 @@ test_that("handcode() throws error when there are fewer than 1 named character v
   data <- c("text1", "text2", "text3")
 
   # Act and Assert
-  expect_error(handcode(data), "If data is a character vector of texts to annotate, you must provide between 1 and 3 named")
+  expect_error(handcode(data), "If data is a character vector of texts to annotate, you must provide between 1 and 5 named")
 })
 
 
