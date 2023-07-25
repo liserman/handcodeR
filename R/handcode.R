@@ -94,8 +94,39 @@ handcoder_app <- function(a) {
                             try(c(a$classifications[[3]]), silent = TRUE),
                             selected = ""
                           )
-            )
-          )
+            )),
+          shiny::div(shiny::checkboxInput(
+            "add4",
+            "Add fourth classification",
+            value = length(a$classifications)>3),
+            class = "hide-checkbox"
+          ),
+          shiny::conditionalPanel(
+            condition = "input.add4",
+            shiny::column(width = 3,
+                          shiny::radioButtons(
+                            "code4",
+                            try(names(a$classifications)[4], silent = TRUE),
+                            try(c(a$classifications[[4]]), silent = TRUE),
+                            selected = ""
+                          )
+            )),
+          shiny::div(shiny::checkboxInput(
+            "add5",
+            "Add fifth classification",
+            value = length(a$classifications)>4),
+            class = "hide-checkbox"
+          ),
+          shiny::conditionalPanel(
+            condition = "input.add5",
+            shiny::column(width = 3,
+                          shiny::radioButtons(
+                            "code5",
+                            try(names(a$classifications)[5], silent = TRUE),
+                            try(c(a$classifications[[5]]), silent = TRUE),
+                            selected = ""
+                          )
+            ))
         ),
 
         # Space and Enter to press next and previous
@@ -155,7 +186,9 @@ handcoder_app <- function(a) {
         # Initialize coding as existing classification
         code1 = a$container[,1],
         code2 = a$container[,2],
-        code3 = a$container[,3]
+        code3 = a$container[,3],
+        code4 = a$container[,4],
+        code5 = a$container[,5]
       )
 
       # Initialize radioButtons
@@ -163,6 +196,8 @@ handcoder_app <- function(a) {
         shiny::updateRadioButtons(session, "code1", selected = values$code1[values$counter])
         shiny::updateRadioButtons(session, "code2", selected = values$code2[values$counter])
         shiny::updateRadioButtons(session, "code3", selected = values$code3[values$counter])
+        shiny::updateRadioButtons(session, "code4", selected = values$code4[values$counter])
+        shiny::updateRadioButtons(session, "code5", selected = values$code5[values$counter])
       })
 
 
@@ -173,6 +208,8 @@ handcoder_app <- function(a) {
         values$code1[values$counter] <- input$code1
         try(values$code2[values$counter] <- input$code2, silent = TRUE)
         try(values$code3[values$counter] <- input$code3, silent = TRUE)
+        try(values$code4[values$counter] <- input$code4, silent = TRUE)
+        try(values$code5[values$counter] <- input$code5, silent = TRUE)
 
         # Update the counter value by substracting 1 but only if page is bigger 1
         if (values$counter > 1) {
@@ -183,6 +220,8 @@ handcoder_app <- function(a) {
         shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
         shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
         shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
+        shiny::updateRadioButtons(session, "code4", selected = ifelse(is.na(values$code4[values$counter]), "", values$code4[values$counter]))
+        shiny::updateRadioButtons(session, "code5", selected = ifelse(is.na(values$code5[values$counter]), "", values$code5[values$counter]))
 
         # Update progress bar
         shinyWidgets::updateProgressBar(id = "progress", value = values$counter-1, total = nrow(a$data_app))
@@ -195,6 +234,8 @@ handcoder_app <- function(a) {
         values$code1[values$counter] <- input$code1
         try(values$code2[values$counter] <- input$code2, silent = TRUE)
         try(values$code3[values$counter] <- input$code3, silent = TRUE)
+        try(values$code4[values$counter] <- input$code4, silent = TRUE)
+        try(values$code5[values$counter] <- input$code5, silent = TRUE)
 
         # If max pages reached, save and exit
         if (values$counter == length(a$data_app$texts)) {
@@ -210,6 +251,8 @@ handcoder_app <- function(a) {
         shiny::updateRadioButtons(session, "code1", selected = ifelse(is.na(values$code1[values$counter]), "", values$code1[values$counter]))
         shiny::updateRadioButtons(session, "code2", selected = ifelse(is.na(values$code2[values$counter]), "", values$code2[values$counter]))
         shiny::updateRadioButtons(session, "code3", selected = ifelse(is.na(values$code3[values$counter]), "", values$code3[values$counter]))
+        shiny::updateRadioButtons(session, "code4", selected = ifelse(is.na(values$code4[values$counter]), "", values$code4[values$counter]))
+        shiny::updateRadioButtons(session, "code5", selected = ifelse(is.na(values$code5[values$counter]), "", values$code5[values$counter]))
 
         shinyWidgets::updateProgressBar(id = "progress", value = values$counter-1, total = nrow(a$data_app))
       })
@@ -236,6 +279,8 @@ handcoder_app <- function(a) {
         values$code1[values$counter] <- input$code1
         try(values$code2[values$counter] <- input$code2, silent = TRUE)
         try(values$code3[values$counter] <- input$code3, silent = TRUE)
+        try(values$code4[values$counter] <- input$code4, silent = TRUE)
+        try(values$code5[values$counter] <- input$code5, silent = TRUE)
 
         # Stop the shiny app and output dataframe
         shiny::stopApp(invisible(gen_output(a$data_app, values)))
@@ -255,10 +300,10 @@ handcoder_app <- function(a) {
 gen_output <- function(data, values){
 
   # Generate final data.frame to be displayed as output
-  final <- data.frame(id = data$id, texts = data$texts, kat1 = values$code1, kat2 = values$code2, kat3 = values$code3)
+  final <- data.frame(id = data$id, texts = data$texts, kat1 = values$code1, kat2 = values$code2, kat3 = values$code3, kat4 = values$code4, kat5 = values$code5)
 
   # Reduce to size of original dataframe
-  final <- final[,1:(ncol(data)-2)]
+  final <- final[,seq_len(ncol(data)-2)]
 
   # Take names from original dataframe
   names(final) <- names(data)[-c(2,3)]
@@ -313,13 +358,19 @@ character_to_data <- function(data, arg_list) {
 #' @param start The value that has been given as start value to `handcode`.
 #' @param randomize The logical value that has been given as randomize to `handcode`.
 #' @param context The logical value that has been given as context to `handcode`.
+#' @param pre Optional vector of texts that come before each respective text to be coded.
+#' @param post Optional vector of texts that come after each respective text to be coded.
 
-data_for_app <- function(data, start, randomize, context) {
+data_for_app <- function(data, start, randomize, context, pre = NULL, post = NULL) {
 
   a <- list()
 
-  # Add context to dataframe
-  data <- data.frame(before = c("", data$texts[seq_len(nrow(data)-1)]), after = c(data$texts[seq(2, nrow(data))], ""), data)
+  if(is.null(pre) & is.null(post)){
+    # Add context to dataframe
+    data <- data.frame(before = c("", data$texts[seq_len(nrow(data)-1)]), after = c(data$texts[seq(2, nrow(data))], ""), data)
+  } else {
+    data <- data.frame(before = pre, after = post, data)
+  }
 
   # Add id variable to data
   data <- cbind(id = seq_len(nrow(data)), data)
@@ -328,7 +379,6 @@ data_for_app <- function(data, start, randomize, context) {
   if(start == "all_empty"){
     data <- data[order(do.call(paste0,data.frame(data[,-c(1:4)], helper=""))==""), ]
   }
-
 
   # Set start to first empty row of data
   if(start %in% c("first_empty", "all_empty")){
@@ -352,7 +402,7 @@ data_for_app <- function(data, start, randomize, context) {
   }
 
   # Initialize container for classification
-  container <- data.frame(kat1 = factor(rep("", nrow(data))), kat2 = factor(""), kat3 = factor(""))
+  container <- data.frame(kat1 = factor(rep("", nrow(data))), kat2 = factor(""), kat3 = factor(""), kat4 = factor(""), kat5 = factor(""))
 
   for (i in seq_along(classifications)){
     container[,i] <- data[,i+4]
@@ -383,6 +433,8 @@ data_for_app <- function(data, start, randomize, context) {
 #' @param start A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.
 #' @param randomize A logical value indicating whether you want to randomize the order in which texts are shown to the coder.
 #' @param context A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.
+#' @param pre Optional vector of custom texts that come as previous text before each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.
+#' @param post Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.
 #'
 #' @return The function returns a data.frame containing all annotations that have been made in the shiny app.
 #' @examples
@@ -404,11 +456,10 @@ data_for_app <- function(data, start, randomize, context) {
 #' @export
 
 
-handcode <- function(data, ... , start = "first_empty", randomize = FALSE, context = FALSE) {
+handcode <- function(data, ... , start = "first_empty", randomize = FALSE, context = FALSE, pre = NULL, post = NULL) {
 
   # Initialize ...
   arg_list <- list(...)
-
 
 # Checks and datahandling for data input ----------------------------------
 
@@ -424,8 +475,8 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
       stop("All arguments in ... must be named character vectors.")
     }
 
-    # Check that there are between 1 and 3 named character vectors given
-    if(length(arg_list) < 1 | length(arg_list) > 3) {
+    # Check that there are between 1 and 5 named character vectors given
+    if(length(arg_list) < 1 | length(arg_list) > 5) {
       stop("If data is a character vector of texts to annotate, you must provide between 1 and 5 named character vectors of annotation categories.")
     }
 
@@ -447,11 +498,18 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   # Check if first column of data is texts and character
   if(names(data)[1] != "texts" | !is.character(data[,1]) ) stop("data must be a character vector of texts you want to annotate or a data.frame() that has been returned in an earlier run of this function.")
 
+  # Check if pre and post exist in dataframe. If yes, save them as individual vectors and remove them from data
+  if(is.data.frame(data) & "pre" %in% names(data) & "post" %in% names(data)) {
+    pre <- data$pre
+    post <- data$post
+    data <- data[,names(res) != c("pre", "post")]
+  }
+
   # Check if all columns except the first one are factors
   if(!all(sapply(data[, -1], is.factor))) stop("data must be a character vector of texts you want to annotate or a data.frame() that has been returned in an earlier run of this function.")
 
   # Check if there are min 1 and  max 3 classification variables
-  if (ncol(data) < 2 | ncol(data) > 4) stop("data must be a character vector of texts you want to annotate or a data.frame() that has been returned in an earlier run of this function.")
+  if (ncol(data) < 2 | ncol(data) > 6) stop("data must be a character vector of texts you want to annotate or a data.frame() that has been returned in an earlier run of this function.")
 
   # check if start is a single value
   if(length(start) > 1) stop("start must be a single value.")
@@ -474,17 +532,39 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   # Check if context is logical
   if(!is.logical(context)) stop("context must be either TRUE or FALSE.")
 
+  # Check if pre is null or character
+  if(!is.null(pre) & !is.character(pre)) stop("pre and post must be character vectors.")
+
+  # Check if post is null or character
+  if(!is.null(post) & !is.character(post)) stop("pre and post must be character vectors.")
+
+  # If pre is given, check if correct length
+  if(is.character(pre) & length(pre) != nrow(data)) stop("pre and post must be of the same length as data.")
+
+  # If post is given, check if correct length
+  if(is.character(post) & length(post) != nrow(data)) stop("pre and post must be of the same length as data.")
+
+  # If only one of pre and post is given, set up the other one
+  if(!is.null(pre) & is.null(post)) post <- rep("", nrow(data))
+  if(!is.null(post) & is.null(pre)) pre <- rep("", nrow(data))
+
   # Check if interactive
   if(!interactive()) stop("handcode() can only be used in an interactive R session.")
 
 
   # Initialize -------------------------------------------------------------------
 
-  a <- data_for_app(data, start, randomize, context)
+  a <- data_for_app(data, start, randomize, context, pre, post)
 
   # Run App ----------------------------------------------------------------------
 
   ret <- runApp(handcoder_app(a))
+
+  # If pre and post given, attach to ret
+  if(!is.null(pre) & !is.null(post)) {
+    ret$pre <- pre
+    ret$post <- post
+  }
 
 
 # Output results ----------------------------------------------------------
