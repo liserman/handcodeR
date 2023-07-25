@@ -282,7 +282,7 @@ handcoder_app <- function(a) {
       # Update text displayed
       if(a$context_app){
         current_text <- reactive({
-          paste0("<font color =\"#D3D3D3\">", a$data_app$before[values$counter], "</font> <b>", a$data_app$texts[values$counter], "</b> <font color =\"#D3D3D3\">", a$data_app$after[values$counter], "</font>")
+          paste0("<font color =\"#979797\">", a$data_app$before[values$counter], "</font> <b>", a$data_app$texts[values$counter], "</b> <font color =\"#979797\">", a$data_app$after[values$counter], "</font>")
         })} else {
           current_text <- reactive({
             a$data_app$texts[values$counter]
@@ -292,7 +292,10 @@ handcoder_app <- function(a) {
       output$statement <- renderText({
         current_text()
       })
-
+"#D3D3D3"
+"#AEAEAE"
+"#979797"
+"#808080"
 
       # Behaviour when save is clicked
       shiny::observeEvent(input$save, {
