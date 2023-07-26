@@ -3,6 +3,34 @@ library(handcodeR)
 
 
 
+# button_output -----------------------------------------------------------
+
+test_that("Test button_output", {
+
+  classification <- list(
+    kat1 = c("", "Not applicable", "category 1", "category 2")
+  )
+
+  res_label <- button_output(classification, 1, names = FALSE)
+  res_names <- button_output(classification, 1, names = TRUE)
+  res_out <- button_output(classification, 2, names = TRUE)
+
+  # Label output is list
+  expect_equal(class(res_label), "list")
+
+  # Names output is character vector
+  expect_equal(class(res_names), "character")
+
+  # Names output is equal to first element of classification
+  expect_equal(res_names, classification[[1]])
+
+  # Second item of label output is html
+  expect_equal(class(res_label[[2]]), c("html", "character"))
+
+  # Out of boundary return is ""
+  expect_equal(res_out, "")
+})
+
 # gen_output --------------------------------------------------------------
 
 test_that("Test gen_output", {
@@ -18,7 +46,10 @@ test_that("Test gen_output", {
                                 levels = c("", "Not applicable", "apple", "banana", "pear")),
                  code2 = factor(c("green", "green", "yellow"),
                                 levels = c("", "Not applicable", "green", "yellow")),
-                 code3 = c("", "", ""))
+                 code3 = c("", "", ""),
+                 code4 = c("", "", ""),
+                 code5 = c("", "", ""),
+                 code6 = c("", "", ""))
 
   output <- gen_output(data, values)
 
@@ -93,7 +124,7 @@ test_that("Test 1 data_for_app", {
   expect_equal(names(a), c("container", "data_app", "start_app", "classifications", "context_app"))
 
   # Container
-  expect_equal(dim(a$container), c(nrow(data), 3))
+  expect_equal(dim(a$container), c(nrow(data), 6))
 
   # Data
   expect_equal(names(a$data_app), c("id", "before", "after", names(data)))
@@ -124,7 +155,7 @@ test_that("Test 2 data_for_app", {
   randomize <- TRUE
   context <- TRUE
 
-  a <- handcodeR:::data_for_app(data, start, randomize, context)
+  a <- data_for_app(data, start, randomize, context)
 
   # Output is list
   expect_equal(class(a), "list")
@@ -133,7 +164,7 @@ test_that("Test 2 data_for_app", {
   expect_equal(names(a), c("container", "data_app", "start_app", "classifications", "context_app"))
 
   # Container
-  expect_equal(dim(a$container), c(nrow(data), 3))
+  expect_equal(dim(a$container), c(nrow(data), 6))
 
   # Data
   expect_equal(names(a$data_app), c("id", "before", "after", names(data)))

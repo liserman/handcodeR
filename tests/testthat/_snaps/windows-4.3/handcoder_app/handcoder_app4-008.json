@@ -8,11 +8,11 @@
     "code1": "category 1",
     "code2": "kategorie 2",
     "code3": "categoria 3",
-    "code4": "",
-    "code5": "",
-    "code6": "",
-    "nextpage": 0,
-    "previouspage": 0,
+    "code4": "banana",
+    "code5": "circle",
+    "code6": "fire",
+    "nextpage": 1,
+    "previouspage": 1,
     "save": 0
   },
   "output": {

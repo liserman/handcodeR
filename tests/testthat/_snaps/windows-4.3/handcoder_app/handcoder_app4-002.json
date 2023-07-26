@@ -2,15 +2,21 @@
   "input": {
     "add2": true,
     "add3": true,
+    "add4": true,
+    "add5": true,
+    "add6": true,
     "code1": "category 1",
     "code2": "kategorie 2",
     "code3": "",
+    "code4": "",
+    "code5": "",
+    "code6": "",
     "nextpage": 0,
     "previouspage": 0,
     "save": 0
   },
   "output": {
-    "statement": "<font color =\"#D3D3D3\">Text 1<\/font> <b>Text 2<\/b> <font color =\"#D3D3D3\">Text 3<\/font>"
+    "statement": "<font color =\"#C0C0C0\">Text 1<\/font> <b>Text 2<\/b> <font color =\"#C0C0C0\">Text 3<\/font>"
   },
   "export": {
 

@@ -2,9 +2,15 @@
   "input": {
     "add2": false,
     "add3": false,
+    "add4": false,
+    "add5": false,
+    "add6": false,
     "code1": "",
-    "code2": null,
-    "code3": null,
+    "code2": "",
+    "code3": "",
+    "code4": "",
+    "code5": "",
+    "code6": "",
     "nextpage": 1,
     "previouspage": 0,
     "save": 0

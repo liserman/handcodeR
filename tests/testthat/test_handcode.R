@@ -214,13 +214,16 @@ test_that("handcode() throws error when less than 1 classification variables are
 })
 
 
-test_that("handcode() throws an error when more than 3 classification variables are specified", {
+test_that("handcode() throws an error when more than 6 classification variables are specified", {
   # Arrange
   data <- data.frame(texts = c("Text 1", "Text 2", "Text 3"),
                      cat1 = factor("", levels = c("cat1a", "cat1b", "", "Not applicable")),
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")),
                      cat3 = factor("", levels = c("cat3a", "cat3b", "", "Not applicable")),
-                     cat4 = factor("", levels = c("cat4a", "cat4b", "", "Not applicable")))
+                     cat4 = factor("", levels = c("cat4a", "cat4b", "", "Not applicable")),
+                     cat5 = factor("", levels = c("cat5a", "cat5b", "", "Not applicable")),
+                     cat6 = factor("", levels = c("cat6a", "cat6b", "", "Not applicable")),
+                     cat7 = factor("", levels = c("cat7a", "cat7b", "", "Not applicable")))
 
   # Act and Assert
   expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")

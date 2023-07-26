@@ -5,18 +5,18 @@
     "add4": true,
     "add5": true,
     "add6": true,
-    "code1": "category 1",
-    "code2": "kategorie 2",
-    "code3": "categoria 3",
+    "code1": "",
+    "code2": "",
+    "code3": "",
     "code4": "",
     "code5": "",
     "code6": "",
-    "nextpage": 0,
+    "nextpage": 1,
     "previouspage": 0,
     "save": 0
   },
   "output": {
-    "statement": "<font color =\"#C0C0C0\">Text 1<\/font> <b>Text 2<\/b> <font color =\"#C0C0C0\">Text 3<\/font>"
+    "statement": "<font color =\"#C0C0C0\">Text 2<\/font> <b>Text 3<\/b> <font color =\"#C0C0C0\"><\/font>"
   },
   "export": {
 

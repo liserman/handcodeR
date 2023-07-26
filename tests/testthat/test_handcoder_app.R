@@ -10,7 +10,10 @@ a <- list(
                                                   "category 1",
                                                   "category 2")),
                          kat2 = factor(rep("", 3)),
-                         kat3 = factor(rep("", 3))),
+                         kat3 = factor(rep("", 3)),
+                         kat4 = factor(rep("", 3)),
+                         kat5 = factor(rep("", 3)),
+                         kat6 = factor(rep("", 3))),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -95,7 +98,10 @@ b <- list(
                                                   "Not applicable",
                                                   "kategorie 1",
                                                   "kategorie 2")),
-                         kat3 = factor(rep("", 3))),
+                         kat3 = factor(rep("", 3)),
+                         kat4 = factor(rep("", 3)),
+                         kat5 = factor(rep("", 3)),
+                         kat6 = factor(rep("", 3))),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -167,7 +173,22 @@ c <- list(
                                                   "Not applicable",
                                                   "categoria 1",
                                                   "categoria 2",
-                                                  "categoria 3"))),
+                                                  "categoria 3")),
+                         kat4 = factor(rep("", 3),
+                                       levels = c("",
+                                                  "Not applicable",
+                                                  "apple",
+                                                  "banana")),
+                         kat5 = factor(rep("", 3),
+                                       levels = c("",
+                                                  "Not applicable",
+                                                  "circle",
+                                                  "square")),
+                         kat6 = factor(rep("", 3),
+                                       levels = c("",
+                                                  "Not applicable",
+                                                  "water",
+                                                  "fire"))),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -187,7 +208,22 @@ c <- list(
                                                  "Not applicable",
                                                  "categoria 1",
                                                  "categoria 2",
-                                                 "categoria 3"))),
+                                                 "categoria 3")),
+                        kat4 = factor(rep("", 3),
+                                      levels = c("",
+                                                 "Not applicable",
+                                                 "apple",
+                                                 "banana")),
+                        kat5 = factor(rep("", 3),
+                                      levels = c("",
+                                                 "Not applicable",
+                                                 "circle",
+                                                 "square")),
+                        kat6 = factor(rep("", 3),
+                                      levels = c("",
+                                                 "Not applicable",
+                                                 "water",
+                                                 "fire"))),
   start_app = 2,
   classifications = list(kat1 = c("",
                                   "Not applicable",
@@ -201,7 +237,19 @@ c <- list(
                                   "Not applicable",
                                   "categoria 1",
                                   "categoria 2",
-                                  "categoria 3")),
+                                  "categoria 3"),
+                         kat4 = c("",
+                                  "Not applicable",
+                                  "apple",
+                                  "banana"),
+                         kat5 = c("",
+                                  "Not applicable",
+                                  "circle",
+                                  "square"),
+                         kat6 = c("",
+                                  "Not applicable",
+                                  "water",
+                                  "fire")),
   context_app = TRUE
 )
 
@@ -209,7 +257,7 @@ c <- list(
 shiny_app3 <- handcoder_app(c)
 
 
-test_that("Test 3 categories",{
+test_that("Test 6 categories",{
   skip_on_cran()
 
   app <- AppDriver$new(shiny_app3, name = "handcoder_app4",
@@ -225,6 +273,18 @@ test_that("Test 3 categories",{
 
   # Click category 3
   app$set_inputs(code3 = "categoria 3")
+  app$expect_values()
+
+  # Click category 4
+  app$set_inputs(code4 = "banana")
+  app$expect_values()
+
+  # Click category 5
+  app$set_inputs(code5 = "circle")
+  app$expect_values()
+
+  # Click category 6
+  app$set_inputs(code6 = "fire")
   app$expect_values()
 
   # Click nextpage to get to page 3/3
@@ -270,7 +330,7 @@ test_that("Test shiny server nextpage",{
 test_that("Test shiny server context",{
   shiny::testServer(shiny_app2, {
     # First Text displayed is second Text (Start value is 2)
-    expect_equal(output$statement, paste0("<font color =\"#D3D3D3\">", b$data_app$before[2], "</font> <b>", b$data_app$texts[2], "</b> <font color =\"#D3D3D3\">", b$data_app$after[2], "</font>"))
+    expect_equal(output$statement, paste0("<font color =\"#C0C0C0\">", b$data_app$before[2], "</font> <b>", b$data_app$texts[2], "</b> <font color =\"#C0C0C0\">", b$data_app$after[2], "</font>"))
   })
 })
 
