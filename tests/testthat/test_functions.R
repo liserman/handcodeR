@@ -31,6 +31,7 @@ test_that("Test button_output", {
   expect_equal(res_out, "")
 })
 
+
 # gen_output --------------------------------------------------------------
 
 test_that("Test gen_output", {
@@ -186,7 +187,24 @@ test_that("Test 2 data_for_app", {
 
 
 
+test_that("Test 3 data_for_app", {
+  data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4"),
+                     fruits = factor(c("", "apple", "", ""), levels = c("", "Not applicable", "apple", "banana", "pear")))
+  start <- 2
+  randomize <- FALSE
+  context <- TRUE
+  pre <- c("pre 1", "pre 2", "pre 3", "pre 4")
+  post <- c("post 1", "post 2", "post 3", "post 4")
 
+  a <- data_for_app(data, start, randomize, context, pre, post)
+
+  # pre and post in data_app as before and after
+  expect_equal(a$data_app$before, pre)
+  expect_equal(a$data_app$after, post)
+
+  # Start is 2
+  expect_equal(a$start_app, 2)
+})
 
 
 

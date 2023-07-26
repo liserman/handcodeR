@@ -231,12 +231,57 @@ test_that("handcode() throws an error when more than 6 classification variables 
 
 
 # no uncoded data
-test_that("handcode() thows error if no uncoded data", {
+test_that("handcode() throws error if no uncoded data", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
                      cat1 = factor("cat1a", levels = c("cat1a", "cat1b", "", "Not applicable")))
   expect_error(handcode(data), "All your data is already classified")
 })
 
+
+# Pre is not null or character
+test_that("handcode() throws error if pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, pre = list("Text 0", "Text 1")),
+    "pre and post must be character"
+  )
+
+})
+
+# Post is not null or character
+test_that("handcode() throws error if pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, post = list("Text 2", "Text 3")),
+    "pre and post must be character"
+  )
+
+})
+
+
+# Pre has wrong length
+test_that("handcode() throws error if pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, pre = c("Text 0", "Text 1", "Text 2")),
+    "pre and post must be of the same length"
+  )
+
+})
+
+# Post has wrong length
+test_that("handcode() throws error if pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, post = c("Text 2")),
+    "pre and post must be of the same length"
+  )
+
+})
 
 
 # check error message if interactive = FALSE
