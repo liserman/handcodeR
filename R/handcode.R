@@ -554,7 +554,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   if(is.data.frame(data) & "pre" %in% names(data) & "post" %in% names(data)) {
     pre <- data$pre
     post <- data$post
-    data <- data[,names(data) != c("pre", "post")]
+    data <- data[,1:(ncol(data)-2)]
   }
 
   # Check if all columns except the first one are factors
