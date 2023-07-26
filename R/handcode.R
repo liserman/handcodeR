@@ -318,10 +318,12 @@ handcoder_app <- function(a) {
   )
 }
 
-#' button_output: Formatting of output for RadioButtons
+#' button_output: Formatting of output for shiny::radioButtons
 #'
-#' `button_output` is an internal function to `handcode`. It works within the shiny app `handcoder_app` to format the look of the radioButtons.
-#' @param input Choice character for radioButton
+#' `button_output` is an internal function to `handcode`. It works within the shiny app `handcoder_app` to format the look of the shiny::radioButtons.
+#' @param classification Classification list obtained as list item from `data_for_app`
+#' @param button Numerical value indicating for which button names and labels should be returned
+#' @param names Logical value indicating whether the function is supposed to return a formatted list of labels or a vector of names for use in radioButtons.
 
 button_output <- function(classification, button, names = FALSE) {
   # If
@@ -552,7 +554,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   if(is.data.frame(data) & "pre" %in% names(data) & "post" %in% names(data)) {
     pre <- data$pre
     post <- data$post
-    data <- data[,names(res) != c("pre", "post")]
+    data <- data[,names(data) != c("pre", "post")]
   }
 
   # Check if all columns except the first one are factors
