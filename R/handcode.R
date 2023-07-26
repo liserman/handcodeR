@@ -12,7 +12,7 @@
 
 handcoder_app <- function(a) {
   shinyApp(
-    ui = shiny::fillPage(
+    ui = shiny::fluidPage(
 
       # Generate html-class that hides output
       shiny::tags$head(
