@@ -10,6 +10,7 @@ handcode(
   start = "first_empty",
   randomize = FALSE,
   context = FALSE,
+  missing = c("Not applicable"),
   pre = NULL,
   post = NULL
 )
@@ -24,6 +25,8 @@ handcode(
 \item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
 
 \item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.}
+
+\item{missing}{A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.}
 
 \item{pre}{Optional vector of custom texts that come as previous text before each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
 

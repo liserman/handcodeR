@@ -181,6 +181,18 @@ By default, `handcode` uses the first uncoded line in the input data as start va
 
 Sometimes, we explicitly want to display texts in a random order to rule out that the context of a text within the larger body of texts influences our annotations. If we want to randomize the order in which texts are displayed, we can set the option `randomize = TRUE`. This will, however, not influence the order in which texts are sorted in the resulting output.
 
+As a default, `handcode` will display one missing category "Not applicable". If you want a different, or more than one missing category, you can provide a character vector of missing categories you would like to have displayed as `missing`. Missing categories will automatically be displayed in gray. In the output these values will be returned with a leading and trainling `_`.
+
+
+```{r, eval = FALSE}
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"),
+                      missing = c("Not applicable", "Undecided"))
+```
+```{r, echo=FALSE, out.width="350px"}
+knitr::include_graphics("man/figures/App_4.PNG")
+```
 
 ### Bibliography
 

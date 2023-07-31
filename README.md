@@ -234,6 +234,22 @@ texts are displayed, we can set the option `randomize = TRUE`. This
 will, however, not influence the order in which texts are sorted in the
 resulting output.
 
+As a default, `handcode` will display one missing category “Not
+applicable”. If you want a different, or more than one missing category,
+you can provide a character vector of missing categories you would like
+to have displayed as `missing`. Missing categories will automatically be
+displayed in gray. In the output these values will be returned with a
+leading and trainling `_`.
+
+``` r
+annotated <- handcode(data = sentences, 
+                      candidate = c("Joe Biden", "Donald Trump"),
+                      sentiment = c("positive", "negative"),
+                      missing = c("Not applicable", "Undecided"))
+```
+
+<img src="man/figures/App_4.PNG" width="350px" />
+
 ### Bibliography
 
 <div id="refs" class="references csl-bib-body hanging-indent">

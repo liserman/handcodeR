@@ -19,6 +19,9 @@ data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
 
 \item{post}{Optional vector of texts that come after each respective text to be coded.}
 }
+\value{
+The function returns a list of inputs needed within the Shiny app.
+}
 \description{
 `data_for_app` is an internal function to `handcode`. It takes the inputs data, start, randomize and context to generate a list of inputs which can then be passed to `handcoder_app`.
 }
