@@ -8,7 +8,7 @@ library(handcodeR)
 test_that("Test button_output", {
 
   classification <- list(
-    kat1 = c("", "_Not applicable_", "category 1", "category 2")
+    kat1 = c("", "_Not applicable_", "_Undecided_", "category 1", "category 2")
   )
 
   res_label <- button_output(classification, 1, names = FALSE)
@@ -26,6 +26,9 @@ test_that("Test button_output", {
 
   # Second item of label output is html
   expect_equal(class(res_label[[2]]), c("html", "character"))
+
+  # Third item of label output is html
+  expect_equal(class(res_label[[3]]), c("html", "character"))
 
   # Out of boundary return is ""
   expect_equal(res_out, "")
