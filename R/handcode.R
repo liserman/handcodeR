@@ -340,9 +340,7 @@ button_output <- function(classification, button, names = FALSE) {
       log <- grepl("\\_(.)*\\_", class)
 
       # Last Missing
-      if(any(log)){
-
-        marg <- max(which(log))
+        marg <- max(which(log), warning = FALSE)
 
         # All other missings
         nomarg <- log & !marg
@@ -353,7 +351,7 @@ button_output <- function(classification, button, names = FALSE) {
         # Apply HTML to all missings
         class[nomarg] <- lapply(no_[nomarg], function(x) shiny::HTML(paste0("<p style = 'color:#C0C0C0'>", x, "</p>")))
         class[marg] <- lapply(no_[marg], function(x) shiny::HTML(paste0("<p style = 'color:#C0C0C0; margin-bottom:15pt'>", x, "</p>")))
-    }}
+    }
   } else {
     class <- c("")
   }
