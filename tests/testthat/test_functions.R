@@ -8,7 +8,7 @@ library(handcodeR)
 test_that("Test button_output", {
 
   classification <- list(
-    kat1 = c("", "Not applicable", "category 1", "category 2")
+    kat1 = c("", "_Not applicable_", "category 1", "category 2")
   )
 
   res_label <- button_output(classification, 1, names = FALSE)
@@ -74,8 +74,9 @@ test_that("Test character_to_data", {
   data <- c("Text 1", "Text 2", "Text 3")
   arg_list <- list(fruits = c("apple", "banana", "pear"),
                    colors = c("green", "yellow"))
+  missing <- c("Not applicable")
 
-  output <- character_to_data(data, arg_list)
+  output <- character_to_data(data, arg_list, missing)
 
   # Output is dataframe
   expect_equal(class(output), "data.frame")
@@ -97,7 +98,7 @@ test_that("Test character_to_data", {
   expect_equal(names(output), c("texts", names(arg_list)))
 
   # Factor levels
-  expect_contains(levels(output[,2]), "Not applicable")
+  expect_contains(levels(output[,2]), "_Not applicable_")
   expect_contains(levels(output[,2]), "")
   expect_contains(levels(output[,2]), arg_list[[1]])
 

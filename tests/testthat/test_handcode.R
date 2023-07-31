@@ -152,16 +152,38 @@ test_that("handcode() throws error when empty texts vector is given", {
 
 
 # "" and "not applicable" are not in list of categories
-test_that("handcode() throws error when \"\" or \"Not applicable\" are given as categories", {
+test_that("handcode() throws error when \"\" is given as category", {
   # Arrange
   data <- c("text1", "text2", "text3")
-  categories1 <- c("", "cat1", "cat2")
-  categories2 <- c("Not applicable", "cat1", "cat2")
+  categories <- c("", "cat1", "cat2")
 
   # Act and Assert
-  expect_error(handcode(data, categories1), "The default categories")
-  expect_error(handcode(data, categories2), "The default categories")
+  expect_error(handcode(data, categories), "The default missing value")
 })
+
+# Missing must be character vector
+test_that("handcode() throws error when missing is not character vector", {
+  # Arrange
+  data <- c("text1", "text2", "text3")
+  categories <- c("banana", "apple")
+  missing <- 4
+
+  # Act and Assert
+  expect_error(handcode(data, categories = categories, missing = missing), "missing must be a character vector")
+})
+
+
+# No duplicates between categories and missing values
+test_that("handcode() throws error when duplicate between missing and categories", {
+  # Arrange
+  data <- c("text1", "text2", "text3")
+  categories <- c("banana", "apple", "pear")
+  missing <- c("NA", "banana")
+
+  # Act and Assert
+  expect_error(handcode(data, categories = categories, missing = missing), "cannot be similar to values")
+})
+
 
 
 # no duplicates in list of categories
@@ -217,13 +239,13 @@ test_that("handcode() throws error when less than 1 classification variables are
 test_that("handcode() throws an error when more than 6 classification variables are specified", {
   # Arrange
   data <- data.frame(texts = c("Text 1", "Text 2", "Text 3"),
-                     cat1 = factor("", levels = c("cat1a", "cat1b", "", "Not applicable")),
-                     cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")),
-                     cat3 = factor("", levels = c("cat3a", "cat3b", "", "Not applicable")),
-                     cat4 = factor("", levels = c("cat4a", "cat4b", "", "Not applicable")),
-                     cat5 = factor("", levels = c("cat5a", "cat5b", "", "Not applicable")),
-                     cat6 = factor("", levels = c("cat6a", "cat6b", "", "Not applicable")),
-                     cat7 = factor("", levels = c("cat7a", "cat7b", "", "Not applicable")))
+                     cat1 = factor("", levels = c("cat1a", "cat1b", "", "_Not applicable_")),
+                     cat2 = factor("", levels = c("cat2a", "cat2b", "", "_Not applicable_")),
+                     cat3 = factor("", levels = c("cat3a", "cat3b", "", "_Not applicable_")),
+                     cat4 = factor("", levels = c("cat4a", "cat4b", "", "_Not applicable_")),
+                     cat5 = factor("", levels = c("cat5a", "cat5b", "", "_Not applicable_")),
+                     cat6 = factor("", levels = c("cat6a", "cat6b", "", "_Not applicable_")),
+                     cat7 = factor("", levels = c("cat7a", "cat7b", "", "_Not applicable_")))
 
   # Act and Assert
   expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
@@ -233,7 +255,7 @@ test_that("handcode() throws an error when more than 6 classification variables 
 # no uncoded data
 test_that("handcode() throws error if no uncoded data", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("cat1a", levels = c("cat1a", "cat1b", "", "Not applicable")))
+                     cat1 = factor("cat1a", levels = c("cat1a", "cat1b", "", "_Not applicable_")))
   expect_error(handcode(data), "All your data is already classified")
 })
 
@@ -241,7 +263,7 @@ test_that("handcode() throws error if no uncoded data", {
 # Pre is not null or character
 test_that("handcode() throws error if pre is wrong class", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, pre = list("Text 0", "Text 1")),
     "pre and post must be character"
@@ -252,7 +274,7 @@ test_that("handcode() throws error if pre is wrong class", {
 # Post is not null or character
 test_that("handcode() throws error if pre is wrong class", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, post = list("Text 2", "Text 3")),
     "pre and post must be character"
@@ -264,7 +286,7 @@ test_that("handcode() throws error if pre is wrong class", {
 # Pre has wrong length
 test_that("handcode() throws error if pre is wrong class", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, pre = c("Text 0", "Text 1", "Text 2")),
     "pre and post must be of the same length"
@@ -275,7 +297,7 @@ test_that("handcode() throws error if pre is wrong class", {
 # Post has wrong length
 test_that("handcode() throws error if pre is wrong class", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, post = c("Text 2")),
     "pre and post must be of the same length"
@@ -288,11 +310,10 @@ test_that("handcode() throws error if pre is wrong class", {
 if(!interactive()){
   test_that("handcode() throws error if session is not interactive", {
     data <- data.frame(texts = c("Text 1", "Text 2"),
-                       cat1 = factor("", levels = c("cat1a", "cat1b", "", "Not applicable")))
+                       cat1 = factor("", levels = c("cat1a", "cat1b", "", "_Not applicable_")))
     expect_error(handcode(data), "can only be used in an interactive R session")
   })
 }
-
 
 
 # check if output is dataframe
@@ -300,7 +321,7 @@ if(interactive()){
 test_that("handcode() output is dataframe with dimensions and variable names identical to input", {
   skip_on_cran()
   data <- data.frame(texts = c("Text 1", "Text 2"),
-                     cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   out <- handcode(data)
 
   expect_s3_class(out, "data.frame")
@@ -308,3 +329,4 @@ test_that("handcode() output is dataframe with dimensions and variable names ide
   expect_equal(dim(out), dim(data))
 })
 }
+
