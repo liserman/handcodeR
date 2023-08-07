@@ -3,5 +3,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^library.bib$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$

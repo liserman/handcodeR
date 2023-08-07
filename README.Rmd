@@ -1,6 +1,6 @@
 ---
 output: github_document
-bibliography: inst/library.bib
+bibliography: library.bib
 ---
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
