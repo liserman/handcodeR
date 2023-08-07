@@ -14,8 +14,8 @@ button_output(classification, button, names = FALSE)
 \item{names}{Logical value indicating whether the function is supposed to return a formatted list of labels or a vector of names for use in radioButtons.}
 }
 \value{
-Depending on the logical names input, the function returns a list of HTML formatted labels or the list of category names for the display of the radioButtons in the Shiny app.
+Depending on the logical names input, the function returns a list of HTML formatted labels or the list of category names for the display of the radioButtons in the Shiny-App.
 }
 \description{
-`button_output` is an internal function to `handcode`. It works within the shiny app `handcoder_app` to format the look of the shiny::radioButtons.
+`button_output` is an internal function to `handcode`. It works within the Shiny-App `handcoder_app` to format the look of the shiny::radioButtons.
 }

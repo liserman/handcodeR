@@ -2,12 +2,12 @@
 % Please edit documentation in R/handcode.R
 \name{data_for_app}
 \alias{data_for_app}
-\title{data_for_app: Prepare inputs for shiny app}
+\title{data_for_app: Prepare inputs for Shiny-App}
 \usage{
 data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
 }
 \arguments{
-\item{data}{A dataframe that has been prepared by `character_to_data` or that has previously already been returned from `handcode`.}
+\item{data}{A data frame that has been prepared by `character_to_data` or that has previously already been returned from `handcode`.}
 
 \item{start}{The value that has been given as start value to `handcode`.}
 
@@ -20,7 +20,7 @@ data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
 \item{post}{Optional vector of texts that come after each respective text to be coded.}
 }
 \value{
-The function returns a list of inputs needed within the Shiny app.
+The function returns a list of inputs needed within the Shiny-App.
 }
 \description{
 `data_for_app` is an internal function to `handcode`. It takes the inputs data, start, randomize and context to generate a list of inputs which can then be passed to `handcoder_app`.

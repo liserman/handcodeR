@@ -2,7 +2,7 @@
 % Please edit documentation in R/handcode.R
 \name{character_to_data}
 \alias{character_to_data}
-\title{character_to_data: Transform text vector and arg_list to dataframe.}
+\title{character_to_data: Transform text vector and arg_list to data frame.}
 \usage{
 character_to_data(data, arg_list, missing)
 }
@@ -14,8 +14,8 @@ character_to_data(data, arg_list, missing)
 \item{missing}{A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.}
 }
 \value{
-The function returns a dataframe in the format of the output dataframe that can be processed by the handcode() function.
+The function returns a data frame in the format of the output data frame that can be processed by the handcode() function.
 }
 \description{
-`character_to_data` is an internal function to `handcode`. It takes a character vector of texts as well as an arg_list of named character vectors as inputs and returns a dataframe which can be used as input to `data_for_app`.
+`character_to_data` is an internal function to `handcode`. It takes a character vector of texts as well as an arg_list of named character vectors as inputs and returns a data frame which can be used as input to `data_for_app`.
 }

@@ -16,7 +16,7 @@ handcode(
 )
 }
 \arguments{
-\item{data}{A character vector of texts you want to annotate or a dataframe returned from the handcode() function.}
+\item{data}{A character vector of texts you want to annotate or a data frame returned from the handcode() function.}
 
 \item{...}{Between one and six named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
 
@@ -33,10 +33,10 @@ handcode(
 \item{post}{Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
 }
 \value{
-The function returns a data.frame containing all annotations that have been made in the shiny app.
+The function returns a data frame containing all annotations that have been made in the Shiny-App.
 }
 \description{
-`handcode` opens a Shiny app which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data.frame with your annotated classifications.
+`handcode` opens a Shiny-App which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data frame with your annotated classifications.
 }
 \examples{
 \dontrun{
