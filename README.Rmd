@@ -1,6 +1,5 @@
 ---
 output: github_document
-bibliography: library.bib
 ---
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
@@ -78,7 +77,7 @@ The workflow of the package follows a simple rule:
 
 The main function of the handcodeR package is `handcode()`. `handcode()` takes either a vector of texts and up to 6 named character vectors with classification categories, or a data frame already initialized by `handcode()` as input. The function allows users to annotate texts using the pre-defined categories in an interactive Shiny-App and returns a data frame of the texts with their annotations.
 
-In order to demonstrate the functionality of `handcode()`, we first use the R-package `archiveRetriever` [@Gavras2022] to download a New York Times article on the presidential debate between Joe Biden and Donald Trump in the 2020 American presidential campaign. We split the article in individual sentences which we can then annotate with `handcode()`. 
+In order to demonstrate the functionality of `handcode()`, we first use the R-package [`archiveRetriever`](https://github.com/liserman/archiveRetriever) to download a New York Times article on the presidential debate between Joe Biden and Donald Trump in the 2020 American presidential campaign. We split the article in individual sentences which we can then annotate with `handcode()`. 
 
 ```{r download data}
 # Install pacman if not already installed
@@ -193,7 +192,6 @@ annotated <- handcode(data = sentences,
 knitr::include_graphics("man/figures/App_4.PNG")
 ```
 
-### Bibliography
 
 
 

@@ -511,7 +511,7 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
 #'
 #' @return The function returns a data frame containing all annotations that have been made in the Shiny-App.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' reviews <- c("Good Quality Dog Food",
 #'              "Not as Advertised",
 #'              "Delight says it all",

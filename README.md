@@ -97,11 +97,12 @@ the pre-defined categories in an interactive Shiny-App and returns a
 data frame of the texts with their annotations.
 
 In order to demonstrate the functionality of `handcode()`, we first use
-the R-package `archiveRetriever` (Gavras and Isermann 2022) to download
-a New York Times article on the presidential debate between Joe Biden
-and Donald Trump in the 2020 American presidential campaign. We split
-the article in individual sentences which we can then annotate with
-`handcode()`.
+the R-package
+[`archiveRetriever`](https://github.com/liserman/archiveRetriever) to
+download a New York Times article on the presidential debate between Joe
+Biden and Donald Trump in the 2020 American presidential campaign. We
+split the article in individual sentences which we can then annotate
+with `handcode()`.
 
 ``` r
 # Install pacman if not already installed
@@ -249,17 +250,3 @@ annotated <- handcode(data = sentences,
 ```
 
 <img src="man/figures/App_4.PNG" width="350px" />
-
-### Bibliography
-
-<div id="refs" class="references csl-bib-body hanging-indent">
-
-<div id="ref-Gavras2022" class="csl-entry">
-
-Gavras, Konstantin, and Lukas Isermann. 2022. *archiveRetriever:
-Retrieve Archived Web Pages from the ’Internet Archive’*.
-<https://CRAN.R-project.org/package=archiveRetriever>.
-
-</div>
-
-</div>
