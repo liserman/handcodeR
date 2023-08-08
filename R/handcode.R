@@ -510,14 +510,12 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
 #' @param post Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.
 #'
 #' @return The function returns a data frame containing all annotations that have been made in the Shiny-App.
-#' @examples
-#' \donttest{
+#' @examplesIf interactive()
 #' reviews <- c("Good Quality Dog Food",
 #'              "Not as Advertised",
 #'              "Delight says it all",
 #'              "Great! Just as good as the expensive brands")
 #' annotated <- handcode(reviews, evaluation = c("positive", "negative"))
-#' }
 #'
 #'
 # Importing dependencies with roxygen2
