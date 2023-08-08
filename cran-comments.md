@@ -10,17 +10,23 @@
 0 errors ✔ | 0 warnings ✔ | 5 notes ✖
 ```
 
-There were no ERRORS or WARNINGS. There were 5 NOTES, 2 of which are "New submission". 
+There were no ERRORS or WARNINGS. There were 6 NOTES, 3 of which are "New submission". 
 
 ```
-❯ On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release)
+❯ On windows-x86_64-devel (r-devel)
   checking CRAN incoming feasibility ... NOTE
   Maintainer: 'Lukas Isermann <lukas.isermann@uni-mannheim.de>'
   
   New submission
   
+❯ On ubuntu-gcc-release (r-release)
+  checking CRAN incoming feasibility ... [6s/11s] NOTE
+  Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
+  
+  New submission
+  
 ❯ On fedora-clang-devel (r-devel)
-  checking CRAN incoming feasibility ... [5s/11s] NOTE
+  checking CRAN incoming feasibility ... [6s/14s] NOTE
   Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
   
   New submission
