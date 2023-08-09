@@ -58,12 +58,18 @@ citation("handcodeR")
 
 ## Installation
 
-The `handcodeR` Package can be installed directly from
-[GitHub](https://github.com/liserman/handcodeR)
+A stable version of `handcodeR` can be directly accessed on CRAN:
+
+``` r
+install.packages("handcodeR", force = TRUE)
+```
+
+To install the latest development version of `handcodeR` directly from
+[GitHub](https://github.com/liserman/handcodeR) use:
 
 ``` r
 library(devtools) # Tools to Make Developing R Packages Easier
-devtools::install_github("liserman/handcodeR")
+devtools::install_github("liserman/handcodeR", force = TRUE)
 ```
 
 ## How to use this package
