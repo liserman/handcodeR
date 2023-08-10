@@ -15,12 +15,12 @@ annotate text data by hand. Often times when we work with text data, we
 rely on hand coded annotations of texts either as unit of analysis in
 itself, or as training and test samples for supervised machine learning
 tools to classify text data. handcodeR offers a Shiny-App that can be
-run within R to annotate individual texts one by one in up to three
+run within R to annotate individual texts one by one in up to six
 different variables. To do so, the package uses the function
 `handcode()`:
 
 - `handcode()` opens a Shiny-App which allows for hand-coding strings of
-  text into pre-defined categories. You can code between one and three
+  text into pre-defined categories. You can code between one and six
   variables at a time. It returns a data frame with your coded
   annotations.
 
