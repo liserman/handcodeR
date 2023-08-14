@@ -38,7 +38,7 @@ I present a short step-by-step guide as well as the functions in more detail bel
 
 To cite the handcodeR package, you can use:
 
-> Isermann, Lukas. (2019). handcodeR: Text annotation app.
+> Isermann, Lukas. (2023). handcodeR: Text annotation app.
 > R package version 0.1.0.
 > <http://doi.org/10.5281/zenodo.8075101>.
 
