@@ -44,7 +44,7 @@ citation("handcodeR")
 #> To cite handcodeR in publications, please use:
 #> 
 #>   Isermann, Lukas. 2023. handcodeR: Text annotation app. R package
-#>   version 0.1.0. https://doi.org/10.5281/zenodo.8075101
+#>   version 0.1.1. https://doi.org/10.5281/zenodo.8075100
 #> 
 #> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
 #> 
@@ -52,8 +52,8 @@ citation("handcodeR")
 #>     title = {handcodeR: Text annotation app},
 #>     author = {Lukas Isermann},
 #>     year = {2023},
-#>     note = {R package version 0.1.0},
-#>     doi = {10.5281/zenodo.8075101},
+#>     note = {R package version 0.1.1},
+#>     doi = {10.5281/zenodo.8075100},
 #>     url = {https://github.com/liserman/handcodeR},
 #>   }
 ```
