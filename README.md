@@ -34,7 +34,7 @@ detail below.
 To cite the handcodeR package, you can use:
 
 > Isermann, Lukas. (2023). handcodeR: Text annotation app. R package
-> version 0.1.0. <http://doi.org/10.5281/zenodo.8075101>.
+> version 0.1.1. <http://doi.org/10.5281/zenodo.8075100>.
 
 You can also access the preferred citation as well as the bibtex entry
 for the handcodeR Package via R:
