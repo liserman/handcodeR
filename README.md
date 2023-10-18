@@ -1,4 +1,6 @@
 
+# handcodeR <img src="man/figures/logo.png" align="right" height="139" />
+
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/handcodeR)](https://cran.r-project.org/package=handcodeR)
 [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/handcodeR)](https://cran.r-project.org/package=handcodeR)
@@ -130,15 +132,15 @@ nytimes_article <- scrape_urls(Urls = "http://web.archive.org/web/20201001004918
                                          article = "//section[@itemprop='articleBody']//p"))
 
 # Split up the article in different sentences
-sentences <- unlist(str_split(nytimes_article$article, pattern = "(?<=\\.)\\s"))
+sentences <- unlist(str_split(nytimes_article$article, pattern = "(?<=(?<!Mr)[\\.!?])\\s"))
 
 head(sentences)
-#> [1] "I wasn’t in the crowd of people who believed Joe Biden shouldn’t deign to debate President Trump, but put me in the crowd that believes he shouldn’t debate him again."                                                                                                                                                                                                                                                                                                                                                                                  
-#> [2] "Not after Tuesday night’s horror show: a disgrace to the format, an insult to the country, a nearly pointless 90 minutes."                                                                                                                                                                                                                                                                                                                                                                                                                               
-#> [3] "And, I should add, a degradation of the presidency itself, which Trump had degraded so thoroughly already."                                                                                                                                                                                                                                                                                                                                                                                                                                              
-#> [4] "He put on a performance so contemptuous, so puerile, so dishonest and so across-the-board repellent that the moderator, Chris Wallace, morphed into some amalgam of elementary-school principal, child psychologist, traffic cop and roadkill."                                                                                                                                                                                                                                                                                                          
-#> [5] "No matter how Wallace pleaded with Trump or admonished him, he couldn’t make him behave."                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-#> [6] "But then why should Wallace have an experience any different from that of Trump’s chiefs of staff, of all the other former administration officials who have fled for the hills, of the Republican lawmakers who just threw up their hands and threw away any scruples they had? Trump runs roughshod over everyone and everything, and on Tuesday night in Cleveland he ran roughshod over the idea that two presidential candidates presenting rival visions for America should do so with at least a small measure of dignity and an iota of decorum."
+#> [1] "I wasn’t in the crowd of people who believed Joe Biden shouldn’t deign to debate President Trump, but put me in the crowd that believes he shouldn’t debate him again."                                                                                                          
+#> [2] "Not after Tuesday night’s horror show: a disgrace to the format, an insult to the country, a nearly pointless 90 minutes."                                                                                                                                                       
+#> [3] "And, I should add, a degradation of the presidency itself, which Trump had degraded so thoroughly already."                                                                                                                                                                      
+#> [4] "He put on a performance so contemptuous, so puerile, so dishonest and so across-the-board repellent that the moderator, Chris Wallace, morphed into some amalgam of elementary-school principal, child psychologist, traffic cop and roadkill."                                  
+#> [5] "No matter how Wallace pleaded with Trump or admonished him, he couldn’t make him behave."                                                                                                                                                                                        
+#> [6] "But then why should Wallace have an experience any different from that of Trump’s chiefs of staff, of all the other former administration officials who have fled for the hills, of the Republican lawmakers who just threw up their hands and threw away any scruples they had?"
 ```
 
 We can now use these sentences as input in `handcode()` to annotate the
@@ -193,7 +195,7 @@ and the function returns a data frame with our texts and annotations.
 
 ``` r
 annotated
-#> # A tibble: 58 × 3
+#> # A tibble: 60 × 3
 #>    texts                                                     candidate sentiment
 #>    <chr>                                                     <fct>     <fct>    
 #>  1 I wasn’t in the crowd of people who believed Joe Biden s… "Joe Bid… "negativ…
@@ -202,11 +204,11 @@ annotated
 #>  4 He put on a performance so contemptuous, so puerile, so … ""        ""       
 #>  5 No matter how Wallace pleaded with Trump or admonished h… ""        ""       
 #>  6 But then why should Wallace have an experience any diffe… ""        ""       
-#>  7 Almost from the start, he talked over Biden, taunting hi… ""        ""       
-#>  8 He interrupted him and interrupted him and then interrup… ""        ""       
-#>  9 “Mr.                                                      ""        ""       
-#> 10 President, I’m the moderator of this debate, and I would… ""        ""       
-#> # ℹ 48 more rows
+#>  7 Trump runs roughshod over everyone and everything, and o… ""        ""       
+#>  8 Almost from the start, he talked over Biden, taunting hi… ""        ""       
+#>  9 He interrupted him and interrupted him and then interrup… ""        ""       
+#> 10 “Mr. President, I’m the moderator of this debate, and I … ""        ""       
+#> # ℹ 50 more rows
 ```
 
 We can resume the annotation process at any point by using the returned
@@ -231,12 +233,13 @@ and exit from the Shiny-App.
 
 #### Beyond the basics
 
-By default, `handcode` uses the first uncoded line in the input data as
-start value. However, the option `start` allows users to specify with
-which observation they want to start their coding process. If we have
-uncoded lines of data that lie between already coded lines of data, we
-can also specify `start = "all_empty"` to annotate all lines that have
-not been coded yet in the order in which they appear.
+By default, `handcode` uses the first line in the input data that has
+not been annotated yet as start value. However, the option `start`
+allows users to specify with which observation they want to start their
+coding process. If we have not yet annotated lines of data that lie
+between already coded lines of data, you can also specify
+`start = "all_empty"` to annotate all lines that have not been coded yet
+in the order in which they appear.
 
 Sometimes, we explicitly want to display texts in a random order to rule
 out that the context of a text within the larger body of texts

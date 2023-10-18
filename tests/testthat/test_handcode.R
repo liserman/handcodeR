@@ -232,7 +232,7 @@ test_that("handcode() throws error when less than 1 classification variables are
   data <- data.frame(texts = c("Text 1", "Text 2", "Text 3"))
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
+  expect_error(handcode(data), "is currently only able to handle between")
 })
 
 
@@ -248,7 +248,7 @@ test_that("handcode() throws an error when more than 6 classification variables 
                      cat7 = factor("", levels = c("cat7a", "cat7b", "", "_Not applicable_")))
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
+  expect_error(handcode(data), "is currently only able to handle between")
 })
 
 
@@ -328,5 +328,56 @@ test_that("handcode() output is dataframe with dimensions and variable names ide
   expect_equal(names(out), names(data))
   expect_equal(dim(out), dim(data))
 })
+}
+
+
+# check if output dataframe matches input dataframe for continued coding
+if(interactive()){
+  test_that("handcode() output matches already coded to input", {
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+    out <- handcode(data)
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), names(data))
+    expect_equal(dim(out), dim(data))
+    expect_equal(out[1:5,], data[1:5,])
+  })
+}
+
+
+# check if output dataframe matches input dataframe for continued coding, randomize true
+if(interactive()){
+  test_that("handcode() output matches already coded to input when randomize TRUE", {
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+    out <- handcode(data, randomize = T, start = "all_empty")
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), names(data))
+    expect_equal(dim(out), dim(data))
+    expect_equal(out[1:5,], data[1:5,])
+  })
+}
+
+
+# check if output dataframe matches input dataframe for continued coding, randomize true, empty row in between
+if(interactive()){
+  test_that("handcode() output matches already coded to input when randomize TRUE", {
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       cat1 = factor(c("cat1a", "", "cat1b", "cat1a", "cat1b", "cat1a", "cat1b"),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+    out <- handcode(data, randomize = T, start = "all_empty")
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), names(data))
+    expect_equal(dim(out), dim(data))
+    expect_equal(out[c(1,3,4,5,6,7),], data[c(1,3,4,5,6,7),])
+  })
 }
 

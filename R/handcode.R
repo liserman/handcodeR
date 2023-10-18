@@ -191,11 +191,11 @@ handcoder_app <- function(a) {
         # Progress bar
         shinyWidgets::progressBar(
           id = "progress",
-          value = a$start_app-1,
+          value = a$start_app,
           total = nrow(a$data_app),
           size = "xxs"
         ),
-        tags$head(tags$style(HTML('.progress-number {position: absolute; bottom: -10px; right: -10px; color: white;}'))),
+        tags$head(tags$style(HTML('.progress-number {position: absolute; bottom: -10px; right: -10px; color: black;}'))),
         tags$head(tags$style(HTML('.progress {height: 6px; margin-top: -21px;}')))
       )
     ),
@@ -251,7 +251,7 @@ handcoder_app <- function(a) {
         shiny::updateRadioButtons(session, "code6", selected = ifelse(is.na(values$code6[values$counter]), "", values$code6[values$counter]))
 
         # Update progress bar
-        shinyWidgets::updateProgressBar(id = "progress", value = values$counter-1, total = nrow(a$data_app))
+        shinyWidgets::updateProgressBar(id = "progress", value = values$counter, total = nrow(a$data_app))
       })
 
       # Behaviour when next is clicked
@@ -283,7 +283,7 @@ handcoder_app <- function(a) {
         shiny::updateRadioButtons(session, "code5", selected = ifelse(is.na(values$code5[values$counter]), "", values$code5[values$counter]))
         shiny::updateRadioButtons(session, "code6", selected = ifelse(is.na(values$code6[values$counter]), "", values$code6[values$counter]))
 
-        shinyWidgets::updateProgressBar(id = "progress", value = values$counter-1, total = nrow(a$data_app))
+        shinyWidgets::updateProgressBar(id = "progress", value = values$counter, total = nrow(a$data_app))
       })
 
       # Update text displayed
@@ -458,8 +458,8 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
   }
 
   # If randomize is TRUE, randomize order after start value
-  if(randomize){
-    data <- data[c(1:start-1, sample(start:nrow(data), nrow(data)-(start-1))),]
+  if(randomize & start < nrow(data)){
+    data <- data[c(1:(start-1), sample(start:nrow(data), nrow(data)-(start-1))),]
   }
 
   # List to store classifications and their categories
@@ -586,8 +586,8 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
   # Check if all columns except the first one are factors
   if(!all(vapply(data[, -1], is.factor, FUN.VALUE = logical(1)))) stop("data must be a character vector of texts you want to annotate or a data frame that has been returned in an earlier run of this function.")
 
-  # Check if there are min 1 and  max 3 classification variables
-  if (ncol(data) < 2 | ncol(data) > 7) stop("data must be a character vector of texts you want to annotate or a data frame that has been returned in an earlier run of this function.")
+  # Check if there are min 1 and  max 6 classification variables
+  if (ncol(data) < 2 | ncol(data) > 7) stop("handcode() is currently only able to handle between one and six classification variables. Please retry using between 1 and six classification variables.")
 
   # check if start is a single value
   if(length(start) > 1) stop("start must be a single value.")
@@ -647,7 +647,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
 
 # Output results ----------------------------------------------------------
 
-  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.0. https://github.com/liserman/handcodeR")
+  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.1. https://github.com/liserman/handcodeR")
 
   return(ret)
 
