@@ -647,7 +647,7 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
 
 # Output results ----------------------------------------------------------
 
-  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.0. https://github.com/liserman/handcodeR")
+  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.1. https://github.com/liserman/handcodeR")
 
   return(ret)
 

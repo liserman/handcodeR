@@ -41,7 +41,7 @@ I present a short step-by-step guide as well as the functions in more detail bel
 To cite the handcodeR package, you can use:
 
 > Isermann, Lukas. (2023). handcodeR: Text annotation app.
-> R package version 0.1.0.
+> R package version 0.1.1.
 > <http://doi.org/10.5281/zenodo.8075101>.
 
 You can also access the preferred citation as well as the bibtex entry for the handcodeR Package via R:
@@ -187,7 +187,7 @@ To facilitate the classification process, `handcode()` takes the keyboard shortc
 
 #### Beyond the basics
 
-By default, `handcode` uses the first uncoded line in the input data as start value. However, the option `start` allows users to specify with which observation they want to start their coding process. If we have uncoded lines of data that lie between already coded lines of data, we can also specify `start = "all_empty"` to annotate all lines that have not been coded yet in the order in which they appear.
+By default, `handcode` uses the first line in the input data that has not been annotated yet as start value. However, the option `start` allows users to specify with which observation they want to start their coding process. If we have not yet annotated lines of data that lie between already coded lines of data, you can also specify `start = "all_empty"` to annotate all lines that have not been coded yet in the order in which they appear.
 
 Sometimes, we explicitly want to display texts in a random order to rule out that the context of a text within the larger body of texts influences our annotations. If we want to randomize the order in which texts are displayed, we can set the option `randomize = TRUE`. This will, however, not influence the order in which texts are sorted in the resulting output.
 
