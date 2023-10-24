@@ -34,7 +34,7 @@ detail below.
 To cite the handcodeR package, you can use:
 
 > Isermann, Lukas. (2023). handcodeR: Text annotation app. R package
-> version 0.1.1. <http://doi.org/10.5281/zenodo.8075100>.
+> version 0.1.2. <http://doi.org/10.5281/zenodo.8075100>.
 
 You can also access the preferred citation as well as the bibtex entry
 for the handcodeR Package via R:
@@ -44,7 +44,7 @@ citation("handcodeR")
 #> To cite handcodeR in publications, please use:
 #> 
 #>   Isermann, Lukas. 2023. handcodeR: Text annotation app. R package
-#>   version 0.1.1. https://doi.org/10.5281/zenodo.8075100
+#>   version 0.1.2. https://doi.org/10.5281/zenodo.8075100
 #> 
 #> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
 #> 
@@ -52,7 +52,7 @@ citation("handcodeR")
 #>     title = {handcodeR: Text annotation app},
 #>     author = {Lukas Isermann},
 #>     year = {2023},
-#>     note = {R package version 0.1.1},
+#>     note = {R package version 0.1.2},
 #>     doi = {10.5281/zenodo.8075100},
 #>     url = {https://github.com/liserman/handcodeR},
 #>   }

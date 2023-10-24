@@ -458,8 +458,9 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
   }
 
   # If randomize is TRUE, randomize order after start value
+    # c(1:start-1, ...) is intentionally without parantheses due to different behaviour of c(1:1) and c(1:0)
   if(randomize & start < nrow(data)){
-    data <- data[c(1:(start-1), sample(start:nrow(data), nrow(data)-(start-1))),]
+    data <- data[c(1:start-1, sample(start:nrow(data), nrow(data)-(start-1))),]
   }
 
   # List to store classifications and their categories
