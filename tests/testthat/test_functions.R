@@ -227,6 +227,9 @@ test_that("Test 3 data_for_app", {
 
   # Last row of data is Text 2
   expect_equal(a$data_app$id[a$start], 2)
+
+  # Number of rows of data is 4
+  expect_equal(nrow(a$data_app), 4)
 })
 
 
