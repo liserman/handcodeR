@@ -4,10 +4,12 @@
 \alias{character_to_data}
 \title{character_to_data: Transform text vector and arg_list to data frame.}
 \usage{
-character_to_data(data, arg_list, missing)
+character_to_data(data, comparison = NULL, arg_list, missing)
 }
 \arguments{
 \item{data}{A character vector of texts which has been given as data input to `handcode`.}
+
+\item{comparison}{A character vector of texts to compare against data which has been given as comparison input to `handcde`.}
 
 \item{arg_list}{A list of additional arguments which have been given as input to `handcode`. These must be named character vectors of categories that will be used to annotate the given texts.}
 

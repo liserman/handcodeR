@@ -4,7 +4,16 @@
 \alias{data_for_app}
 \title{data_for_app: Prepare inputs for Shiny-App}
 \usage{
-data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
+data_for_app(
+  data,
+  start,
+  randomize,
+  context,
+  pre = NULL,
+  post = NULL,
+  comparison_pre = NULL,
+  comparison_post = NULL
+)
 }
 \arguments{
 \item{data}{A data frame that has been prepared by `character_to_data` or that has previously already been returned from `handcode`.}
@@ -18,6 +27,10 @@ data_for_app(data, start, randomize, context, pre = NULL, post = NULL)
 \item{pre}{Optional vector of texts that come before each respective text to be coded.}
 
 \item{post}{Optional vector of texts that come after each respective text to be coded.}
+
+\item{comparison_pre}{Optional vector of texts that come before each respective comparison text to be coded.}
+
+\item{comparison_post}{Optional vector of texts that come after each respective comparison text to be coded.}
 }
 \value{
 The function returns a list of inputs needed within the Shiny-App.

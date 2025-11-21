@@ -6,3 +6,4 @@
 ^library.bib$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+_\.new\.png$

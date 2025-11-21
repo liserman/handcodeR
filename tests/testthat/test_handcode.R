@@ -8,7 +8,7 @@ test_that("handcode() throws error if data is not vector or data.frame",{
   data <- list(texts = c("Text 1", "Text 2", "Text 3"), cat1 = c("cat1a", "cat1b"))
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts")
+  expect_error(handcode(data), "'data' must be either a character vector of texts or")
 })
 
 
@@ -17,7 +17,7 @@ test_that("handcode() throws error if data is not vector or data.frame",{
   data <- c(1, 2, 3)
 
   # Act and Assert
-  expect_error(handcode(data, cat1 = c("cat1a", "cat1b")), "data must be a character vector of texts")
+  expect_error(handcode(data, cat1 = c("cat1a", "cat1b")), "'data' must be either a character vector of texts or")
 })
 
 
@@ -27,7 +27,7 @@ test_that("handcode() throws an error when empty vector as data is given", {
   categories <- c("cat1a", "cat1b")
 
   # Act and Assert
-  expect_error(handcode(data, cat = categories), "data must be a character vector of texts you want to annotate or a data")
+  expect_error(handcode(data, cat = categories), "'data' must be either a character vector of texts or")
 })
 
 
@@ -40,7 +40,7 @@ test_that("handcode() throws error when start is not numeric", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, start = "a"), "start must be numeric")
+  expect_error(handcode(data, start = "a"), "Invalid 'start' value: provide a single")
 })
 
 # start is a single value
@@ -51,7 +51,7 @@ test_that("handcode() throws error when more than one start value is given", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, start = c(1, 2)), "start must be a single")
+  expect_error(handcode(data, start = c(1, 2)), "Invalid 'start' value: provide a single")
 })
 
 
@@ -63,7 +63,7 @@ test_that("handcode() throws error if context is not logical", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, context = 3), "context must be either TRUE")
+  expect_error(handcode(data, context = 3), "Invalid 'context' argument: provide")
 })
 
 
@@ -75,7 +75,7 @@ test_that("handcode() throws error if more than one context value is given", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, context = c(TRUE, FALSE)), "context must be a single")
+  expect_error(handcode(data, context = c(TRUE, FALSE)), "Invalid 'context' argument: provide")
 })
 
 
@@ -87,7 +87,7 @@ test_that("handcode() throws error if context is not logical", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, randomize = 3), "randomize must be either TRUE")
+  expect_error(handcode(data, randomize = 3), "Invalid 'randomize' argument: provide")
 })
 
 
@@ -99,7 +99,7 @@ test_that("handcode() throws error if more than one context value is given", {
                      cat2 = factor("", levels = c("cat2a", "cat2b", "", "Not applicable")))
 
   # Act and Assert
-  expect_error(handcode(data, randomize = c(TRUE, FALSE)), "randomize must be a single")
+  expect_error(handcode(data, randomize = c(TRUE, FALSE)), "Invalid 'randomize' argument: provide")
 })
 
 
@@ -111,12 +111,12 @@ test_that("handcode() throws error when arg_list is not a named character vector
   categories2 <- list("cat2a", "cat2b", "cat2c")
 
   # Act and Assert
-  expect_error(handcode(data, categories1, categories2), "All arguments in ... must be named character vectors.")
+  expect_error(handcode(data, categories1, categories2), "Arguments passed in '...' must be named character")
 })
 
 
 # Between 1 and 6 arguments are given in ...
-test_that("handcode() throws error when there are more than 5 named character vectors", {
+test_that("handcode() throws error when there are more than 6 named character vectors", {
   # Arrange
   data <- c("text1", "text2", "text3")
   categories1 <- c("cat1a", "cat1b")
@@ -128,7 +128,7 @@ test_that("handcode() throws error when there are more than 5 named character ve
   categories7 <- c("cat7a", "cat7b", "cat7c")
 
   # Act and Assert
-  expect_error(handcode(data, cat1 = categories1, cat2 = categories2, cat3 = categories3, cat4 = categories4, cat5 = categories5, cat6 = categories6, cat7 = categories7), "If data is a character vector of texts to annotate, you must provide between 1 and 6 named")
+  expect_error(handcode(data, cat1 = categories1, cat2 = categories2, cat3 = categories3, cat4 = categories4, cat5 = categories5, cat6 = categories6, cat7 = categories7), "You must supply between 1 and 6 named character vectors of annotation")
 })
 
 test_that("handcode() throws error when there are fewer than 1 named character vectors", {
@@ -136,7 +136,7 @@ test_that("handcode() throws error when there are fewer than 1 named character v
   data <- c("text1", "text2", "text3")
 
   # Act and Assert
-  expect_error(handcode(data), "If data is a character vector of texts to annotate, you must provide between 1 and 6 named")
+  expect_error(handcode(data), "You must supply between 1 and 6 named character vectors of annotation")
 })
 
 
@@ -147,7 +147,7 @@ test_that("handcode() throws error when empty texts vector is given", {
   categories <- c()
 
   # Act and Assert
-  expect_error(handcode(data, cat = categories), "All arguments in ... must be named character vectors")
+  expect_error(handcode(data, cat = categories), "Arguments passed in '...' must be named character ")
 })
 
 
@@ -158,7 +158,7 @@ test_that("handcode() throws error when \"\" is given as category", {
   categories <- c("", "cat1", "cat2")
 
   # Act and Assert
-  expect_error(handcode(data, categories), "The default missing value")
+  expect_error(handcode(data, categories), "The empty string \"\" cannot be used as a category ")
 })
 
 # Missing must be character vector
@@ -169,7 +169,7 @@ test_that("handcode() throws error when missing is not character vector", {
   missing <- 4
 
   # Act and Assert
-  expect_error(handcode(data, categories = categories, missing = missing), "missing must be a character vector")
+  expect_error(handcode(data, categories = categories, missing = missing), "Invalid 'missing' argument. Provide a ")
 })
 
 
@@ -181,7 +181,7 @@ test_that("handcode() throws error when duplicate between missing and categories
   missing <- c("NA", "banana")
 
   # Act and Assert
-  expect_error(handcode(data, categories = categories, missing = missing), "cannot be similar to values")
+  expect_error(handcode(data, categories = categories, missing = missing), "Invalid input: some category values")
 })
 
 
@@ -193,7 +193,7 @@ test_that("handcode() throws error when duplicate categories are given", {
   categories <- c("cat1", "cat1", "cat2")
 
   # Act and Assert
-  expect_error(handcode(data, categories), "You cannot set duplicate categories for a variable. Please provide unique categories for classification")
+  expect_error(handcode(data, categories), "Duplicate categories detected. Ensure each")
 })
 
 # if data is data.frame, first column is texts
@@ -203,7 +203,7 @@ test_that("handcode() throws error when first row of data.frame is not texts", {
                      cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
+  expect_error(handcode(data), "Invalid 'data'. Only a data frame returned")
 })
 
 # if data is data.frame, texts column is character
@@ -213,7 +213,7 @@ test_that("handcode() throws error when first row of data.frame is not texts", {
                      cat1 = factor("", levels = c("", "Not applicable", "cat1a", "cat1b")))
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
+  expect_error(handcode(data), "Invalid 'data'. Only a data frame returned")
 })
 
 # if data is data.frame, annotation vectors are factors
@@ -223,16 +223,16 @@ test_that("handcode() throws error when first row of data.frame is not texts", {
                      cat1 = "")
 
   # Act and Assert
-  expect_error(handcode(data), "data must be a character vector of texts you want to annotate or a data.frame")
+  expect_error(handcode(data), "Invalid data: all remaining annotation")
 })
 
-# if data is data.frame, between 1 and 3 annotation vectors
+# if data is data.frame, between 1 and 6 annotation vectors
 test_that("handcode() throws error when less than 1 classification variables are specified", {
   # Arrange
   data <- data.frame(texts = c("Text 1", "Text 2", "Text 3"))
 
   # Act and Assert
-  expect_error(handcode(data), "is currently only able to handle between")
+  expect_error(handcode(data), "Invalid input: provide between 1 and 6 ")
 })
 
 
@@ -248,7 +248,7 @@ test_that("handcode() throws an error when more than 6 classification variables 
                      cat7 = factor("", levels = c("cat7a", "cat7b", "", "_Not applicable_")))
 
   # Act and Assert
-  expect_error(handcode(data), "is currently only able to handle between")
+  expect_error(handcode(data), "Invalid input: provide between 1 and 6 ")
 })
 
 
@@ -256,7 +256,7 @@ test_that("handcode() throws an error when more than 6 classification variables 
 test_that("handcode() throws error if no uncoded data", {
   data <- data.frame(texts = c("Text 1", "Text 2"),
                      cat1 = factor("cat1a", levels = c("cat1a", "cat1b", "", "_Not applicable_")))
-  expect_error(handcode(data), "All your data is already classified")
+  expect_error(handcode(data), "All classification columns are filled.")
 })
 
 
@@ -266,7 +266,7 @@ test_that("handcode() throws error if pre is wrong class", {
                      cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, pre = list("Text 0", "Text 1")),
-    "pre and post must be character"
+    "Invalid 'pre' argument: must"
   )
 
 })
@@ -277,7 +277,7 @@ test_that("handcode() throws error if pre is wrong class", {
                      cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, post = list("Text 2", "Text 3")),
-    "pre and post must be character"
+    "Invalid 'post' argument: must"
   )
 
 })
@@ -289,7 +289,7 @@ test_that("handcode() throws error if pre is wrong class", {
                      cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, pre = c("Text 0", "Text 1", "Text 2")),
-    "pre and post must be of the same length"
+    "'pre' must have the same length as"
   )
 
 })
@@ -300,10 +300,99 @@ test_that("handcode() throws error if pre is wrong class", {
                      cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
   expect_error(
     handcode(data, post = c("Text 2")),
-    "pre and post must be of the same length"
+    "'post' must have the same length as"
   )
 
 })
+
+
+# Comparison is not character
+test_that("handcode() throws error if comparison is not character", {
+  data <- c("Text 1", "Text 2")
+  comparison <- list("Comparison 1", "Comparison 2")
+
+  expect_error(handcode(data = data, comparison = comparison, cat1 = c("cat1a", "cat1b")),
+               "Invalid 'comparison' argument: 'comparison'")
+})
+
+
+# Comparison is wrong length
+test_that("handcode() throws error if comparison is of wrong length", {
+  data <- c("Text 1", "Text 2")
+  comparison <- list("Comparison 1", "Comparison 2", "Comparison 3")
+
+  expect_error(handcode(data = data, comparison = comparison, cat1 = c("cat1a", "cat1b")),
+               "Invalid 'comparison' argument: 'comparison'")
+})
+
+# comparison_pre is not null or character
+test_that("handcode() throws error if comparison_pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, comparison_pre = list("Text 0", "Text 1")),
+    "Invalid 'comparison_pre' argument: must"
+  )
+})
+
+# comparison_post is not null or character
+test_that("handcode() throws error if comparison_post is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, comparison_post = list("Text 2", "Text 3")),
+    "Invalid 'comparison_post' argument: must"
+  )
+})
+
+
+# comparison_pre has wrong length
+test_that("handcode() throws error if comparison_pre is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, comparison_pre = c("Text 0", "Text 1", "Text 2")),
+    "'comparison_pre' must have the same length as"
+  )
+})
+
+# comparison_post has wrong length
+test_that("handcode() throws error if comparison_post is wrong class", {
+  data <- data.frame(texts = c("Text 1", "Text 2"),
+                     cat1 = factor("", levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+  expect_error(
+    handcode(data, comparison_post = c("Text 2")),
+    "'comparison_post' must have the same length as"
+  )
+})
+
+
+# Comparison input with data.frame
+if(interactive()){
+  test_that("comparison is ignored when data is data.frame",{
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+
+    expect_warning(handcode(data, comparison = c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7")),
+                   "'comparison' was ignored ")
+})
+}
+
+# Comparison in data and given as additional argument
+if(interactive()){
+  test_that("comparison is ignored when data is data.frame",{
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       comparison = c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7"),
+                       cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+
+    expect_warning(handcode(data, comparison = c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7")),
+                   "'comparison' was ignored ")
+  })
+}
 
 
 # check error message if interactive = FALSE
@@ -311,7 +400,7 @@ if(!interactive()){
   test_that("handcode() throws error if session is not interactive", {
     data <- data.frame(texts = c("Text 1", "Text 2"),
                        cat1 = factor("", levels = c("cat1a", "cat1b", "", "_Not applicable_")))
-    expect_error(handcode(data), "can only be used in an interactive R session")
+    expect_error(handcode(data), "only be run in an interactive R session")
   })
 }
 
@@ -378,6 +467,78 @@ if(interactive()){
     expect_equal(names(out), names(data))
     expect_equal(dim(out), dim(data))
     expect_equal(out[c(1,3,4,5,6,7),], data[c(1,3,4,5,6,7),])
+  })
+}
+
+
+# Check output with comparison given as additional argument
+if(interactive()){
+  test_that("comparison given as argument",{
+    skip_on_cran()
+    texts <- c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7")
+    comparison <- c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7")
+    out <- handcode(data = texts,
+                    cat1 = c("cat1a", "cat2a"),
+                    comparison = comparison)
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), c("texts", "comparison", "cat1"))
+    expect_equal(nrow(out), 7)
+    expect_equal(out[,1], texts)
+    expect_equal(out[,2], comparison)
+  })
+}
+
+# Check output with comparison given in data.frame
+if(interactive()){
+  test_that("comparison given in dataframe",{
+    skip_on_cran()
+    data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
+                       comparison = c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7"),
+                       cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+
+    out <- handcode(data)
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), names(data))
+    expect_equal(nrow(out), nrow(data))
+    expect_equal(out[,1], data[,1])
+    expect_equal(out[,2], data[,2])
+  })
+}
+
+
+# Check output with pre, post, comparison_pre and comparison_post
+if(interactive()){
+  test_that("comparison given as argument",{
+    skip_on_cran()
+    texts <- c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7")
+    comparison <- c("Comp 1", "Comp 2", "Comp 3", "Comp 4", "Comp 5", "Comp 6", "Comp 7")
+    pre <- c("pre 1", "pre 2", "pre 3", "pre 4", "pre 5", "pre 6", "pre 7")
+    post <- c("post 1", "post 2", "post 3", "post 4", "post 5", "post 6", "post 7")
+    comparison_pre <- c("comp pre 1", "comp pre 2", "comp pre 3", "comp pre 4", "comp pre 5", "comp pre 6", "comp pre 7")
+    comparison_post <- c("comp post 1", "comp post 2", "comp post 3", "comp post 4", "comp post 5", "comp post 6", "comp post 7")
+
+    out <- handcode(data = texts,
+                    cat1 = c("cat1a", "cat2a"),
+                    comparison = comparison,
+                    pre = pre,
+                    post = post,
+                    comparison_pre = comparison_pre,
+                    comparison_post = comparison_post,
+                    context = TRUE,
+                    randomize = TRUE)
+
+    expect_s3_class(out, "data.frame")
+    expect_equal(names(out), c("texts", "comparison", "cat1", "pre", "post", "comparison_pre", "comparison_post"))
+    expect_equal(nrow(out), 7)
+    expect_equal(out[,1], texts)
+    expect_equal(out[,2], comparison)
+    expect_equal(out[,4], pre)
+    expect_equal(out[,5], post)
+    expect_equal(out[,6], comparison_pre)
+    expect_equal(out[,7], comparison_post)
   })
 }
 

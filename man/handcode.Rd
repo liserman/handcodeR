@@ -7,44 +7,94 @@
 handcode(
   data,
   ...,
-  start = "first_empty",
+  start = "all_empty",
   randomize = FALSE,
   context = FALSE,
   missing = c("Not applicable"),
   pre = NULL,
-  post = NULL
+  post = NULL,
+  comparison = NULL,
+  comparison_pre = NULL,
+  comparison_post = NULL
 )
 }
 \arguments{
-\item{data}{A character vector of texts you want to annotate or a data frame returned from the handcode() function.}
+\item{data}{A character vector of texts to annotate, or a data frame previously returned by `handcode()`.}
 
-\item{...}{Between one and six named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.}
+\item{...}{Between 1 and 6 named character vectors defining annotation variables and their categories.
+These are only required when `data` is a new character vector of texts (not a data frame returned by `handcode()`).}
 
-\item{start}{A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.}
+\item{start}{A single value indicating where to begin hand coding.
+- If numeric, coding will start at the specified row number.
+- `"first_empty"`: automatically start at the first row that is not fully annotated (i.e., at least one classification column is still empty).
+- `"all_empty"`: display all rows that are not fully annotated for coding.}
 
-\item{randomize}{A logical value indicating whether you want to randomize the order in which texts are shown to the coder.}
+\item{randomize}{A single logical value (`TRUE` or `FALSE`) indicating whether to randomize the order in which texts are displayed to the coder.}
 
-\item{context}{A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.}
+\item{context}{A single logical value (`TRUE` or `FALSE`) indicating whether to display the previous and next texts alongside the current text being coded.
+When `TRUE`, the surrounding texts are shown in light gray.
+This is particularly useful when annotating individual sentences within a larger document.}
 
-\item{missing}{A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.}
+\item{missing}{A character vector of values to be treated as missing across all annotation vectors.
+In the returned data, these missing values are marked by adding an underscore ('_') at the beginning and end of each value.}
 
-\item{pre}{Optional vector of custom texts that come as previous text before each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
+\item{pre}{Optional character vector of custom texts to display as the preceding context for each text in `data`.
+These texts are shown only if `context = TRUE`.
+This is useful when the texts in `data` do not form a continuous sequence.}
 
-\item{post}{Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.}
+\item{post}{Optional character vector of custom texts to display as the following context for each text in `data`.
+These texts are shown only if `context = TRUE`.
+This is useful when the texts in `data` do not form a continuous sequence.}
+
+\item{comparison}{Optional. A character vector of texts to compare against the texts in `data`.
+This argument is typically used on the first run; when resuming from a previous `handcode()` output, the comparison column in `data` will be used automatically.}
+
+\item{comparison_pre}{Optional character vector of custom texts to display as the preceding context for each text in `comparison`.
+These texts are shown only if `context = TRUE`.
+This is useful when the texts in `comparison` do not form a continuous sequence.}
+
+\item{comparison_post}{Optional character vector of custom texts to display as the following context for each text in `comparison`.
+These texts are shown only if `context = TRUE`.
+This is useful when the texts in `comparison` do not form a continuous sequence.}
 }
 \value{
-The function returns a data frame containing all annotations that have been made in the Shiny-App.
+A data frame containing all annotations made in the Shiny app.
+  Each row corresponds to a text from the input `data` (or `comparison`), and each annotation variable is stored as a factor column.
 }
 \description{
-`handcode` opens a Shiny-App which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data frame with your annotated classifications.
+`handcode()` opens an interactive Shiny app that allows you to classify strings of text into predefined categories. You can annotate between one and six variables at a time. The function returns an updated data frame containing your annotated classifications.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 reviews <- c("Good Quality Dog Food",
              "Not as Advertised",
              "Delight says it all",
              "Great! Just as good as the expensive brands")
 annotated <- handcode(reviews, evaluation = c("positive", "negative"))
+\dontshow{\}) # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+# Original sentences
+sentences <- c(
+  "The weather today is sunny and warm.",
+  "I love eating chocolate cake.",
+  "She enjoys going for a run every morning.",
+  "This movie was absolutely fantastic."
+)
+
+# Redacted/reworded versions to compare
+redacted_sentences <- c(
+  "Today's weather is sunny and warm.",
+  "I enjoy the taste of chocolate.",
+  "She likes jogging each morning.",
+  "The film was really great."
+)
+
+# Handcode sentences to see if meaning changed
+annotated <- handcode(
+  data = sentences,
+  comparison = redacted_sentences,
+  meaning_change = c("unchanged", "changed")
+)
 
 \dontshow{\}) # examplesIf}
 }

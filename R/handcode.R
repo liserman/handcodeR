@@ -47,11 +47,30 @@ handcoder_app <- function(a) {
       shiny::mainPanel(
 
         # Text Statement
-        shiny::h3("Statement:"),
-        shiny::div(
-          shiny::htmlOutput("statement"),
-          class = "statement-output"),
-        shiny::HTML("<br>"),
+        shiny::fluidRow(
+          shiny::column(width = floor(12/(a$compare+1)),
+                        shiny::h3("Statement:"),
+                        shiny::div(
+                          shiny::htmlOutput("statement"),
+                          class = "statement-output"),
+                        shiny::HTML("<br>")
+          ),
+          # Invisible checkbox for optional comparison
+          shiny::div(shiny::checkboxInput(
+            "compare",
+            "Add second text",
+            value = a$compare),
+            class = "hide-checkbox"
+          ),
+          shiny::conditionalPanel(
+            condition = "input.compare",
+            shiny::column(width = floor(12/(a$compare+1)),
+                          shiny::h3("Comparison:"),
+                          shiny::div(
+                            shiny::htmlOutput("comparison"),
+                            class = "statement-output"),
+                          shiny::HTML("<br>")
+            ))),
 
         # Coding Categories
         shiny::fluidRow(
@@ -300,6 +319,26 @@ handcoder_app <- function(a) {
         current_text()
       })
 
+      # Update comparison displayed
+      if(a$compare){
+        if(a$context_app){
+          current_comparison <- reactive({
+            paste0("<font color =\"#C0C0C0\">", a$data_app$before_comparison[values$counter], "</font> <b>", a$data_app$comparison[values$counter], "</b> <font color =\"#C0C0C0\">", a$data_app$after_comparison[values$counter], "</font>")
+          })} else {
+            current_comparison <- reactive({
+              a$data_app$comparison[values$counter]
+            })
+          }
+        output$comparison <- renderText({
+          current_comparison()
+        })
+      } else {
+        output$comparison <- renderText({
+          current_text()
+        })
+      }
+
+
       # Behaviour when save is clicked
       shiny::observeEvent(input$save, {
 
@@ -318,6 +357,7 @@ handcoder_app <- function(a) {
     }
   )
 }
+
 
 #' button_output: Formatting of output for shiny::radioButtons
 #'
@@ -367,13 +407,38 @@ button_output <- function(classification, button, names = FALSE) {
 gen_output <- function(data, values){
 
   # Generate final data frame to be displayed as output
-  final <- data.frame(id = data$id, texts = data$texts, kat1 = values$code1, kat2 = values$code2, kat3 = values$code3, kat4 = values$code4, kat5 = values$code5, kat6 = values$code6)
+  if("comparison" %in% names(data)) {
+    final <- data.frame(id = data$id, texts = data$texts, comparison = data$comparison,
+                        kat1 = values$code1,
+                        kat2 = values$code2,
+                        kat3 = values$code3,
+                        kat4 = values$code4,
+                        kat5 = values$code5,
+                        kat6 = values$code6)
+  } else {
+    final <- data.frame(id = data$id, texts = data$texts,
+                        kat1 = values$code1,
+                        kat2 = values$code2,
+                        kat3 = values$code3,
+                        kat4 = values$code4,
+                        kat5 = values$code5,
+                        kat6 = values$code6)
+  }
+
 
   # Reduce to size of original data frame
-  final <- final[,seq_len(ncol(data)-2)]
+  if("comparison" %in% names(data)){
+    final <- final[, seq_len(ncol(data)-4)]
+  } else {
+    final <- final[,seq_len(ncol(data)-2)]
+  }
 
   # Take names from original data frame
-  names(final) <- names(data)[-c(2,3)]
+  if("comparison" %in% names(data)){
+    names(final) <- names(data)[-c(2,3, 4, 5)]
+  } else {
+    names(final) <- names(data)[-c(2,3)]
+  }
 
   # Make sure all NA is saved as ""
   final[is.na(final)] <- ""
@@ -390,16 +455,16 @@ gen_output <- function(data, values){
 }
 
 
-
 #' character_to_data: Transform text vector and arg_list to data frame.
 #'
 #' `character_to_data` is an internal function to `handcode`. It takes a character vector of texts as well as an arg_list of named character vectors as inputs and returns a data frame which can be used as input to `data_for_app`.
 #' @param data A character vector of texts which has been given as data input to `handcode`.
+#' @param comparison A character vector of texts to compare against data which has been given as comparison input to `handcde`.
 #' @param arg_list A list of additional arguments which have been given as input to `handcode`. These must be named character vectors of categories that will be used to annotate the given texts.
 #' @param missing A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.
 #' @return The function returns a data frame in the format of the output data frame that can be processed by the handcode() function.
 
-character_to_data <- function(data, arg_list, missing) {
+character_to_data <- function(data, comparison = NULL, arg_list, missing) {
 
   output <- data.frame(matrix(factor(""), nrow = length(data), ncol = length(arg_list)))
 
@@ -415,7 +480,11 @@ character_to_data <- function(data, arg_list, missing) {
   }
 
   # Paste texts object to data frame
-  data <- data.frame(texts = data, output)
+  if(is.null(comparison)){
+    data <- data.frame(texts = data, output)
+  } else {
+    data <- data.frame(texts = data, comparison = comparison, output)
+  }
 
   return(data)
 
@@ -431,9 +500,11 @@ character_to_data <- function(data, arg_list, missing) {
 #' @param context The logical value that has been given as context to `handcode`.
 #' @param pre Optional vector of texts that come before each respective text to be coded.
 #' @param post Optional vector of texts that come after each respective text to be coded.
+#' @param comparison_pre Optional vector of texts that come before each respective comparison text to be coded.
+#' @param comparison_post Optional vector of texts that come after each respective comparison text to be coded.
 #' @return The function returns a list of inputs needed within the Shiny-App.
 
-data_for_app <- function(data, start, randomize, context, pre = NULL, post = NULL) {
+data_for_app <- function(data, start, randomize, context, pre = NULL, post = NULL, comparison_pre = NULL, comparison_post = NULL) {
 
   a <- list()
 
@@ -444,41 +515,52 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
     data <- data.frame(before = pre, after = post, data)
   }
 
+  # If comparison in data, but comparison_pre and comparison_post are NULL, add context to data.frame
+  if("comparison" %in% names(data)) {
+    if(is.null(comparison_pre) & is.null(comparison_post)){
+      # Add context to data frame
+      data <- data.frame(before_comparison = c("", data$comparison[seq_len(nrow(data)-1)]), after_comparison = c(data$comparison[seq(2, nrow(data))], ""), data)
+    } else {
+      data <- data.frame(before_comparison = comparison_pre, after_comparison = comparison_post, data)
+    }
+  }
+
   # Add id variable to data
   data <- cbind(id = seq_len(nrow(data)), data)
 
   # if start == "all_empty", reorder data
   if(start == "all_empty"){
-    data <- data[order(do.call(paste0,data.frame(data[,-c(1:4)], helper=""))==""), ]
+    data <- data[order(rowSums(data.frame(data[,!names(data) %in% c("id", "texts", "comparison", "before", "after", "before_comparison", "after_comparison")], helper = "A") == "")>0), ]
   }
+
 
   # Set start to first empty row of data
   if(start %in% c("first_empty", "all_empty")){
-    start <- min(seq_len(nrow(data))[do.call(paste0,data.frame(data[,-c(1:4)], helper=""))==""])
+    start <- min(seq_len(nrow(data))[rowSums(data.frame(data[,!names(data) %in% c("id", "texts", "comparison", "before", "after", "before_comparison", "after_comparison")], helper = "A") == "")>0])
   }
 
   # If randomize is TRUE, randomize order after start value
-    # c(1:start-1, ...) is intentionally without parantheses due to different behaviour of c(1:1) and c(1:0)
+  # c(1:start-1, ...) is intentionally without parantheses due to different behaviour of c(1:1) and c(1:0)
   if(randomize & start < nrow(data)){
     data <- data[c(1:start-1, sample(start:nrow(data), nrow(data)-(start-1))),]
   }
 
   # List to store classifications and their categories
-  classifications <- vector("list", length = ncol(data)-4)
+  classifications <- vector("list", length = sum(!names(data) %in% c("id", "texts", "comparison", "before", "after", "before_comparison", "after_comparison")))
 
   # Name list
-  names(classifications) <- names(data)[-c(1:4)]
+  names(classifications) <- names(data)[!names(data) %in% c("id", "texts", "comparison", "before", "after", "before_comparison", "after_comparison")]
 
   # Fill with categories
   for (i in seq_along(classifications)) {
-    classifications[[i]] <- levels(data[,i+4])
+    classifications[[i]] <- levels(data[,names(classifications)[i]])
   }
 
   # Initialize container for classification
   container <- data.frame(kat1 = factor(rep("", nrow(data))), kat2 = factor(""), kat3 = factor(""), kat4 = factor(""), kat5 = factor(""), kat6 = factor(""))
 
   for (i in seq_along(classifications)){
-    container[,i] <- data[,i+4]
+    container[,i] <- data[,names(classifications)[i]]
     names(container)[i] <- names(classifications)[[i]]
     levels(container[,i]) <- c(classifications[[i]])
   }
@@ -489,6 +571,7 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
   a$start_app <- start
   a$classifications <- classifications
   a$context_app <- context
+  a$compare <- "comparison" %in% names(data)
 
 
   return(a)
@@ -496,27 +579,72 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
 }
 
 
-
 #' handcode: Classifying text into pre-defined categories.
 #'
-#' `handcode` opens a Shiny-App which allows for hand coding strings of text into pre-defined categories. You can code between one and three variables at a time. It returns an updated data frame with your annotated classifications.
+#' `handcode()` opens an interactive Shiny app that allows you to classify strings of text into predefined categories. You can annotate between one and six variables at a time. The function returns an updated data frame containing your annotated classifications.
 #'
-#' @param data A character vector of texts you want to annotate or a data frame returned from the handcode() function.
-#' @param ... Between one and six named character vectors indicating different variables and categories you want to use for your annotation. Only needed if data a new character vector of texts.
-#' @param start A numeric value indicating the line in which you want to start hand coding. Alternatively, you can set start to "first_empty" to automatically start hand coding in the first line that has not been coded yet, or to "all_empty" to display all lines that have not been coded yet.
-#' @param randomize A logical value indicating whether you want to randomize the order in which texts are shown to the coder.
-#' @param context A logical value indicating whether you want the coder to see the previous and next text alongside the text that is currently coded. If TRUE, the function will show the previous and next text in light gray. This option is especially useful if we annotate individual sentences within a larger document.
-#' @param missing A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.
-#' @param pre Optional vector of custom texts that come as previous text before each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.
-#' @param post Optional vector of custom texts that come as next text after each respective text to be coded. Will be displayed if context = TRUE. This option can be used if the vector of texts specified in data do not form a continuous text.
+#' @param data A character vector of texts to annotate, or a data frame previously returned by `handcode()`.
+#' @param ... Between 1 and 6 named character vectors defining annotation variables and their categories.
+#'   These are only required when `data` is a new character vector of texts (not a data frame returned by `handcode()`).
+#' @param start A single value indicating where to begin hand coding.
+#'   - If numeric, coding will start at the specified row number.
+#'   - `"first_empty"`: automatically start at the first row that is not fully annotated (i.e., at least one classification column is still empty).
+#'   - `"all_empty"`: display all rows that are not fully annotated for coding.
+#' @param randomize A single logical value (`TRUE` or `FALSE`) indicating whether to randomize the order in which texts are displayed to the coder.
+#' @param context A single logical value (`TRUE` or `FALSE`) indicating whether to display the previous and next texts alongside the current text being coded.
+#'   When `TRUE`, the surrounding texts are shown in light gray.
+#'   This is particularly useful when annotating individual sentences within a larger document.
+#' @param missing A character vector of values to be treated as missing across all annotation vectors.
+#'   In the returned data, these missing values are marked by adding an underscore ('_') at the beginning and end of each value.
+#' @param pre Optional character vector of custom texts to display as the preceding context for each text in `data`.
+#'   These texts are shown only if `context = TRUE`.
+#'   This is useful when the texts in `data` do not form a continuous sequence.
+#' @param post Optional character vector of custom texts to display as the following context for each text in `data`.
+#'   These texts are shown only if `context = TRUE`.
+#'   This is useful when the texts in `data` do not form a continuous sequence.
+#' @param comparison Optional. A character vector of texts to compare against the texts in `data`.
+#'   This argument is typically used on the first run; when resuming from a previous `handcode()` output, the comparison column in `data` will be used automatically.
+#' @param comparison_pre Optional character vector of custom texts to display as the preceding context for each text in `comparison`.
+#'   These texts are shown only if `context = TRUE`.
+#'   This is useful when the texts in `comparison` do not form a continuous sequence.
+#' @param comparison_post Optional character vector of custom texts to display as the following context for each text in `comparison`.
+#'   These texts are shown only if `context = TRUE`.
+#'   This is useful when the texts in `comparison` do not form a continuous sequence.
 #'
-#' @return The function returns a data frame containing all annotations that have been made in the Shiny-App.
+#' @return A data frame containing all annotations made in the Shiny app.
+#'   Each row corresponds to a text from the input `data` (or `comparison`), and each annotation variable is stored as a factor column.
+
 #' @examplesIf interactive()
 #' reviews <- c("Good Quality Dog Food",
 #'              "Not as Advertised",
 #'              "Delight says it all",
 #'              "Great! Just as good as the expensive brands")
 #' annotated <- handcode(reviews, evaluation = c("positive", "negative"))
+#'
+#' @examplesIf interactive()
+#' # Original sentences
+#' sentences <- c(
+#'   "The weather today is sunny and warm.",
+#'   "I love eating chocolate cake.",
+#'   "She enjoys going for a run every morning.",
+#'   "This movie was absolutely fantastic."
+#' )
+#'
+#' # Redacted/reworded versions to compare
+#' redacted_sentences <- c(
+#'   "Today's weather is sunny and warm.",
+#'   "I enjoy the taste of chocolate.",
+#'   "She likes jogging each morning.",
+#'   "The film was really great."
+#' )
+#'
+#' # Handcode sentences to see if meaning changed
+#' annotated <- handcode(
+#'   data = sentences,
+#'   comparison = redacted_sentences,
+#'   meaning_change = c("unchanged", "changed")
+#' )
+
 #'
 #'
 # Importing dependencies with roxygen2
@@ -528,112 +656,173 @@ data_for_app <- function(data, start, randomize, context, pre = NULL, post = NUL
 #' @export
 
 
-handcode <- function(data, ... , start = "first_empty", randomize = FALSE, context = FALSE, missing = c("Not applicable"), pre = NULL, post = NULL) {
+handcode <- function(data, ... , start = "all_empty", randomize = FALSE, context = FALSE, missing = c("Not applicable"), pre = NULL, post = NULL, comparison = NULL, comparison_pre = NULL, comparison_post = NULL) {
 
   # Initialize ...
   arg_list <- list(...)
 
-# Checks and datahandling for data input ----------------------------------
+  # Checks and datahandling for data input ----------------------------------
 
   # Check if data is either data frame or character vector of texts
-  if(!is.data.frame(data) & !is.character(data)) stop("data must be a character vector of texts you want to annotate or a data frame that has been returned in an earlier run of this function.")
+  if(!is.data.frame(data) & !is.character(data)) stop("Invalid 'data' argument: 'data' must be either a character vector of texts or a data frame returned from a previous handcode() session.")
+
+
+  # Check comparison input
+  if (!is.null(comparison)) {
+    if (is.data.frame(data)) {
+      # If data is from previous run, ignore comparison
+      if (!"comparison" %in% names(data)) warning("'comparison' was ignored because 'data' was supplied as a data frame.
+If you intended to start a new comparison annotation, please provide raw text vectors instead of a previous handcode() output.")
+      if ("comparison" %in% names(data)) warning("'comparison' was ignored because 'data' already includes comparison information from a previous handcode() run.")
+
+      comparison <- NULL
+
+    } else {
+      # Check type
+      if (!is.character(comparison)) {
+        stop("Invalid 'comparison' argument: 'comparison' must be a character vector.")
+      }
+      # Check length
+      if (length(comparison) != length(data)) {
+        stop("Invalid 'comparison' argument: 'comparison' must have the same length as 'data' (", nrow(data), "), but length = ", length(comparison), ".")
+      }
+    }
+  }
 
   # Checks and data handling if data is character vector
   if(is.character(data)){
 
     # Check if items in arg_list are named vectors
-    if(!all(vapply(arg_list, is.character, logical(1))) | !all(vapply(arg_list, is.vector, logical(1)))) {
-      stop("All arguments in ... must be named character vectors.")
+    if(!all(vapply(arg_list, is.character, logical(1))) || !all(vapply(arg_list, is.vector, logical(1)))) {
+      stop("Arguments passed in '...' must be named character vectors (e.g., category = c('a','b')).")
     }
 
     # Check that there are between 1 and 6 named character vectors given
-    if(length(arg_list) < 1 | length(arg_list) > 6) {
-      stop("If data is a character vector of texts to annotate, you must provide between 1 and 6 named character vectors of annotation categories.")
+    if(length(arg_list) < 1 || length(arg_list) > 6) {
+      stop("You must supply between 1 and 6 named character vectors of annotation categories when providing raw text data.")
     }
 
     # Check if "" is in list of categories
-    if(any(vapply(arg_list, function(x) "" %in% x, logical(1)))) stop("The default missing value \"\" cannot be part of the categories of any variable you want to code with handcode()." )
+    if(any(vapply(arg_list, function(x) "" %in% x, logical(1)))) stop('The empty string "" cannot be used as a category in any annotation vector.')
+
 
     # Missing is character vector
-    if(!is.character(missing)) stop("missing must be a character vector of values you want to be displayed as missing values for your coding categories.")
-
+    if(!is.character(missing)) stop("Invalid 'missing' argument. Provide a character vector of values to be treated as missing in all annotation vectors.")
 
     # Check if duplicates between missing and categories
-    if(any(vapply(arg_list, function(x) missing %in% x, logical(length(missing))))) stop("Values given as categories in variables you want to code with handcode() cannot be similar to values you give in missing.")
-
+    if(any(vapply(arg_list, function(x) missing %in% x, logical(length(missing))))) stop("Invalid input: some category values are also listed in 'missing'. Please remove them from one of the arguments.")
 
     # Check for duplicate categories
     for (i in seq_along(arg_list)) {
-      if(length(unique(arg_list[[i]]))<length(arg_list[[i]])) stop("You cannot set duplicate categories for a variable. Please provide unique categories for classification.")
+      if(length(unique(arg_list[[i]]))<length(arg_list[[i]])) stop("Duplicate categories detected. Ensure each annotation vector contains only unique values.")
     }
 
     # Data handling
-    data <- character_to_data(data, arg_list, missing)
+    data <- character_to_data(data, comparison, arg_list, missing)
 
   }
 
   # Checks -----------------------------------------------------------------------
 
   # Check if first column of data is texts and character
-  if(names(data)[1] != "texts" | !is.character(data[,1]) ) stop("data must be a character vector of texts you want to annotate or a data frame that has been returned in an earlier run of this function.")
+  if(names(data)[1] != "texts" | !is.character(data[,1]) ) stop("Invalid 'data'. Only a data frame returned from a previous handcode() run is allowed. The first column must be named 'texts' and contain character values.", "Alternatively provide a character vector of texts to annotate.")
+
+  # Check if column comparison exists and is character
+  if (is.data.frame(data) && "comparison" %in% names(data)) {
+    # Check that the comparison column is character
+    if (!is.character(data$comparison)) {
+      stop("'comparison' column in the provided data frame must be of type character. ",
+           "Only data frames returned by a previous handcode() run are allowed.")
+    }
+  }
+
 
   # Check if pre and post exist in data frame. If yes, save them as individual vectors and remove them from data
   if(is.data.frame(data) & "pre" %in% names(data) & "post" %in% names(data)) {
     pre <- data$pre
     post <- data$post
-    data <- data[,1:(ncol(data)-2)]
+    data <- data[,!names(data) %in% c("pre", "post")]
   }
 
-  # Check if all columns except the first one are factors
-  if(!all(vapply(data[, -1], is.factor, FUN.VALUE = logical(1)))) stop("data must be a character vector of texts you want to annotate or a data frame that has been returned in an earlier run of this function.")
+  # Check if pre and post exist in data frame. If yes, save them as individual vectors and remove them from data
+  if(is.data.frame(data) & "comparison_pre" %in% names(data) & "comparison_post" %in% names(data)) {
+    comparison_pre <- data$pre
+    comparison_post <- data$post
+    data <- data[,!names(data) %in% c("comparison_pre", "comparison_post")]
+  }
 
   # Check if there are min 1 and  max 6 classification variables
-  if (ncol(data) < 2 | ncol(data) > 7) stop("handcode() is currently only able to handle between one and six classification variables. Please retry using between 1 and six classification variables.")
+  if (sum(!names(data) %in% c("texts", "comparison")) < 1 || sum(!names(data) %in% c("texts", "comparison")) > 6) stop("Invalid input: provide between 1 and 6 classification variables. ", "Only the remaining annotation columns after excluding 'texts', 'comparison', and pre/post columns are counted.")
+
+  # Check if all columns that are not texts or comparison are factors
+  if(names(data)[2] == "comparison") {
+    if(!all(vapply(data[, -c(1,2)], is.factor, FUN.VALUE = logical(1)))) stop("Invalid data: all remaining annotation columns must be factors. ", "Ensure you provide a data frame returned from a previous handcode() run.")
+  } else {
+    if(!all(vapply(data[, -1], is.factor, FUN.VALUE = logical(1)))) stop("Invalid data: all remaining annotation columns must be factors. ", "Ensure you provide a data frame returned from a previous handcode() run.")
+  }
 
   # check if start is a single value
-  if(length(start) > 1) stop("start must be a single value.")
+  if(length(start) > 1) stop("Invalid 'start' value: provide a single numeric value or one of 'first_empty' / 'all_empty'.")
 
   # Check if start is numeric or "first_empty"
-  if(!is.numeric(start) & !start%in%c("first_empty", "all_empty")) stop("start must be numeric, 'first_empty', or 'all_empty'.")
+  if(!is.numeric(start) & !start%in%c("first_empty", "all_empty")) stop("Invalid 'start' value: provide a single numeric value or one of 'first_empty' / 'all_empty'.")
 
-  # Check if there is uncoded data when start = "first_empty"
-  if(all(!do.call(paste0,data.frame(data[,-1], helper=""))=="")) stop("All your data is already classified. Please provide unclassified data if you want to proceed.")
+  # Check if there is uncoded data
+  if(!any(data[,!names(data) %in% c("texts", "comparison")] == "")) stop("All classification columns are filled. At least one empty annotation is required to continue.")
 
   # Check if randomize is single value
-  if(length(randomize)>1) stop("randomize must be a single value.")
+  if(length(randomize)>1) stop("Invalid 'randomize' argument: provide a single TRUE or FALSE value.")
 
   # Check if randomize is logical
-  if(!is.logical(randomize)) stop("randomize must be either TRUE or FALSE.")
+  if(!is.logical(randomize)) stop("Invalid 'randomize' argument: provide a single TRUE or FALSE value.")
 
   # Check if context is single value
-  if(length(context)>1) stop("context must be a single value.")
+  if(length(context)>1) stop("Invalid 'context' argument: provide a single TRUE or FALSE value.")
 
   # Check if context is logical
-  if(!is.logical(context)) stop("context must be either TRUE or FALSE.")
+  if(!is.logical(context)) stop("Invalid 'context' argument: provide a single TRUE or FALSE value.")
 
   # Check if pre is null or character
-  if(!is.null(pre) & !is.character(pre)) stop("pre and post must be character vectors.")
+  if(!is.null(pre) & !is.character(pre)) stop("Invalid 'pre' argument: must be a character vector.")
 
   # Check if post is null or character
-  if(!is.null(post) & !is.character(post)) stop("pre and post must be character vectors.")
+  if(!is.null(post) & !is.character(post)) stop("Invalid 'post' argument: must be a character vector.")
 
   # If pre is given, check if correct length
-  if(is.character(pre) & length(pre) != nrow(data)) stop("pre and post must be of the same length as data.")
+  if(is.character(pre) & length(pre) != nrow(data)) stop("'pre' must have the same length as 'data' (", nrow(data), "), but length = ", length(pre), ".")
 
   # If post is given, check if correct length
-  if(is.character(post) & length(post) != nrow(data)) stop("pre and post must be of the same length as data.")
+  if(is.character(post) & length(post) != nrow(data)) stop("'post' must have the same length as 'data' (", nrow(data), "), but length = ", length(post), ".")
 
   # If only one of pre and post is given, set up the other one
   if(!is.null(pre) & is.null(post)) post <- rep("", nrow(data))
   if(!is.null(post) & is.null(pre)) pre <- rep("", nrow(data))
 
+
+
+  # Check if comparison_pre is null or character
+  if(!is.null(comparison_pre) & !is.character(comparison_pre)) stop("Invalid 'comparison_pre' argument: must be a character vector.")
+
+  # Check if comparison_post is null or character
+  if(!is.null(comparison_post) & !is.character(comparison_post)) stop("Invalid 'comparison_post' argument: must be a character vector.")
+
+  # If pre is given, check if correct length
+  if(is.character(comparison_pre) & length(comparison_pre) != nrow(data)) stop("'comparison_pre' must have the same length as 'data' (", nrow(data), "), but length = ", length(comparison_pre), ".")
+
+  # If post is given, check if correct length
+  if(is.character(comparison_post) & length(comparison_post) != nrow(data)) stop("'comparison_post' must have the same length as 'data' (", nrow(data), "), but length = ", length(comparison_post), ".")
+
+  # If only one of pre and post is given, set up the other one
+  if(!is.null(comparison_pre) & is.null(comparison_post)) comparison_post <- rep("", nrow(data))
+  if(!is.null(comparison_post) & is.null(comparison_pre)) comparison_pre <- rep("", nrow(data))
+
   # Check if interactive
-  if(!interactive()) stop("handcode() can only be used in an interactive R session.")
+  if(!interactive()) stop("'handcode()' can only be run in an interactive R session.")
 
 
   # Initialize -------------------------------------------------------------------
 
-  a <- data_for_app(data, start, randomize, context, pre, post)
+  a <- data_for_app(data, start, randomize, context, pre, post, comparison_pre, comparison_post)
 
   # Run App ----------------------------------------------------------------------
 
@@ -645,13 +834,20 @@ handcode <- function(data, ... , start = "first_empty", randomize = FALSE, conte
     ret$post <- post
   }
 
+  # If comparison_pre and comparison_post given, attach to ret
+  if(!is.null(comparison_pre) & !is.null(comparison_post)) {
+    ret$comparison_pre <- comparison_pre
+    ret$comparison_post <- comparison_post
+  }
 
-# Output results ----------------------------------------------------------
+  # Output results ----------------------------------------------------------
 
-  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.1. https://github.com/liserman/handcodeR")
+  message("Please cite: Isermann, Lukas. 2023. handcodeR: Text annotation app. R package version 0.1.2. https://github.com/liserman/handcodeR")
 
   return(ret)
 
 }
+
+
 
 

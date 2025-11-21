@@ -6,7 +6,7 @@ library(handcodeR)
 a <- list(
   container = data.frame(kat1 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "category 1",
                                                   "category 2")),
                          kat2 = factor(rep("", 3)),
@@ -20,22 +20,25 @@ a <- list(
                         texts = c("Text 1", "Text 2", "Text 3"),
                         kat1 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "category 1",
                                                  "category 2"))),
   start_app = 1,
   classifications = list(kat1 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "category 1",
                                   "category 2")),
-  context_app = FALSE
+  context_app = FALSE,
+  compare = FALSE
 )
 
-# Initialize App
-shiny_app <- handcoder_app(a)
+handcodeR:::handcoder_app(a)
 
 test_that("Test nextpage, 1 category", {
   skip_on_cran()
+
+  # Initialize App
+  shiny_app <- handcoder_app(a)
 
   app <- AppDriver$new(shiny_app, name = "handcoder_app1",
                        variant = platform_variant())
@@ -70,14 +73,21 @@ test_that("Test nextpage, 1 category", {
 })
 
 
+
+
+
+
 test_that("Test save and exit, 1 category", {
   skip_on_cran()
+
+  # Initialize App
+  shiny_app <- handcoder_app(a)
 
   app <- AppDriver$new(shiny_app, name = "handcoder_app2",
                        variant = platform_variant())
 
   # Click category 1
-  app$set_inputs(code1 = "Not applicable")
+  app$set_inputs(code1 = "_Not applicable_")
   app$expect_values()
 
   # Click save to save and exit
@@ -90,12 +100,12 @@ test_that("Test save and exit, 1 category", {
 b <- list(
   container = data.frame(kat1 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "category 1",
                                                   "category 2")),
                          kat2 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "kategorie 1",
                                                   "kategorie 2")),
                          kat3 = factor(rep("", 3)),
@@ -108,32 +118,34 @@ b <- list(
                         texts = c("Text 1", "Text 2", "Text 3"),
                         kat1 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "category 1",
                                                  "category 2")),
                         kat2 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "kategorie 1",
                                                  "kategorie 2"))),
   start_app = 2,
   classifications = list(kat1 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "category 1",
                                   "category 2"),
                          kat2 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "kategorie 1",
                                   "kategorie 2")),
-  context_app = TRUE
+  context_app = TRUE,
+  compare = FALSE
 )
 
-# Initialize App
-shiny_app2 <- handcoder_app(b)
 
 
 test_that("Test 2 categories",{
   skip_on_cran()
+
+  # Initialize App
+  shiny_app2 <- handcoder_app(b)
 
   app <- AppDriver$new(shiny_app2, name = "handcoder_app3",
                        variant = platform_variant())
@@ -160,33 +172,33 @@ test_that("Test 2 categories",{
 c <- list(
   container = data.frame(kat1 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "category 1",
                                                   "category 2")),
                          kat2 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "kategorie 1",
                                                   "kategorie 2")),
                          kat3 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "categoria 1",
                                                   "categoria 2",
                                                   "categoria 3")),
                          kat4 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "apple",
                                                   "banana")),
                          kat5 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "circle",
                                                   "square")),
                          kat6 = factor(rep("", 3),
                                        levels = c("",
-                                                  "Not applicable",
+                                                  "_Not applicable_",
                                                   "water",
                                                   "fire"))),
   data_app = data.frame(id = seq(1,3),
@@ -195,70 +207,73 @@ c <- list(
                         texts = c("Text 1", "Text 2", "Text 3"),
                         kat1 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "category 1",
                                                  "category 2")),
                         kat2 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "kategorie 1",
                                                  "kategorie 2")),
                         kat3 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "categoria 1",
                                                  "categoria 2",
                                                  "categoria 3")),
                         kat4 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "apple",
                                                  "banana")),
                         kat5 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "circle",
                                                  "square")),
                         kat6 = factor(rep("", 3),
                                       levels = c("",
-                                                 "Not applicable",
+                                                 "_Not applicable_",
                                                  "water",
                                                  "fire"))),
   start_app = 2,
   classifications = list(kat1 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "category 1",
                                   "category 2"),
                          kat2 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "kategorie 1",
                                   "kategorie 2"),
                          kat3 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "categoria 1",
                                   "categoria 2",
                                   "categoria 3"),
                          kat4 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "apple",
                                   "banana"),
                          kat5 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "circle",
                                   "square"),
                          kat6 = c("",
-                                  "Not applicable",
+                                  "_Not applicable_",
                                   "water",
                                   "fire")),
-  context_app = TRUE
+  context_app = TRUE,
+  compare = FALSE
 )
 
-# Initialize App
-shiny_app3 <- handcoder_app(c)
+
 
 
 test_that("Test 6 categories",{
   skip_on_cran()
+
+  # Initialize App
+  shiny_app3 <- handcoder_app(c)
 
   app <- AppDriver$new(shiny_app3, name = "handcoder_app4",
                        variant = platform_variant())
@@ -298,10 +313,73 @@ test_that("Test 6 categories",{
 
 
 
+# Initialize input 1 category with comparison
+d <- list(
+  container = data.frame(kat1 = factor(rep("", 3),
+                                       levels = c("",
+                                                  "_Not applicable_",
+                                                  "category 1",
+                                                  "category 2")),
+                         kat2 = factor(rep("", 3)),
+                         kat3 = factor(rep("", 3)),
+                         kat4 = factor(rep("", 3)),
+                         kat5 = factor(rep("", 3)),
+                         kat6 = factor(rep("", 3))),
+  data_app = data.frame(id = seq(1,3),
+                        before_comparison = c("", "comp 1", "comp 2"),
+                        after_comparison = c("comp 2", "comp 3", ""),
+                        before = c("", "Text 1", "Text 2"),
+                        after = c("Text 2", "Text 3", ""),
+                        texts = c("Text 1", "Text 2", "Text 3"),
+                        comparison = c("comp 1", "comp 2", "comp 3"),
+                        kat1 = factor(rep("", 3),
+                                      levels = c("",
+                                                 "_Not applicable_",
+                                                 "category 1",
+                                                 "category 2"))),
+  start_app = 1,
+  classifications = list(kat1 = c("",
+                                  "_Not applicable_",
+                                  "category 1",
+                                  "category 2")),
+  context_app = FALSE,
+  compare = TRUE
+)
+
+
+
+
+test_that("Test 1 category with comparison",{
+  skip_on_cran()
+
+  # Initialize App
+  shiny_app4 <- handcoder_app(d)
+
+  app <- AppDriver$new(shiny_app4, name = "handcoder_app5",
+                       variant = platform_variant())
+
+  # Click category 1
+  app$set_inputs(code1 = "category 1")
+  app$expect_values()
+
+  # Click nextpage to get to page 3/3
+  app$click("nextpage")
+  app$expect_values()
+
+  # Click previouspage to get to page 2/3
+  app$click("previouspage")
+  app$expect_values()
+})
+
+
+
 # Test Server -------------------------------------------------------------
 
 
 test_that("Test shiny server nextpage",{
+  # Initialize App
+  shiny_app <- handcoder_app(a)
+
   shiny::testServer(shiny_app, {
     # First Text displayed is first Text
     expect_equal(output$statement, a$data_app$texts[1])
@@ -328,6 +406,9 @@ test_that("Test shiny server nextpage",{
 
 
 test_that("Test shiny server context",{
+  # Initialize App
+  shiny_app2 <- handcoder_app(b)
+
   shiny::testServer(shiny_app2, {
     # First Text displayed is second Text (Start value is 2)
     expect_equal(output$statement, paste0("<font color =\"#C0C0C0\">", b$data_app$before[2], "</font> <b>", b$data_app$texts[2], "</b> <font color =\"#C0C0C0\">", b$data_app$after[2], "</font>"))
@@ -335,7 +416,15 @@ test_that("Test shiny server context",{
 })
 
 
+test_that("Test shiny server comparison",{
+  # Initialize App
+  shiny_app4 <- handcoder_app(d)
 
+  shiny::testServer(shiny_app4, {
+    # First comparison text displayed is comparison 1
+    expect_equal(output$comparison, d$data_app$comparison[1])
+  })
+})
 
 
 
