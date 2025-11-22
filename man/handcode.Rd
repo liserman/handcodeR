@@ -2,7 +2,7 @@
 % Please edit documentation in R/handcode.R
 \name{handcode}
 \alias{handcode}
-\title{handcode: Classifying text into pre-defined categories.}
+\title{handcode: Classify text into predefined categories}
 \usage{
 handcode(
   data,
@@ -15,54 +15,56 @@ handcode(
   post = NULL,
   comparison = NULL,
   comparison_pre = NULL,
-  comparison_post = NULL
+  comparison_post = NULL,
+  add_notes = FALSE
 )
 }
 \arguments{
-\item{data}{A character vector of texts to annotate, or a data frame previously returned by `handcode()`.}
+\item{data}{Character vector or data frame; texts to annotate, or a data frame previously returned by `handcode()`.}
 
-\item{...}{Between 1 and 6 named character vectors defining annotation variables and their categories.
-These are only required when `data` is a new character vector of texts (not a data frame returned by `handcode()`).}
+\item{...}{Between 1 and 6 named character vectors defining annotation variables and their categories. These are required only when `data` is a new character vector of texts (not a data frame previously returned by `handcode()`).}
 
-\item{start}{A single value indicating where to begin hand coding.
-- If numeric, coding will start at the specified row number.
-- `"first_empty"`: automatically start at the first row that is not fully annotated (i.e., at least one classification column is still empty).
-- `"all_empty"`: display all rows that are not fully annotated for coding.}
+\item{start}{Numeric or character; indicates where to begin hand coding.
+- If numeric, coding starts at the specified row number.
+- `"first_empty"`: automatically start at the first row that is not fully annotated (i.e., at least one classification column is empty).
+- `"all_empty"`: display all rows that are not fully annotated, ignoring fully coded rows.}
 
-\item{randomize}{A single logical value (`TRUE` or `FALSE`) indicating whether to randomize the order in which texts are displayed to the coder.}
+\item{randomize}{Logical; whether to randomize the order in which texts are displayed to the coder (`TRUE` or `FALSE`).}
 
-\item{context}{A single logical value (`TRUE` or `FALSE`) indicating whether to display the previous and next texts alongside the current text being coded.
-When `TRUE`, the surrounding texts are shown in light gray.
-This is particularly useful when annotating individual sentences within a larger document.}
+\item{context}{Logical; whether to display the previous and next texts alongside the current text being coded (`TRUE` or `FALSE`).
+When `TRUE`, the surrounding texts are displayed in light gray.
+This is useful when annotating individual sentences within a larger document.}
 
-\item{missing}{A character vector of values to be treated as missing across all annotation vectors.
-In the returned data, these missing values are marked by adding an underscore ('_') at the beginning and end of each value.}
+\item{missing}{Character vector; values to be treated as missing across all annotation vectors.
+In the returned data, these values are marked by adding an underscore (`_`) at the beginning and end of each value.}
 
-\item{pre}{Optional character vector of custom texts to display as the preceding context for each text in `data`.
-These texts are shown only if `context = TRUE`.
-This is useful when the texts in `data` do not form a continuous sequence.}
+\item{pre}{Optional character vector; custom texts to display as preceding context for each text in `data`.
+These texts are shown only if `context = TRUE` and are useful when the texts in `data` do not form a continuous sequence.}
 
-\item{post}{Optional character vector of custom texts to display as the following context for each text in `data`.
-These texts are shown only if `context = TRUE`.
-This is useful when the texts in `data` do not form a continuous sequence.}
+\item{post}{Optional character vector; custom texts to display as following context for each text in `data`.
+These texts are shown only if `context = TRUE` and are useful when the texts in `data` do not form a continuous sequence.}
 
-\item{comparison}{Optional. A character vector of texts to compare against the texts in `data`.
-This argument is typically used on the first run; when resuming from a previous `handcode()` output, the comparison column in `data` will be used automatically.}
+\item{comparison}{Optional character vector; texts to compare against the texts in `data`.
+This argument is used only on the first run (i.e., when `data` is a character vector).
+When `data` is a data frame returned by a previous `handcode()` run, this input is ignored and the comparison column in `data` is used automatically.}
 
-\item{comparison_pre}{Optional character vector of custom texts to display as the preceding context for each text in `comparison`.
-These texts are shown only if `context = TRUE`.
-This is useful when the texts in `comparison` do not form a continuous sequence.}
+\item{comparison_pre}{Optional character vector; custom texts to display as preceding context for each text in `comparison`.
+These texts are shown only if `context = TRUE` and are useful when the texts in `comparison` do not form a continuous sequence.}
 
-\item{comparison_post}{Optional character vector of custom texts to display as the following context for each text in `comparison`.
-These texts are shown only if `context = TRUE`.
-This is useful when the texts in `comparison` do not form a continuous sequence.}
+\item{comparison_post}{Optional character vector; custom texts to display as following context for each text in `comparison`.
+These texts are shown only if `context = TRUE` and are useful when the texts in `comparison` do not form a continuous sequence.}
+
+\item{add_notes}{Logical; if `TRUE`, a `notes` column is added for free text input.
+This is used only on the first run (i.e., when `data` is a character vector).
+When `data` is a data frame returned by a previous `handcode()` run, the notes column is taken from the data frame and this input is ignored. Default is `FALSE`.}
 }
 \value{
 A data frame containing all annotations made in the Shiny app.
-  Each row corresponds to a text from the input `data` (or `comparison`), and each annotation variable is stored as a factor column.
+  Each row corresponds to a text from the main input `data`, and each annotation variable is stored as a factor column.
+  The returned data frame can be used as input to `handcode()` in a subsequent run if not all coding was completed in a single session.
 }
 \description{
-`handcode()` opens an interactive Shiny app that allows you to classify strings of text into predefined categories. You can annotate between one and six variables at a time. The function returns an updated data frame containing your annotated classifications.
+`handcode()` launches an interactive Shiny app that allows users to classify text strings into predefined categories. You can annotate between one and six variables at a time. The function returns an updated data frame containing the annotated classifications.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
@@ -89,11 +91,12 @@ redacted_sentences <- c(
   "The film was really great."
 )
 
-# Handcode sentences to see if meaning changed
+# Handcode sentences to detect changes in meaning
 annotated <- handcode(
   data = sentences,
   comparison = redacted_sentences,
-  meaning_change = c("unchanged", "changed")
+  meaning_change = c("unchanged", "changed"),
+  add_notes = TRUE
 )
 
 \dontshow{\}) # examplesIf}

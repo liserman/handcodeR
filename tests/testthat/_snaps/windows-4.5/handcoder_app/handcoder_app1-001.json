@@ -5,6 +5,7 @@
     "add4": false,
     "add5": false,
     "add6": false,
+    "add_note": false,
     "code1": "category 1",
     "code2": "",
     "code3": "",
@@ -13,6 +14,7 @@
     "code6": "",
     "compare": false,
     "nextpage": 0,
+    "notes": "",
     "previouspage": 0,
     "save": 0
   },

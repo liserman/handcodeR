@@ -2,7 +2,7 @@
 % Please edit documentation in R/handcode.R
 \name{data_for_app}
 \alias{data_for_app}
-\title{data_for_app: Prepare inputs for Shiny-App}
+\title{data_for_app: Prepare inputs for the Shiny app}
 \usage{
 data_for_app(
   data,
@@ -16,25 +16,25 @@ data_for_app(
 )
 }
 \arguments{
-\item{data}{A data frame that has been prepared by `character_to_data` or that has previously already been returned from `handcode`.}
+\item{data}{Data frame; prepared by `character_to_data` or previously returned by `handcode`.}
 
-\item{start}{The value that has been given as start value to `handcode`.}
+\item{start}{Numeric; the start value provided to `handcode`.}
 
-\item{randomize}{The logical value that has been given as randomize to `handcode`.}
+\item{randomize}{Logical; the randomize value provided to `handcode`.}
 
-\item{context}{The logical value that has been given as context to `handcode`.}
+\item{context}{Logical; the context value provided to `handcode`.}
 
-\item{pre}{Optional vector of texts that come before each respective text to be coded.}
+\item{pre}{Optional character vector; texts that appear before each corresponding text to be coded.}
 
-\item{post}{Optional vector of texts that come after each respective text to be coded.}
+\item{post}{Optional character vector; texts that appear after each corresponding text to be coded.}
 
-\item{comparison_pre}{Optional vector of texts that come before each respective comparison text to be coded.}
+\item{comparison_pre}{Optional character vector; texts that appear before each corresponding comparison text to be coded.}
 
-\item{comparison_post}{Optional vector of texts that come after each respective comparison text to be coded.}
+\item{comparison_post}{Optional character vector; texts that appear after each corresponding comparison text to be coded.}
 }
 \value{
-The function returns a list of inputs needed within the Shiny-App.
+A list of inputs required by the Shiny app.
 }
 \description{
-`data_for_app` is an internal function to `handcode`. It takes the inputs data, start, randomize and context to generate a list of inputs which can then be passed to `handcoder_app`.
+`data_for_app` is an internal function used by `handcode`. It takes the inputs `data`, `start`, `randomize`, and `context` to generate a list of inputs that can be passed to `handcoder_app`.
 }

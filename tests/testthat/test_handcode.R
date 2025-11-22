@@ -223,7 +223,7 @@ test_that("handcode() throws error when first row of data.frame is not texts", {
                      cat1 = "")
 
   # Act and Assert
-  expect_error(handcode(data), "Invalid data: all remaining annotation")
+  expect_error(handcode(data), "Invalid data: all annotation")
 })
 
 # if data is data.frame, between 1 and 6 annotation vectors
@@ -394,6 +394,28 @@ if(interactive()){
   })
 }
 
+# add_notes not logical
+test_that("handcode() throws error if add_notes is wrong class", {
+  data <- c("Text 1", "Text 2")
+
+  expect_error(
+    handcode(data, cat1 = c("cat1a", "cat1b"), add_notes = "drei"),
+    "Invalid 'add_notes' argument"
+  )
+})
+
+
+# add_notes wrong length
+test_that("handcode() throws error if add_notes is wrong class", {
+  data <- c("Text 1", "Text 2")
+
+  expect_error(
+    handcode(data, cat1 = c("cat1a", "cat1b"), add_notes = c(TRUE, FALSE)),
+    "Invalid 'add_notes' argument"
+  )
+})
+
+
 
 # check error message if interactive = FALSE
 if(!interactive()){
@@ -437,13 +459,14 @@ if(interactive()){
 }
 
 
-# check if output dataframe matches input dataframe for continued coding, randomize true
+# check if output dataframe matches input dataframe for continued coding, randomize true, notes
 if(interactive()){
   test_that("handcode() output matches already coded to input when randomize TRUE", {
     skip_on_cran()
     data <- data.frame(texts = c("Text 1", "Text 2", "Text 3", "Text 4", "Text 5", "Text 6", "Text 7"),
                        cat1 = factor(c("cat1a", "cat1a", "cat1b", "cat1a", "cat1b", "", ""),
-                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")))
+                                     levels = c("", "_Not applicable_", "cat1a", "cat1b")),
+                       notes = c("", "", "", "", "review", "", ""))
     out <- handcode(data, randomize = T, start = "all_empty")
 
     expect_s3_class(out, "data.frame")
@@ -452,6 +475,7 @@ if(interactive()){
     expect_equal(out[1:5,], data[1:5,])
   })
 }
+
 
 
 # check if output dataframe matches input dataframe for continued coding, randomize true, empty row in between

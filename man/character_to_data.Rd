@@ -2,22 +2,30 @@
 % Please edit documentation in R/handcode.R
 \name{character_to_data}
 \alias{character_to_data}
-\title{character_to_data: Transform text vector and arg_list to data frame.}
+\title{character_to_data: Transform text vector and argument list to a data frame}
 \usage{
-character_to_data(data, comparison = NULL, arg_list, missing)
+character_to_data(
+  data,
+  comparison = NULL,
+  arg_list,
+  missing,
+  add_notes = FALSE
+)
 }
 \arguments{
-\item{data}{A character vector of texts which has been given as data input to `handcode`.}
+\item{data}{Character vector; the texts provided as input to `handcode`.}
 
-\item{comparison}{A character vector of texts to compare against data which has been given as comparison input to `handcde`.}
+\item{comparison}{Character vector; the texts to compare against the data provided to `handcode`.}
 
-\item{arg_list}{A list of additional arguments which have been given as input to `handcode`. These must be named character vectors of categories that will be used to annotate the given texts.}
+\item{arg_list}{List; named character vectors of categories used to annotate the texts, passed as additional input to `handcode`.}
 
-\item{missing}{A character vector of values that are displayed as missing values in the App. In the return data, these missing will be saved with an additional "_" as prefix and suffix.}
+\item{missing}{Character vector; values to be treated as missing in the app. In the returned data, these missing values are saved with an underscore (`_`) as prefix and suffix.}
+
+\item{add_notes}{Logical; if TRUE, a `notes` column is added to allow free text input. Default is FALSE.}
 }
 \value{
-The function returns a data frame in the format of the output data frame that can be processed by the handcode() function.
+A data frame in the same format as the output of `handcode()`, suitable for further processing by `handcode()`.
 }
 \description{
-`character_to_data` is an internal function to `handcode`. It takes a character vector of texts as well as an arg_list of named character vectors as inputs and returns a data frame which can be used as input to `data_for_app`.
+`character_to_data` is an internal function used by `handcode`. It takes a character vector of texts and an `arg_list` of named character vectors as inputs, and returns a data frame suitable for use as input to `data_for_app`.
 }

@@ -2,20 +2,20 @@
 % Please edit documentation in R/handcode.R
 \name{button_output}
 \alias{button_output}
-\title{button_output: Formatting of output for shiny::radioButtons}
+\title{button_output: Format output for `shiny::radioButtons`}
 \usage{
 button_output(classification, button, names = FALSE)
 }
 \arguments{
-\item{classification}{Classification list obtained as list item from `data_for_app`}
+\item{classification}{List; a classification item obtained from `data_for_app`.}
 
-\item{button}{Numerical value indicating for which button names and labels should be returned}
+\item{button}{Numeric; indicates for which button the names and labels should be returned.}
 
-\item{names}{Logical value indicating whether the function is supposed to return a formatted list of labels or a vector of names for use in radioButtons.}
+\item{names}{Logical; if TRUE, the function returns a formatted list of labels; if FALSE, it returns a vector of names suitable for `radioButtons`.}
 }
 \value{
-Depending on the logical names input, the function returns a list of HTML formatted labels or the list of category names for the display of the radioButtons in the Shiny-App.
+A list of HTML-formatted labels or a vector of category names for `radioButtons` in the Shiny app, depending on the value of the `names` parameter.
 }
 \description{
-`button_output` is an internal function to `handcode`. It works within the Shiny-App `handcoder_app` to format the look of the shiny::radioButtons.
+`button_output` is an internal function used by `handcode`. It operates within the Shiny app `handcoder_app` to format the appearance of `shiny::radioButtons`.
 }

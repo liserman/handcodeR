@@ -13,7 +13,8 @@ a <- list(
                          kat3 = factor(rep("", 3)),
                          kat4 = factor(rep("", 3)),
                          kat5 = factor(rep("", 3)),
-                         kat6 = factor(rep("", 3))),
+                         kat6 = factor(rep("", 3)),
+                         notes = ""),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -29,7 +30,8 @@ a <- list(
                                   "category 1",
                                   "category 2")),
   context_app = FALSE,
-  compare = FALSE
+  compare = FALSE,
+  add_notes = FALSE
 )
 
 handcodeR:::handcoder_app(a)
@@ -111,7 +113,8 @@ b <- list(
                          kat3 = factor(rep("", 3)),
                          kat4 = factor(rep("", 3)),
                          kat5 = factor(rep("", 3)),
-                         kat6 = factor(rep("", 3))),
+                         kat6 = factor(rep("", 3)),
+                         notes = ""),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -125,7 +128,8 @@ b <- list(
                                       levels = c("",
                                                  "_Not applicable_",
                                                  "kategorie 1",
-                                                 "kategorie 2"))),
+                                                 "kategorie 2")),
+                        notes = ""),
   start_app = 2,
   classifications = list(kat1 = c("",
                                   "_Not applicable_",
@@ -136,12 +140,13 @@ b <- list(
                                   "kategorie 1",
                                   "kategorie 2")),
   context_app = TRUE,
-  compare = FALSE
+  compare = FALSE,
+  add_notes = TRUE
 )
 
 
 
-test_that("Test 2 categories",{
+test_that("Test 2 categories with notes",{
   skip_on_cran()
 
   # Initialize App
@@ -164,6 +169,14 @@ test_that("Test 2 categories",{
 
   # Click previouspage to get to page 2/3
   app$click("previouspage")
+  app$expect_values()
+
+  # Add note
+  app$set_inputs(notes = "Hallo Welt")
+  app$expect_values()
+
+  # Click nextpage to get to page 3/3
+  app$click("nextpage")
   app$expect_values()
 })
 
@@ -200,7 +213,8 @@ c <- list(
                                        levels = c("",
                                                   "_Not applicable_",
                                                   "water",
-                                                  "fire"))),
+                                                  "fire")),
+                         notes = ""),
   data_app = data.frame(id = seq(1,3),
                         before = c("", "Text 1", "Text 2"),
                         after = c("Text 2", "Text 3", ""),
@@ -263,7 +277,8 @@ c <- list(
                                   "water",
                                   "fire")),
   context_app = TRUE,
-  compare = FALSE
+  compare = FALSE,
+  add_notes = FALSE
 )
 
 
@@ -324,7 +339,8 @@ d <- list(
                          kat3 = factor(rep("", 3)),
                          kat4 = factor(rep("", 3)),
                          kat5 = factor(rep("", 3)),
-                         kat6 = factor(rep("", 3))),
+                         kat6 = factor(rep("", 3)),
+                         notes = ""),
   data_app = data.frame(id = seq(1,3),
                         before_comparison = c("", "comp 1", "comp 2"),
                         after_comparison = c("comp 2", "comp 3", ""),
@@ -343,7 +359,8 @@ d <- list(
                                   "category 1",
                                   "category 2")),
   context_app = FALSE,
-  compare = TRUE
+  compare = TRUE,
+  add_notes = FALSE
 )
 
 
