@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-```{css, echo = FALSE}
+```{css, include = FALSE}
 p {
   text-align: justify
 }
@@ -266,7 +266,7 @@ handcode(data = wombat_1$text,
 ```
 
 ```{r, echo=FALSE}
-knitr::include_graphics("man/figures/App4.png")
+knitr::include_graphics("man/figures/App5.png")
 ```
 
 By default, this option only needs to be set once at the beginning of a new annotation process.  

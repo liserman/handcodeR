@@ -1,10 +1,4 @@
 
-<style type="text/css">
-p {
-  text-align: justify
-}
-</style>
-
 # handcodeR <img src="man/figures/logo.png" align="right" height="139" />
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
@@ -339,7 +333,7 @@ handcode(data = wombat_1$text,
 )
 ```
 
-<img src="man/figures/App4.png" width="100%" />
+<img src="man/figures/App5.png" width="100%" />
 
 By default, this option only needs to be set once at the beginning of a
 new annotation process.  
