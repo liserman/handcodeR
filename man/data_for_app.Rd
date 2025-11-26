@@ -16,13 +16,13 @@ data_for_app(
 )
 }
 \arguments{
-\item{data}{Data frame; prepared by `character_to_data` or previously returned by `handcode`.}
+\item{data}{Data frame; prepared by `character_to_data()` or previously returned by `handcode()`.}
 
-\item{start}{Numeric; the start value provided to `handcode`.}
+\item{start}{Numeric; the start value provided to `handcode()`.}
 
-\item{randomize}{Logical; the randomize value provided to `handcode`.}
+\item{randomize}{Logical; the randomize value provided to `handcode()`.}
 
-\item{context}{Logical; the context value provided to `handcode`.}
+\item{context}{Logical; the context value provided to `handcode()`.}
 
 \item{pre}{Optional character vector; texts that appear before each corresponding text to be coded.}
 
@@ -36,5 +36,5 @@ data_for_app(
 A list of inputs required by the Shiny app.
 }
 \description{
-`data_for_app` is an internal function used by `handcode`. It takes the inputs `data`, `start`, `randomize`, and `context` to generate a list of inputs that can be passed to `handcoder_app`.
+`data_for_app()` is an internal function used by `handcode()`. It takes the inputs `data`, `start`, `randomize`, and `context` to generate a list of inputs that can be passed to `handcoder_app()`.
 }

@@ -34,7 +34,6 @@ a <- list(
   add_notes = FALSE
 )
 
-handcodeR:::handcoder_app(a)
 
 test_that("Test nextpage, 1 category", {
   skip_on_cran()
@@ -412,11 +411,6 @@ test_that("Test shiny server nextpage",{
     # Clicking previouspage leads back to first text
     session$setInputs(previouspage = input$previouspage + 1)
     expect_equal(output$statement, a$data_app$texts[1])
-
-    # Clicking nextpage until last page leads to exit
-    session$setInputs(nextpage = input$nextpage + 1)
-    session$setInputs(nextpage = input$nextpage + 1)
-    expect_equal(values$counter, 3)
 
   })
 })

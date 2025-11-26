@@ -125,12 +125,12 @@ campaign. We then split the article into individual sentences, which can
 be annotated using `handcode()`.
 
 ``` r
-# Install box if not already installed
-if (!"box" %in% installed.packages()) install.packages("box")
+# Install pacman if not already installed
+if (!require(pacman)) install.packages("pacman")
 
-# Use box to install and load archiveRetriever::scrape_urls() and stringr::str_split()
-box::use(archiveRetriever[scrape_urls],
-         stringr[str_split])
+# Use pacman to install and load archiveRetriever and stringr
+pacman::p_load(archiveRetriever,
+               stringr)
 
 # Use the archiveRetriever to download article
 nytimes_article <- scrape_urls(Urls = "http://web.archive.org/web/20201001004918/https://www.nytimes.com/2020/09/30/opinion/biden-trump-2020-debate.html",
@@ -326,7 +326,7 @@ To enable this feature, set `add_notes = TRUE`. This lets you enter
 comments or observations alongside your coded categories.
 
 ``` r
-handcode(data = wombat_1$text,
+comparison <- handcode(data = wombat_1$text,
          comparison = wombat_2$text,
          content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened"),
          add_notes = TRUE

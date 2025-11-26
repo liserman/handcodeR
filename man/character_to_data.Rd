@@ -13,11 +13,11 @@ character_to_data(
 )
 }
 \arguments{
-\item{data}{Character vector; the texts provided as input to `handcode`.}
+\item{data}{Character vector; the texts provided as input to `handcode()`.}
 
-\item{comparison}{Character vector; the texts to compare against the data provided to `handcode`.}
+\item{comparison}{Character vector; the texts to compare against the data provided to `handcode()`.}
 
-\item{arg_list}{List; named character vectors of categories used to annotate the texts, passed as additional input to `handcode`.}
+\item{arg_list}{List; named character vectors of categories used to annotate the texts, passed as additional input to `handcode()`.}
 
 \item{missing}{Character vector; values to be treated as missing in the app. In the returned data, these missing values are saved with an underscore (`_`) as prefix and suffix.}
 
@@ -27,5 +27,5 @@ character_to_data(
 A data frame in the same format as the output of `handcode()`, suitable for further processing by `handcode()`.
 }
 \description{
-`character_to_data` is an internal function used by `handcode`. It takes a character vector of texts and an `arg_list` of named character vectors as inputs, and returns a data frame suitable for use as input to `data_for_app`.
+`character_to_data()` is an internal function used by `handcode()`. It takes a character vector of texts and an `arg_list` of named character vectors as inputs, and returns a data frame suitable for use as input to `data_for_app()`.
 }
