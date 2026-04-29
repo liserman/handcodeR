@@ -1,4 +1,5 @@
 ## Test environments
+
 - R-hub windows-x86_64-devel (r-devel)
 - R-hub ubuntu-gcc-release (r-release)
 - R-hub fedora-clang-devel (r-devel)
@@ -15,19 +16,19 @@ There were no ERRORS or WARNINGS. There were 6 NOTES, three of which refer to th
 ❯ On windows-x86_64-devel (r-devel)
   checking CRAN incoming feasibility ... [12s] NOTE
   Maintainer: 'Lukas Isermann <lukas.isermann@uni-mannheim.de>'
-  
+
   Days since last update: 6
-  
+
 ❯ On ubuntu-gcc-release (r-release)
   checking CRAN incoming feasibility ... [7s/20s] NOTE
   Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
-  
+
   Days since last update: 6
-  
+
 ❯ On fedora-clang-devel (r-devel)
   checking CRAN incoming feasibility ... [8s/27s] NOTE
   Maintainer: ‘Lukas Isermann <lukas.isermann@uni-mannheim.de>’
-  
+
   Days since last update: 6
 ```
 

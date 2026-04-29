@@ -1,4 +1,3 @@
-
 # handcodeR <img src="man/figures/logo.png" align="right" height="139" />
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
@@ -12,19 +11,27 @@
 
 R-Package to facilitate the annotation of text data by hand in R.
 
-The goal of the handcodeR package is to provide an easy to use app to
+The goal of the handcodeR package is to provide an easy-to-use app to
 annotate text data by hand. Often times when we work with text data, we
-rely on hand coded annotations of texts either as unit of analysis in
+rely on hand-coded annotations of texts either as a unit of analysis in
 itself, or as training and test samples for supervised machine learning
-tools to classify text data. handcodeR offers a Shiny-App that can be
-run within R to annotate individual texts one by one in up to six
-different variables. To do so, the package uses the function
-`handcode()`:
+tools to classify text data. handcodeR offers Shiny-Apps that can be run
+within R to annotate individual texts one by one. The package provides
+two complementary entry points:
 
-- `handcode()` opens a Shiny-App which allows for hand-coding strings of
-  text into pre-defined categories. You can code between one and six
-  variables at a time. It returns a data frame with your coded
-  annotations.
+- `handcode()` opens a Shiny-App for **categorial annotation**, allowing
+  you to code each text into pre-defined categories across an arbitrary
+  number of classification variables. It also supports **side-by-side
+  comparison** of two text vectors.
+- `handcode_binary()` opens a Shiny-App for **two-choice (binary)
+  annotation**, where each variable presents exactly two color-coded
+  options (e.g. positive/negative). It supports keyboard shortcuts and
+  multi-/single-factorial coding.
+
+Both functions return a data frame with your coded annotations, support
+resuming an existing coding session, autosave and quicksave recovery,
+free-text notes, randomized order, and contextual display of preceding
+and following texts.
 
 I present a short step-by-step guide as well as the functions in more
 detail below.
@@ -33,26 +40,28 @@ detail below.
 
 To cite the handcodeR package, you can use:
 
-> Isermann, Lukas. (2023). handcodeR: Text annotation app. R package
-> version 0.2.0. <http://doi.org/10.5281/zenodo.8075100>.
+> Isermann, Lukas and Klingenspohr, Dennis. (2026). handcodeR: Text
+> annotation app. R package version 0.2.1.
+> <http://doi.org/10.5281/zenodo.8075100>.
 
 You can also access the preferred citation as well as the bibtex entry
 for the handcodeR Package via R:
 
-``` r
+```r
 citation("handcodeR")
 #> To cite handcodeR in publications, please use:
-#> 
-#>   Isermann, Lukas. 2023. handcodeR: Text annotation app. R package
-#>   version 0.2.0. https://doi.org/10.5281/zenodo.8075100
-#> 
+#>
+#>   Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text
+#>   annotation app. R package version 0.2.1.
+#>   https://doi.org/10.5281/zenodo.8075100
+#>
 #> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
-#> 
+#>
 #>   @Misc{,
 #>     title = {handcodeR: Text annotation app},
-#>     author = {Lukas Isermann},
-#>     year = {2023},
-#>     note = {R package version 0.2.0},
+#>     author = {Lukas Isermann and Dennis Klingenspohr},
+#>     year = {2026},
+#>     note = {R package version 0.2.1},
 #>     doi = {10.5281/zenodo.8075100},
 #>     url = {https://github.com/liserman/handcodeR},
 #>   }
@@ -62,14 +71,14 @@ citation("handcodeR")
 
 A stable version of `handcodeR` can be directly accessed on CRAN:
 
-``` r
+```r
 install.packages("handcodeR", force = TRUE)
 ```
 
 To install the latest development version of `handcodeR` directly from
 [GitHub](https://github.com/liserman/handcodeR) use:
 
-``` r
+```r
 library(devtools) # Tools to Make Developing R Packages Easier
 devtools::install_github("liserman/handcodeR", force = TRUE)
 ```
@@ -78,7 +87,7 @@ devtools::install_github("liserman/handcodeR", force = TRUE)
 
 First, load the package
 
-``` r
+```r
 library(handcodeR) # classify texts by hand in R
 ```
 
@@ -88,28 +97,33 @@ using a minimal working example.
 The workflow of the package follows a simple rule:
 
 1.  **Starting a new coding session:**
-    - Initialize coding with `handcode()` by providing a **character
+    - Initialize coding with `handcode()` (categorial) or
+      `handcode_binary()` (two-choice) by providing a **character
       vector** of texts you wish to annotate as the `data` input.
-    - Supply up to six **named character vectors** defining the
+    - Supply one or more **named character vectors** defining the
       categories you want to code.
     - Hand-code as much data as you like and save your progress by
       clicking the **“Save and exit”** button. This will return a data
       frame containing your annotations.
 2.  **Resuming an existing coding session:**
     - Continue coding by providing the **data frame output** from your
-      previous `handcode()` session as the `data` input.
+      previous session as the `data` input.
     - This allows you to pick up where you left off without losing any
       previous annotations.
+    - If autosave or quicksave files exist for the same object name, a
+      recovery menu will appear at session start to let you choose the
+      most complete state.
 
 ### handcode
 
 The main function of the **handcodeR** package is `handcode()`.
 
-`handcode()` can take either:  
-- A **character vector** of texts along with up to six **named character
-vectors** defining classification categories, or  
+`handcode()` can take either:
+
+- A **character vector** of texts along with one or more **named
+  character vectors** defining classification categories, or
 - A **data frame** previously returned by `handcode()` to resume an
-existing coding session.
+  existing coding session.
 
 The function launches an interactive **Shiny app** that allows users to
 annotate texts using the predefined categories. Once coding is complete,
@@ -124,7 +138,7 @@ between Joe Biden and Donald Trump during the 2020 U.S. presidential
 campaign. We then split the article into individual sentences, which can
 be annotated using `handcode()`.
 
-``` r
+```r
 # Install pacman if not already installed
 if (!require(pacman)) install.packages("pacman")
 
@@ -143,11 +157,11 @@ nytimes_article <- scrape_urls(Urls = "http://web.archive.org/web/20201001004918
 sentences <- unlist(str_split(nytimes_article$article, pattern = "(?<=(?<!Mr)[\\.!?])\\s"))
 
 head(sentences)
-#> [1] "I wasn’t in the crowd of people who believed Joe Biden shouldn’t deign to debate President Trump, but put me in the crowd that believes he shouldn’t debate him again."                                                                                                          
-#> [2] "Not after Tuesday night’s horror show: a disgrace to the format, an insult to the country, a nearly pointless 90 minutes."                                                                                                                                                       
-#> [3] "And, I should add, a degradation of the presidency itself, which Trump had degraded so thoroughly already."                                                                                                                                                                      
-#> [4] "He put on a performance so contemptuous, so puerile, so dishonest and so across-the-board repellent that the moderator, Chris Wallace, morphed into some amalgam of elementary-school principal, child psychologist, traffic cop and roadkill."                                  
-#> [5] "No matter how Wallace pleaded with Trump or admonished him, he couldn’t make him behave."                                                                                                                                                                                        
+#> [1] "I wasn’t in the crowd of people who believed Joe Biden shouldn’t deign to debate President Trump, but put me in the crowd that believes he shouldn’t debate him again."
+#> [2] "Not after Tuesday night’s horror show: a disgrace to the format, an insult to the country, a nearly pointless 90 minutes."
+#> [3] "And, I should add, a degradation of the presidency itself, which Trump had degraded so thoroughly already."
+#> [4] "He put on a performance so contemptuous, so puerile, so dishonest and so across-the-board repellent that the moderator, Chris Wallace, morphed into some amalgam of elementary-school principal, child psychologist, traffic cop and roadkill."
+#> [5] "No matter how Wallace pleaded with Trump or admonished him, he couldn’t make him behave."
 #> [6] "But then why should Wallace have an experience any different from that of Trump’s chiefs of staff, of all the other former administration officials who have fled for the hills, of the Republican lawmakers who just threw up their hands and threw away any scruples they had?"
 ```
 
@@ -159,8 +173,8 @@ In this example, we will annotate **two variables**:
 1.  The **candidate** a sentence refers to.
 2.  The **sentiment** of the statement.
 
-``` r
-annotated <- handcode(data = sentences, 
+```r
+annotated <- handcode(data = sentences,
                       candidate = c("Joe Biden", "Donald Trump"),
                       sentiment = c("positive", "negative"))
 ```
@@ -173,8 +187,11 @@ displays the current sentence along with its **previous** and
 **following** sentences. To avoid confusion about which sentence is
 being evaluated, the surrounding sentences are shown in **gray**.
 
-``` r
-annotated <- handcode(data = sentences, 
+You can also pass `context = "FLEX"` to render a runtime checkbox in the
+app that lets you toggle the context display on and off while coding.
+
+```r
+annotated <- handcode(data = sentences,
                       candidate = c("Joe Biden", "Donald Trump"),
                       sentiment = c("positive", "negative"),
                       context = TRUE)
@@ -187,7 +204,7 @@ want to provide previous and next sentences as context, you can specify
 **custom vectors** for the surrounding sentences using the `pre` and
 `post` arguments.
 
-``` r
+```r
 # Vectors of all previous and all subsequent sentences
 previous <- c("", sentences[2:length(sentences)])
 subsequent <- c(sentences[2:length(sentences)-1])
@@ -201,25 +218,25 @@ annotated <- handcode(data = sentences,
 ```
 
 You can stop the annotation process at any point by clicking the **“Save
-and exit”** button. Once this button is clicked, the app closes and
-`handcode()` returns a **data frame** containing your texts along with
-the corresponding annotations.
+and exit”** button. Once this button is clicked, the app shows a
+confirmation dialog, closes, and `handcode()` returns a **data frame**
+containing your texts along with the corresponding annotations.
 
-``` r
+```r
 annotated
 #> # A tibble: 60 × 3
 #>    texts                                                     candidate sentiment
-#>    <chr>                                                     <fct>     <fct>    
+#>    <chr>                                                     <fct>     <fct>
 #>  1 I wasn’t in the crowd of people who believed Joe Biden s… "Joe Bid… "negativ…
 #>  2 Not after Tuesday night’s horror show: a disgrace to the… "_Not ap… "negativ…
-#>  3 And, I should add, a degradation of the presidency itsel… ""        ""       
-#>  4 He put on a performance so contemptuous, so puerile, so … ""        ""       
-#>  5 No matter how Wallace pleaded with Trump or admonished h… ""        ""       
-#>  6 But then why should Wallace have an experience any diffe… ""        ""       
-#>  7 Trump runs roughshod over everyone and everything, and o… ""        ""       
-#>  8 Almost from the start, he talked over Biden, taunting hi… ""        ""       
-#>  9 He interrupted him and interrupted him and then interrup… ""        ""       
-#> 10 “Mr. President, I’m the moderator of this debate, and I … ""        ""       
+#>  3 And, I should add, a degradation of the presidency itsel… ""        ""
+#>  4 He put on a performance so contemptuous, so puerile, so … ""        ""
+#>  5 No matter how Wallace pleaded with Trump or admonished h… ""        ""
+#>  6 But then why should Wallace have an experience any diffe… ""        ""
+#>  7 Trump runs roughshod over everyone and everything, and o… ""        ""
+#>  8 Almost from the start, he talked over Biden, taunting hi… ""        ""
+#>  9 He interrupted him and interrupted him and then interrup… ""        ""
+#> 10 “Mr. President, I’m the moderator of this debate, and I … ""        ""
 #> # ℹ 50 more rows
 ```
 
@@ -228,7 +245,7 @@ frame** returned from your previous `handcode()` session as the `data`
 input in a new call to `handcode()`. By default, the function resumes
 annotation at the **first text** that has not yet been annotated.
 
-``` r
+```r
 annotated <- handcode(data = annotated,
                       context = TRUE)
 ```
@@ -262,7 +279,7 @@ at two different points in time – **July 2022** and **March 2024**. We
 then use `handcode()` to compare the paragraphs and identify changes
 between the two versions.
 
-``` r
+```r
 # Download paragraphs of Wikipedia article on Wombats for July 2022 and March 2024
 wombat_1 <- scrape_urls(Urls = "https://web.archive.org/web/20220703070930/https://en.wikipedia.org/wiki/Wombat",
                         Paths = c(text = "//text()"),
@@ -271,21 +288,6 @@ wombat_1 <- scrape_urls(Urls = "https://web.archive.org/web/20220703070930/https
 wombat_2 <- scrape_urls(Urls = "https://web.archive.org/web/20240329193637/https://en.wikipedia.org/wiki/Wombat",
                         Paths = c(text = "//text()"),
                         collapse = "//div[@class='mw-content-ltr mw-parser-output']//p")
-
-head(wombat_1$text)
-#> [1] ""                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-#> [2] "Wombats are short-legged, muscular quadrupedal  marsupials that are native to Australia . They are about 1 m (40 in) in length with small, stubby tails and weigh between 20 and 35 kg (44 and 77 lb). All three of the extant species are members of the family  Vombatidae . They are adaptable and habitat tolerant, and are found in forested, mountainous, and heathland areas of southern and eastern Australia, including Tasmania, as well as an isolated patch of about 300 ha (740 acres) in Epping Forest National Park [2] in central Queensland."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-#> [3] "The name \"wombat\" comes from the now-nearly extinct Darug language spoken by the aboriginal Darug people , who originally inhabited the Sydney area. [3] It was first recorded in January 1798, when John Price and James Wilson, a white man who had adopted aboriginal ways, visited the area of what is now Bargo, New South Wales . Price wrote: \"We saw several sorts of dung of different animals, one of which Wilson called a \"Whom-batt\", which is an animal about 20 inches high, with short legs and a thick body with a large head, round ears, and very small eyes; is very fat, and has much the appearance of a badger.\" [4] Wombats were often called badgers by early settlers because of their size and habits. Because of this, localities such as Badger Creek, Victoria , and Badger Corner, Tasmania, were named after the wombat. [5] The spelling went through many variants over the years, including \"wambat\", \"whombat\", \"womat\", \"wombach\", and \"womback\", possibly reflecting dialectal differences in the Darug language. [3]"
-#> [4] "Though genetic studies of the Vombatidae have been undertaken, evolution of the family is not well understood. Wombats are estimated to have diverged from other Australian marsupials relatively early, as long as 40 million years ago, while some estimates place divergence at around 25 million years. [6] : 10–  While some theories place wombats as miniaturised relatives of diprotodonts, such as the rhinoceros-sized Diprotodon , more recent studies place the Vombatiformes as having a distinct parallel evolution, hence their current classification as a separate family. [7]"                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-#> [5] "Wombats dig extensive burrow systems with their rodent-like front teeth and powerful claws. One distinctive adaptation of wombats is their backward pouch. The advantage of a backward-facing pouch is that when digging, the wombat does not gather soil in its pouch over its young. Although mainly crepuscular and nocturnal , wombats may also venture out to feed on cool or overcast days. They are not commonly seen, but leave ample evidence of their passage, treating fences as minor inconveniences to be gone through or under."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-#> [6] "Wombats leave distinctive cubic  feces . [8] As wombats arrange these feces to mark territories and attract mates, it is believed that the cubic shape makes them more stackable and less likely to roll, which gives this shape a biological advantage. The method by which the wombat produces them is not well understood, but it is believed that the wombat intestine stretches preferentially at the walls, with two flexible and two stiff areas around its intestines. [9] The adult wombat produces between 80 and 100, 2 cm (0.8 in) pieces of feces in a single night, and four to eight pieces each bowel movement. [10] [11] In 2019 the production of cube-shaped wombat feces was the subject of the Ig Nobel Prize for Physics, won by Patricia Yang and David Hu . [12]"
-head(wombat_2$text)
-#> [1] ""                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-#> [2] "Wombats are short-legged, muscular quadrupedal  marsupials of the family Vombatidae that are native to Australia . Living species are about 1 m (40 in) in length with small, stubby tails and weigh between 20 and 35 kg (44 and 77 lb). They are adaptable and habitat tolerant, and are found in forested, mountainous, and heathland areas of southern and eastern Australia, including Tasmania, as well as an isolated patch of about 300 ha (740 acres) in Epping Forest National Park [2] in central Queensland."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-#> [3] "The name \"wombat\" comes from the now nearly extinct Dharug language spoken by the aboriginal Dharug people , who originally inhabited the Sydney area. [3] It was first recorded in January 1798, when John Price and James Wilson, a white man who had adopted aboriginal ways, visited the area of what is now Bargo, New South Wales . Price wrote: \"We saw several sorts of dung of different animals, one of which Wilson called a 'Whom-batt', which is an animal about 20 inches [51 cm] high, with short legs and a thick body with a large head, round ears, and very small eyes; is very fat, and has much the appearance of a badger.\" [4] Wombats were often called badgers by early settlers because of their size and habits. Because of this, localities such as Badger Creek, Victoria , and Badger Corner, Tasmania, were named after the wombat. [5] The spelling went through many variants over the years, including \"wambat\", \"whombat\", \"womat\", \"wombach\", and \"womback\", possibly reflecting dialectal differences in the Darug language. [3]"
-#> [4] "Though genetic studies of the Vombatidae have been undertaken, evolution of the family is not well understood. Wombats are estimated to have diverged from other Australian marsupials relatively early, as long as 40 million years ago, while some estimates place divergence at around 25 million years. [6] : 10–  Some prehistoric wombat genera greatly exceeded modern wombats in size. The largest known wombat, Phascolonus , which went extinct approximately 40,000 years ago, [7] is estimated to have had a body mass of up to 360 kilograms (790 lb). [8]"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-#> [5] "Wombats dig extensive burrow systems with their rodent-like front teeth and powerful claws. One distinctive adaptation of wombats is their backward pouch. The advantage of a backward-facing pouch is that when digging, the wombat does not gather soil in its pouch over its young. Although mainly crepuscular and nocturnal , wombats may also venture out to feed on cool or overcast days. They are not commonly seen, but leave ample evidence of their passage, treating fences as minor inconveniences to be gone through or under."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-#> [6] "Wombats leave distinctive cubic  feces . [9] As wombats arrange these feces to mark territories and attract mates, it is believed that the cubic shape makes them more stackable and less likely to roll, which gives this shape a biological advantage. The method by which the wombat produces them is not well understood, but it is believed that the wombat intestine stretches preferentially at the walls, with two flexible and two stiff areas around its intestines. [10] The adult wombat produces between 80 and 100, 2 cm (0.8 in) pieces of feces in a single night, and four to eight pieces each bowel movement. [11] [12] In 2019 the production of cube-shaped wombat feces was the subject of the Ig Nobel Prize for Physics, won by Patricia Yang and David Hu . [13]"
 
 # Delete empty first row
 wombat_1 <- wombat_1[-1,]
@@ -299,7 +301,7 @@ We supply the **original version** of the Wikipedia article as the
 `comparison` input. This allows us to view both versions side by side in
 the Shiny app and annotate how each paragraph has changed over time.
 
-``` r
+```r
 comparison <- handcode(data = wombat_1$text,
                        comparison = wombat_2$text,
                        content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened")
@@ -325,7 +327,7 @@ free-text notes.
 To enable this feature, set `add_notes = TRUE`. This lets you enter
 comments or observations alongside your coded categories.
 
-``` r
+```r
 comparison <- handcode(data = wombat_1$text,
          comparison = wombat_2$text,
          content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened"),
@@ -339,7 +341,8 @@ By default, this option only needs to be set once at the beginning of a
 new annotation process.  
 If you use `handcode()` to resume an existing annotation process, the
 information is automatically taken from the data frame provided in
-`data`, so you do not need to specify `add_notes` again.
+`data`, so you do not need to specify `add_notes` again. The same
+applies to `handcode_binary()`.
 
 ### Other Tweaks
 
@@ -351,7 +354,7 @@ that has not yet been annotated (`start = "first_empty"`).
 The `start` option allows you to specify which observation to begin
 coding from:
 
-- Use a **numeric value** to start at a specific row number.  
+- Use a **numeric value** to start at a specific row number.
 - Use `start = "all_empty"` to annotate all lines that have not yet been
   coded, including any unannotated rows that lie between already coded
   lines, in the order they appear.
@@ -376,11 +379,109 @@ missing categories, you can provide a **character vector** to the
 Shiny app. In the returned data frame, these values are stored with a
 **leading and trailing `_`**.
 
-``` r
-annotated <- handcode(data = sentences, 
+```r
+annotated <- handcode(data = sentences,
                       candidate = c("Joe Biden", "Donald Trump"),
                       sentiment = c("positive", "negative"),
                       missing = c("Not applicable", "Undecided"))
 ```
 
 <img src="man/figures/App6.png" width="100%" />
+
+Note that `handcode_binary()` only allows a **single** missing category,
+since the binary interface uses one shared “(missing)” button per
+variable.
+
+### Binary annotation with `handcode_binary()`
+
+For workflows where each variable has exactly **two possible values**
+(e.g. yes/no, positive/negative, supports/opposes), the package provides
+`handcode_binary()`. The function shares the same data contract and
+resume behavior as `handcode()`, but renders each variable as a pair of
+large color-coded buttons, optimized for high-throughput coding.
+
+Each classification variable must be a **named character vector of
+length 2**. The first element is rendered on the **left**, the second on
+the **right**.
+
+```r
+binary_annotated <- handcode_binary(data = sentences,
+                                    biden_mention   = c("Yes", "No"),
+                                    trump_mention   = c("Yes", "No"),
+                                    sentiment       = c("Positive", "Negative"))
+```
+
+<img src="man/figures/App7.png" width="100%" />
+
+`handcode_binary()` adds three options on top of the standard
+`handcode()` arguments:
+
+- **`colors`**: a list with `left` and `right` 6-digit hex strings to
+  override the default green/red palette,
+  e.g. `colors = list(left = "#2563eb", right = "#f97316")`.
+- **`multifactorial`** (default `TRUE`): when set to `FALSE`, choosing
+  the _left_ value for any variable automatically sets all other
+  variables on that row to their _right_ value, except those already
+  explicitly marked as missing. This is useful for “mutually exclusive”
+  coding tasks where exactly one variable should receive the positive
+  label.
+- **`enable_numeric`** (default `FALSE`): activates numeric keyboard
+  shortcuts. Pressing keys **1**–**9** clicks the _left_ button of the
+  corresponding variable in display order. Limited to 9 variables.
+
+The standard navigation shortcuts (Space = previous, Enter = next) and
+all `handcode()` features — `context`, `pre`/`post`, `randomize`,
+`start`, `add_notes`, autosave, quicksave, resume — apply to
+`handcode_binary()` as well.
+
+### Saving and resuming work
+
+handcodeR provides three layers of save functionality so coding progress
+is never lost.
+
+#### Save and exit
+
+Clicking **“Save and Exit”** in the app cleanly closes the Shiny session
+and returns the annotated data frame to your R session. A confirmation
+dialog appears so you know your data was saved before the tab closes.
+
+#### Quicksave
+
+Clicking the **“Quicksave”** button writes a timestamped `.RData`
+snapshot of the current annotation state to your working directory,
+**without** ending the session. Files are named
+`<object_name>_quicksave_<timestamp>.RData`. Quicksaves accumulate, so
+multiple checkpoints can coexist for the same object.
+
+#### Autosave
+
+If the app terminates **unexpectedly** (browser closed, R session
+killed, network drop), the package writes an autosave file
+`<object_name>_autosave.RData` to the working directory. The autosave is
+overwritten on each unexpected close, so it always reflects the most
+recent recoverable state. Autosave is disabled by setting
+`autosave = FALSE` in the call to `handcode()` or `handcode_binary()`.
+
+#### Resume menu
+
+When you call `handcode()` (or `handcode_binary()`) with a data frame
+whose object name matches existing autosave or quicksave files, the
+function shows an interactive console menu that lists every recoverable
+state along with the number of annotated rows in each. You can then
+select the most complete version to continue from, or abort to keep the
+data frame as-is.
+
+```r
+annotated <- handcode(data = annotated,
+                      context = TRUE)
+
+# Saved version(s) found. Which data do you want to use?
+#
+# 1: Passed data frame (12 of 60 rows annotated)
+# 2: Autosave 'annotated_autosave.RData' (24 of 60 rows annotated)
+# 3: Latest quicksave 'annotated_quicksave_1714387234.RData' (31 of 60 rows, saved 2026-04-29 14:20)
+# 4: Abort
+```
+
+The resume menu is skipped when no recovery files exist or when `data`
+is a raw character vector.
