@@ -179,7 +179,7 @@ annotated <- handcode(data = sentences,
                       sentiment = c("positive", "negative"))
 ```
 
-<img src="man/figures/App1.PNG" width="100%" />
+<img src="man/figures/App1.png" width="100%" />
 
 If we want to see not only the sentence currently being coded but also
 the surrounding sentences, we can use the option `context = TRUE`. This
@@ -197,7 +197,7 @@ annotated <- handcode(data = sentences,
                       context = TRUE)
 ```
 
-<img src="man/figures/App2.PNG" width="100%" />
+<img src="man/figures/App2.png" width="100%" />
 
 If your text vector does not form a continuous sequence, but you still
 want to provide previous and next sentences as context, you can specify
@@ -250,7 +250,7 @@ annotated <- handcode(data = annotated,
                       context = TRUE)
 ```
 
-<img src="man/figures/App3.PNG" width="100%" />
+<img src="man/figures/App3.png" width="100%" />
 
 To facilitate the classification process, `handcode()` supports the
 following keyboard shortcuts:
@@ -308,7 +308,7 @@ comparison <- handcode(data = wombat_1$text,
                        )
 ```
 
-<img src="man/figures/App4.PNG" width="100%" />
+<img src="man/figures/App4.png" width="100%" />
 
 As before, you can use the option `context = TRUE` to display the
 preceding and following text for both the `data` and the `comparison`
@@ -335,7 +335,7 @@ comparison <- handcode(data = wombat_1$text,
 )
 ```
 
-<img src="man/figures/App5.PNG" width="100%" />
+<img src="man/figures/App5.png" width="100%" />
 
 By default, this option only needs to be set once at the beginning of a
 new annotation process.  
@@ -381,7 +381,7 @@ binary_annotated <- handcode_binary(data = sentences,
                                     sentiment       = c("Positive", "Negative"))
 ```
 
-<img src="man/figures/App7.PNG" width="100%" />
+<img src="man/figures/App7.png" width="100%" />
 
 #### `handcode_binary()` arguments
 
