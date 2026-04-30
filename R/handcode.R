@@ -29,7 +29,6 @@ NULL
 # Offers autosave / quicksave recovery to the user at session start            #
 # ============================================================================ #
 
-
 .resume_menu <- function(data, original_name) {
   # Autosave is a single file overwritten each session; quicksave accumulates timestamped snapshots.
   # Menu presents annotation counts for passed data, autosave, and most-recent quicksave so the
