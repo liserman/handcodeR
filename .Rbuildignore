@@ -7,3 +7,10 @@
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 _\.new\.png$
+^\.github$
+^DESCRIPTION_020\.txt$
+^NAMESPACE_020\.txt$
+^NEWS_020_md\.txt$
+^README_020_md\.txt$
+^README_020_rmd\.txt$
+^handcode_020\.txt$
