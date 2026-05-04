@@ -13,6 +13,96 @@ NULL
   # Recovery loads are fail-safe: unreadable files resolve to NULL instead of terminating the session flow.
   tryCatch({ env <- new.env(); load(path, envir = env); env[[var_name]] }, error = function(err) NULL)}
 
+# CRAN policy forbids writing to user filespace without explicit per-session confirmation.
+# Prompt user for directory + filename prefix when autosave is opted in.
+# Last-used directory is persisted in tools::R_user_dir("handcodeR","config") (CRAN-allowed for config files).
+
+.autosave_config_path <- function() {
+  cfg_dir <- tools::R_user_dir("handcodeR", "config")
+  if (!dir.exists(cfg_dir)) dir.create(cfg_dir, recursive = TRUE, showWarnings = FALSE)
+  file.path(cfg_dir, "last_save_dir.txt")
+}
+
+.read_last_save_dir <- function() {
+  p <- .autosave_config_path()
+  if (!file.exists(p)) return(NULL)
+  dir <- tryCatch(readLines(p, n = 1, warn = FALSE), error = function(e) NULL)
+  if (is.null(dir) || length(dir) == 0 || !nchar(trimws(dir))) return(NULL)
+  dir <- trimws(dir)
+  if (!dir.exists(dir)) return(NULL)
+  dir
+}
+
+.write_last_save_dir <- function(dir) {
+  tryCatch(writeLines(dir, .autosave_config_path()), error = function(e) NULL)
+}
+
+.autosave_menu <- function(default_name) {
+  cwd        <- getwd()
+  last_dir   <- .read_last_save_dir()
+  has_last   <- !is.null(last_dir) && last_dir != cwd
+
+  choices <- c(
+    if (has_last) paste0("Use last location [", last_dir, "]"),
+    paste0("Work in current working directory [", cwd, "]"),
+    "Create a subdirectory for auto- and quicksaves",
+    "Specify a different path",
+    "Cancel and quit"
+  )
+
+  loc_choice <- .menu_wrapper(
+    choices = choices,
+    title   = paste0(
+      "\nAutosave is enabled. Recovery files (autosave + quicksave) will be ",
+      "written to disk. Please choose a location:"
+    )
+  )
+
+  if (loc_choice == 0 || loc_choice == length(choices)) stop("Autosave setup cancelled.")
+
+  # Resolve choice index to a concrete action, accounting for optional last-dir entry.
+  idx_offset  <- if (has_last) 1L else 0L
+  choice_last <- if (has_last) 1L else NA_integer_
+  choice_cwd  <- 1L + idx_offset
+  choice_sub  <- 2L + idx_offset
+  choice_path <- 3L + idx_offset
+
+  dir_out <- if (!is.na(choice_last) && loc_choice == choice_last) {
+    last_dir
+  } else if (loc_choice == choice_cwd) {
+    cwd
+  } else if (loc_choice == choice_sub) {
+    cat("What should your subdirectory be called?\n")
+    subdir_in <- .readline_wrapper(sprintf("[%s]: ", cwd))
+    if (nchar(trimws(subdir_in)) == 0) stop("Autosave setup cancelled.")
+    subdir_path <- file.path(cwd, trimws(subdir_in))
+    if (!dir.exists(subdir_path)) dir.create(subdir_path, recursive = TRUE)
+    subdir_path
+  } else {
+    cat("What path should your auto- and quicksave files be saved to?\n")
+    path_in <- .readline_wrapper("Path: ")
+    if (nchar(trimws(path_in)) == 0) stop("Autosave setup cancelled.")
+    path_out <- normalizePath(trimws(path_in), mustWork = FALSE)
+    if (!dir.exists(path_out)) {
+      create <- .menu_wrapper(
+        c("Yes", "No"),
+        title = sprintf("Directory '%s' does not exist. Create it?", path_out)
+      )
+      if (create == 1) dir.create(path_out, recursive = TRUE) else stop("Autosave setup cancelled.")
+    }
+    path_out
+  }
+
+  .write_last_save_dir(dir_out)
+
+  has_recovery <- file.exists(file.path(dir_out, paste0(default_name, "_autosave.RData"))) ||
+    length(list.files(dir_out, pattern = paste0("^", default_name, "_quicksave_[0-9]+\\.RData$"))) > 0
+  prefix_label <- if (has_recovery) "enter to resume" else "default"
+  prefix_in  <- .readline_wrapper(sprintf("Filename prefix [%s: %s]: ", prefix_label, default_name))
+  prefix_out <- if (nchar(trimws(prefix_in)) == 0) default_name else trimws(prefix_in)
+  list(dir = dir_out, prefix = prefix_out)
+}
+
 #' @keywords internal
 #' @export
 .count_annotations <- function(df) {
@@ -29,23 +119,26 @@ NULL
 # Offers autosave / quicksave recovery to the user at session start            #
 # ============================================================================ #
 
-.resume_menu <- function(data, original_name) {
+.resume_menu <- function(data, original_name, save_loc = NULL) {
   # Autosave is a single file overwritten each session; quicksave accumulates timestamped snapshots.
   # Menu presents annotation counts for passed data, autosave, and most-recent quicksave so the
   # operator can select the most complete recoverable state.
   # Resume handling applies only to data-frame sessions that already contain annotation structure.
   if (!is.data.frame(data) || !"texts" %in% names(data)) return(data)
+  # Without an opt-in save_loc, no scan: CRAN policy forbids reading user filespace silently as a default.
+  if (is.null(save_loc)) return(data)
 
-  # Autosave is treated as a single recovery checkpoint for the current object name.
-  autosave_path   <- paste0(original_name, "_autosave.RData")
-  loaded_autosave <- if (file.exists(autosave_path)) .load_rdata(autosave_path, paste0(original_name, "_autosave")) else NULL
+  # Autosave is treated as a single recovery checkpoint for the current prefix.
+  autosave_var    <- paste0(save_loc$prefix, "_autosave")
+  autosave_path   <- file.path(save_loc$dir, paste0(save_loc$prefix, "_autosave.RData"))
+  loaded_autosave <- if (file.exists(autosave_path)) .load_rdata(autosave_path, autosave_var) else NULL
   loaded_autosave <- if (!is.null(loaded_autosave) && is.data.frame(loaded_autosave) && "texts" %in% names(loaded_autosave)) loaded_autosave else NULL
 
   # Quicksave can have multiple snapshots; latest modification time is used as recovery default.
-  quicksave_pat    <- paste0("^", original_name, "_quicksave_[0-9]+\\.RData$")
-  quicksave_files  <- list.files(pattern = quicksave_pat)
+  quicksave_pat    <- paste0("^", save_loc$prefix, "_quicksave_[0-9]+\\.RData$")
+  quicksave_files  <- list.files(save_loc$dir, pattern = quicksave_pat, full.names = TRUE)
   quicksave_path   <- if (length(quicksave_files) > 0) quicksave_files[which.max(file.mtime(quicksave_files))] else NULL
-  loaded_quicksave <- if (!is.null(quicksave_path)) .load_rdata(quicksave_path, original_name) else NULL
+  loaded_quicksave <- if (!is.null(quicksave_path)) .load_rdata(quicksave_path, save_loc$prefix) else NULL
   loaded_quicksave <- if (!is.null(loaded_quicksave) && is.data.frame(loaded_quicksave) && "texts" %in% names(loaded_quicksave)) loaded_quicksave else NULL
 
   if (is.null(loaded_autosave) && is.null(loaded_quicksave)) return(data)
@@ -84,9 +177,9 @@ NULL
 
   # The menu surfaces annotation progress so users can choose the most complete recoverable state.
   labels <- sapply(options, function(opt) opt$label)
-  choice <- menu(choices = labels, title = "\nSaved version(s) found. Which data do you want to use?")
+  choice <- .menu_wrapper(choices = labels, title = "\nSaved version(s) found. Which data do you want to use?")
   abort_check <- .check_aborted(choice, length(labels))
-  if (is.null(abort_check)) return(data)  # Abort — return original data without error.
+  if (is.null(abort_check)) stop("handcodeR: session aborted by user.")
   options[[choice]]$data
 }
 
@@ -172,7 +265,9 @@ NULL
 #' @export
 .sanitize_id <- function(x) gsub("[^A-Za-z0-9_]", "_", x)
 
-.interactive <- function() interactive()
+.interactive  <- function() interactive()
+.menu_wrapper <- function(...) utils::menu(...)
+.readline_wrapper <- function(prompt = "") readline(prompt)
 
 #' @keywords internal
 #' @export
@@ -422,15 +517,26 @@ NULL
 
 .setup_quicksave_handler <- function(input, app_data, save_function) {
   shiny::observeEvent(input$quicksave, {
+    # Quicksave requires opt-in save_loc; without it, button is informational only.
+    if (is.null(app_data$save_loc)) {
+      shiny::showNotification(
+        "Quicksave disabled. Restart with autosave = TRUE to enable.",
+        type = "warning", duration = 4
+      )
+      return()
+    }
     # Quicksave captures current progress without ending the annotation session.
     annotated_df  <- save_function(perform_autosave = FALSE)
     # Timestamp naming keeps snapshots sortable and avoids overwriting prior checkpoints.
-    quicksave_file <- paste0(app_data$original_name, "_quicksave_", as.integer(Sys.time()), ".RData")
+    quicksave_file <- file.path(
+      app_data$save_loc$dir,
+      paste0(app_data$save_loc$prefix, "_quicksave_", as.integer(Sys.time()), ".RData")
+    )
     # assign() places the variable in this function's local env so save() can locate it by name.
-    assign(app_data$original_name, annotated_df, envir = environment())
+    assign(app_data$save_loc$prefix, annotated_df, envir = environment())
     tryCatch(
       {
-        save(list = app_data$original_name, file = quicksave_file, envir = environment())
+        save(list = app_data$save_loc$prefix, file = quicksave_file, envir = environment())
         shiny::showNotification(paste("Quicksaved:", quicksave_file), type = "message", duration = 3)
       },
       error = function(e) shiny::showNotification(paste("Quicksave failed:", e$message), type = "error")
@@ -455,13 +561,17 @@ NULL
       add_notes              = app_data$add_notes,
       extra_cleanup_function = extra_cleanup_function
     )
-    if (perform_autosave && autosave && nchar(app_data$original_name) > 0 && !close_state$autosave_written) {
+    if (perform_autosave && autosave && !is.null(app_data$save_loc) &&
+        nchar(app_data$save_loc$prefix) > 0 && !close_state$autosave_written) {
       # Autosave is reserved for unexpected termination to preserve explicit user exit behavior.
       # Guard prevents double-write if both Save&Exit and onSessionEnded fire.
-      autosave_file <- paste0(app_data$original_name, "_autosave.RData")
+      autosave_file <- file.path(
+        app_data$save_loc$dir,
+        paste0(app_data$save_loc$prefix, "_autosave.RData")
+      )
       tryCatch(
         {
-          autosave_var <- paste0(app_data$original_name, "_autosave")
+          autosave_var <- paste0(app_data$save_loc$prefix, "_autosave")
           # assign() writes to local env so save() can locate the variable by name below.
           assign(autosave_var, annotated_df, envir = environment())
           save(list = autosave_var, file = autosave_file, envir = environment())
@@ -653,7 +763,7 @@ NULL
       ),
       shiny::div(
         class = "save-button-container",
-        shiny::actionButton("quicksave", "Quicksave", class = "btn btn-warning"),
+        if (!is.null(app_data$save_loc)) shiny::actionButton("quicksave", "Quicksave", class = "btn btn-warning"),
         shiny::actionButton("save_exit", "Save and Exit", class = "btn btn-success")
       ),
       if (app_data$add_notes) {
@@ -684,17 +794,34 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                                 pre = NULL, post = NULL,
                                 comparison = NULL,
                                 pre_comparison = NULL, post_comparison = NULL,
-                                autosave = TRUE, add_notes = FALSE) {
+                                autosave = FALSE, add_notes = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_cat_session(.interactive(), arg_list, data)
 
-  # Comparison mode is auto-detected: either a comparison vector is supplied alongside
-  # character data, or a resumed data frame already carries the comparison column.
-  comparison_mode <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
-
-  # Resume menu may swap the passed data for an autosave/quicksave snapshot before validation.
-  data <- .resume_menu(data, original_name)
+  # CRAN policy: writes to user filespace only with explicit interactive confirmation.
+  # tryCatch catches user-initiated cancellation from .autosave_menu() and .resume_menu().
+  setup <- tryCatch({
+    sl <- if (isTRUE(autosave) && .interactive()) {
+      .autosave_menu(original_name)
+    } else {
+      if (isTRUE(autosave) && !.interactive()) {
+        warning("autosave = TRUE requires an interactive session; disabling autosave.")
+        autosave <- FALSE
+      }
+      NULL
+    }
+    comparison_mode_pre <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
+    d <- .resume_menu(data, original_name, sl)
+    list(save_loc = sl, data = d, comparison_mode = comparison_mode_pre)
+  }, error = function(e) {
+    message(conditionMessage(e))
+    NULL
+  })
+  if (is.null(setup)) return(invisible(NULL))
+  save_loc       <- setup$save_loc
+  data           <- setup$data
+  comparison_mode <- setup$comparison_mode
 
   # Char-vector path: validate ... category specs before promoting to a data frame.
   if (is.character(data)) {
@@ -792,7 +919,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     classifications = arg_list,
     missing         = missing,
     original_name   = original_name,
-    add_notes       = add_notes
+    add_notes       = add_notes,
+    save_loc        = save_loc
   )
 
   # UI execution is isolated in the app runner; this function only prepares and returns result data.
@@ -922,15 +1050,34 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 # Binary annotation entry point for two-choice (left/right) coding workflows.
 handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             context = FALSE, missing = c("Not applicable"),
-                            pre = NULL, post = NULL, autosave = TRUE,
+                            pre = NULL, post = NULL, autosave = FALSE,
                             multifactorial = TRUE, enable_numeric = FALSE,
                             colors = list(), add_notes = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_bin_session(.interactive(), data)
 
-  # Resume menu may swap the passed data for an autosave/quicksave snapshot before validation.
-  data <- .resume_menu(data, original_name)
+  # CRAN policy: writes to user filespace only with explicit interactive confirmation.
+  # tryCatch catches user-initiated cancellation from .autosave_menu() and .resume_menu().
+  setup <- tryCatch({
+    sl <- if (isTRUE(autosave) && .interactive()) {
+      .autosave_menu(original_name)
+    } else {
+      if (isTRUE(autosave) && !.interactive()) {
+        warning("autosave = TRUE requires an interactive session; disabling autosave.")
+        autosave <- FALSE
+      }
+      NULL
+    }
+    d <- .resume_menu(data, original_name, sl)
+    list(save_loc = sl, data = d)
+  }, error = function(e) {
+    message(conditionMessage(e))
+    NULL
+  })
+  if (is.null(setup)) return(invisible(NULL))
+  save_loc <- setup$save_loc
+  data     <- setup$data
 
   # Char-vector path: validate that each ... entry is a length-2 character vector.
   if (is.character(data)) .check_binary_args(arg_list)
@@ -1004,7 +1151,8 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     multifactorial  = multifactorial,
     enable_numeric  = enable_numeric,
     colors          = colors,
-    add_notes       = add_notes
+    add_notes       = add_notes,
+    save_loc        = save_loc
   )
 
   # Execution delegates to binary app runtime after input normalization is complete.

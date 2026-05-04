@@ -1,16 +1,14 @@
-# Tests for exported pure-logic helpers. No Shiny dependency.
+# Pure-logic helpers: color, misc, styles, data prep, output. No Shiny dependency.
 
-# ── .darken_hex ──────────────────────────────────────────────────────────────
+# ---- color: .darken_hex ----
 
 test_that(".darken_hex darkens white correctly", {
   result <- handcodeR::.darken_hex("#ffffff", 0.65)
-  # 255 * 0.65 = 165.75 -> 165 = 0xa5
   expect_equal(result, "#a5a5a5")
 })
 
 test_that(".darken_hex darkens a mixed color correctly", {
   result <- handcodeR::.darken_hex("#10b981", 0.65)
-  # r=16*0.65=10, g=185*0.65=120, b=129*0.65=83
   expect_equal(result, "#0a7853")
 })
 
@@ -29,11 +27,14 @@ test_that(".darken_hex factor=0 returns black", {
   expect_equal(result, "#000000")
 })
 
-# ── .lighten_hex ─────────────────────────────────────────────────────────────
+test_that(".darken_hex handles short lowercase hex", {
+  expect_equal(handcodeR::.darken_hex("#000000", 0.5), "#000000")
+})
+
+# ---- color: .lighten_hex ----
 
 test_that(".lighten_hex lightens black correctly", {
   result <- handcodeR::.lighten_hex("#000000", 0.88)
-  # 0 + (255 - 0) * 0.88 = 224.4 -> 224 = 0xe0
   expect_equal(result, "#e0e0e0")
 })
 
@@ -44,11 +45,20 @@ test_that(".lighten_hex leaves white unchanged", {
 
 test_that(".lighten_hex lightens a mixed color correctly", {
   result <- handcodeR::.lighten_hex("#10b981", 0.88)
-  # r=16+(255-16)*0.88=226, g=185+(255-185)*0.88=246, b=129+(255-129)*0.88=239
   expect_equal(result, "#e2f6ef")
 })
 
-# ── .format_NA ───────────────────────────────────────────────────────────────
+test_that(".lighten_hex factor=0 returns original color", {
+  result <- handcodeR::.lighten_hex("#aabbcc", 0)
+  expect_equal(result, "#aabbcc")
+})
+
+test_that(".lighten_hex factor=1 returns white", {
+  result <- handcodeR::.lighten_hex("#aabbcc", 1)
+  expect_equal(result, "#ffffff")
+})
+
+# ---- misc: .format_NA ----
 
 test_that(".format_NA wraps single value in underscores", {
   expect_equal(handcodeR::.format_NA("NA"), "_NA_")
@@ -58,7 +68,7 @@ test_that(".format_NA works with custom missing label", {
   expect_equal(handcodeR::.format_NA("missing"), "_missing_")
 })
 
-# ── .sanitize_id ─────────────────────────────────────────────────────────────
+# ---- misc: .sanitize_id ----
 
 test_that(".sanitize_id replaces spaces with underscores", {
   expect_equal(handcodeR::.sanitize_id("my var"), "my_var")
@@ -72,37 +82,7 @@ test_that(".sanitize_id leaves valid identifiers unchanged", {
   expect_equal(handcodeR::.sanitize_id("valid_ID123"), "valid_ID123")
 })
 
-# ── .count_annotations ───────────────────────────────────────────────────────
-
-test_that(".count_annotations returns 0 for fully empty df", {
-  df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations counts rows with at least one annotation", {
-  df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", "Y"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 2L)
-})
-
-test_that(".count_annotations ignores technical columns", {
-  df <- data.frame(
-    texts = "a", id = 1L, before = "x", after = "y", notes = "note",
-    stringsAsFactors = FALSE
-  )
-  expect_equal(handcodeR::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations returns 0L for df with no annotation columns", {
-  df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations treats NA as unannotated", {
-  df <- data.frame(texts = "a", cat1 = NA_character_, stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
-})
-
-# ── .get_current_val ─────────────────────────────────────────────────────────
+# ---- misc: .get_current_val ----
 
 test_that(".get_current_val returns value when set", {
   values <- list(annotations = list(cat1 = c("A", "B", "")))
@@ -119,7 +99,69 @@ test_that(".get_current_val returns empty string for NA", {
   expect_equal(handcodeR::.get_current_val(values, "cat1", 1), "")
 })
 
-# ── .character_to_data ───────────────────────────────────────────────────────
+# ---- misc: .menu_wrapper and .readline_wrapper pass-through ----
+
+test_that(".menu_wrapper dispatches to utils::menu", {
+  local_mocked_bindings(
+    .menu_wrapper = function(...) 42L,
+    .package      = "handcodeR"
+  )
+  expect_equal(handcodeR:::.menu_wrapper(c("a", "b")), 42L)
+})
+
+test_that(".readline_wrapper dispatches to readline", {
+  local_mocked_bindings(
+    .readline_wrapper = function(prompt = "") "hello",
+    .package          = "handcodeR"
+  )
+  expect_equal(handcodeR:::.readline_wrapper("prompt: "), "hello")
+})
+
+# ---- misc: .interactive ----
+
+test_that(".interactive returns a logical scalar", {
+  result <- handcodeR:::.interactive()
+  expect_true(is.logical(result) && length(result) == 1L)
+})
+
+# ---- styles: .common_styles, .binary_styles, .comparison_styles ----
+
+test_that(".common_styles returns a shiny tag", {
+  result <- handcodeR:::.common_styles()
+  expect_s3_class(result, "shiny.tag")
+})
+
+test_that(".common_styles output contains app-container CSS class", {
+  result <- as.character(handcodeR:::.common_styles())
+  expect_true(grepl("app-container", result, fixed = TRUE))
+})
+
+test_that(".binary_styles returns a shiny tag", {
+  result <- handcodeR:::.binary_styles(list(left = "#10b981", right = "#dc2626"))
+  expect_s3_class(result, "shiny.tag")
+})
+
+test_that(".binary_styles injects the supplied left color into CSS", {
+  result <- as.character(handcodeR:::.binary_styles(list(left = "#aabbcc", right = "#112233")))
+  expect_true(grepl("#aabbcc", result, fixed = TRUE))
+})
+
+test_that(".binary_styles injects the supplied right color into CSS", {
+  result <- as.character(handcodeR:::.binary_styles(list(left = "#aabbcc", right = "#112233")))
+  expect_true(grepl("#112233", result, fixed = TRUE))
+})
+
+test_that(".comparison_styles returns a shiny tag", {
+  result <- handcodeR:::.comparison_styles()
+  expect_s3_class(result, "shiny.tag")
+})
+
+test_that(".comparison_styles output contains comparison-col CSS class", {
+  result <- as.character(handcodeR:::.comparison_styles())
+  expect_true(grepl("comparison-col", result, fixed = TRUE))
+})
+
+# ---- data prep: .character_to_data ----
 
 test_that(".character_to_data creates texts column", {
   df <- handcodeR::.character_to_data(
@@ -169,7 +211,18 @@ test_that(".character_to_data adds comparison column when provided", {
   expect_equal(df$comparison, c("c1", "c2"))
 })
 
-# ── .prepare_data ────────────────────────────────────────────────────────────
+test_that(".character_to_data handles comparison and multi-variable list together", {
+  df <- handcodeR::.character_to_data(
+    c("t1", "t2"),
+    list(cat1 = c("A", "B"), cat2 = c("X", "Y")),
+    missing = "NA",
+    comparison = c("c1", "c2")
+  )
+  expect_true("comparison" %in% names(df))
+  expect_true("cat2" %in% names(df))
+})
+
+# ---- data prep: .prepare_data ----
 
 test_that(".prepare_data assigns sequential IDs", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
@@ -247,7 +300,96 @@ test_that(".prepare_data extra_exclude removes columns from class_cols", {
   expect_false("comparison" %in% result$class_cols)
 })
 
-# ── .gen_output ──────────────────────────────────────────────────────────────
+test_that(".prepare_data randomize=TRUE shuffles uncoded rows", {
+  set.seed(42)
+  df <- data.frame(texts = paste0("t", 1:10), cat1 = rep("", 10), stringsAsFactors = FALSE)
+  result <- handcodeR::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
+  expect_equal(nrow(result$data), 10L)
+  expect_false(identical(result$data$texts, df$texts))
+})
+
+test_that(".prepare_data randomize with first_empty: start_val is 1", {
+  set.seed(1)
+  df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", ""), stringsAsFactors = FALSE)
+  result <- handcodeR::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
+  expect_equal(result$start_val, 1L)
+})
+
+test_that(".prepare_data extra_exclude with non-existent column is a no-op", {
+  df <- data.frame(texts = "a", cat1 = "A", stringsAsFactors = FALSE)
+  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE,
+                                      pre = NULL, post = NULL, extra_exclude = "nonexistent")
+  expect_true("cat1" %in% result$class_cols)
+})
+
+# ---- output: .count_annotations ----
+
+test_that(".count_annotations returns 0 for fully empty df", {
+  df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
+  expect_equal(handcodeR::.count_annotations(df), 0L)
+})
+
+test_that(".count_annotations counts rows with at least one annotation", {
+  df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", "Y"), stringsAsFactors = FALSE)
+  expect_equal(handcodeR::.count_annotations(df), 2L)
+})
+
+test_that(".count_annotations ignores technical columns", {
+  df <- data.frame(
+    texts = "a", id = 1L, before = "x", after = "y", notes = "note",
+    stringsAsFactors = FALSE
+  )
+  expect_equal(handcodeR::.count_annotations(df), 0L)
+})
+
+test_that(".count_annotations returns 0L for df with no annotation columns", {
+  df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
+  expect_equal(handcodeR::.count_annotations(df), 0L)
+})
+
+test_that(".count_annotations treats NA as unannotated", {
+  df <- data.frame(texts = "a", cat1 = NA_character_, stringsAsFactors = FALSE)
+  expect_equal(handcodeR::.count_annotations(df), 0L)
+})
+
+test_that(".count_annotations mixed annotated/empty/NA rows", {
+  df <- data.frame(
+    texts = c("a", "b", "c", "d"),
+    cat1  = c("X", "", NA, "Y"),
+    stringsAsFactors = FALSE
+  )
+  expect_equal(handcodeR::.count_annotations(df), 2L)
+})
+
+# ---- output: .init_annotations ----
+
+test_that(".init_annotations initialises empty strings for uncoded data", {
+  app_data <- make_app_data(n = 3, vars = list(cat1 = c("A", "B")))
+  result <- handcodeR:::.init_annotations(app_data)
+  expect_equal(result$cat1, c("", "", ""))
+})
+
+test_that(".init_annotations preserves pre-existing annotations in data", {
+  app_data <- make_app_data(n = 3, vars = list(cat1 = c("A", "B")))
+  app_data$data$cat1[2] <- "A"
+  result <- handcodeR:::.init_annotations(app_data)
+  expect_equal(result$cat1[2], "A")
+})
+
+test_that(".init_annotations handles multiple variables", {
+  app_data <- make_app_data(n = 2, vars = list(cat1 = c("A", "B"), cat2 = c("X", "Y")))
+  result <- handcodeR:::.init_annotations(app_data)
+  expect_true(all(c("cat1", "cat2") %in% names(result)))
+})
+
+test_that(".init_annotations returns empty vector for variable not in data", {
+  app_data <- make_app_data(n = 2, vars = list(cat1 = c("A", "B")))
+  app_data$classifications[["extra_var"]] <- c("P", "Q")
+  result <- handcodeR:::.init_annotations(app_data)
+  expect_equal(result$extra_var, c("", ""))
+})
+
+# ---- output: .gen_output ----
 
 test_that(".gen_output merges annotations back by id", {
   original <- data.frame(texts = c("a", "b", "c"), cat1 = c("", "", ""), id = 1:3,
@@ -299,6 +441,17 @@ test_that(".gen_output writes notes when add_notes=TRUE", {
     notes = c("note1", "note2"), add_notes = TRUE
   )
   expect_equal(result$notes, c("note1", "note2"))
+})
+
+test_that(".gen_output with add_notes=TRUE and empty notes column creates the column", {
+  original <- data.frame(texts = c("a", "b"), cat1 = c("", ""), id = 1:2,
+                          stringsAsFactors = FALSE)
+  result <- handcodeR::.gen_output(
+    original, current_ids = 1:2,
+    annotations = list(cat1 = c("X", "Y")),
+    notes = c("", ""), add_notes = TRUE
+  )
+  expect_true("notes" %in% names(result))
 })
 
 test_that(".gen_output applies extra_cleanup_function", {
