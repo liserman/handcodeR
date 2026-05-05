@@ -1,7 +1,11 @@
 # Shiny server reactive tests via shiny::testServer(). All blocks skip_on_cran()
 # because reactive timing can be flaky on minimal CRAN check environments.
 
-# ---- categorial server ----
+# ============================================================================ #
+# Categorial Server                                                            #
+# ---------------------------------------------------------------------------- #
+# Reactive tests for .categorial_server via shiny::testServer().               #
+# ============================================================================ #
 
 test_that("categorial server: initial counter equals start_val", {
   skip_on_cran()
@@ -101,7 +105,11 @@ test_that("categorial server: quicksave without save_loc shows warning notificat
   })
 })
 
-# ---- binary server ----
+# ============================================================================ #
+# Binary Server                                                                #
+# ---------------------------------------------------------------------------- #
+# Reactive tests for .binary_server via shiny::testServer().                   #
+# ============================================================================ #
 
 test_that("binary server: initial counter equals start_val", {
   skip_on_cran()
@@ -164,7 +172,11 @@ test_that("binary server multifactorial=FALSE forces other vars to right when on
   })
 })
 
-# ---- comparison server ----
+# ============================================================================ #
+# Comparison Server                                                            #
+# ---------------------------------------------------------------------------- #
+# Reactive tests for .comparison_server via shiny::testServer().               #
+# ============================================================================ #
 
 test_that("comparison server: initial counter equals start_val", {
   skip_on_cran()
@@ -198,7 +210,11 @@ test_that("comparison server: FLEX context toggle updates show_context", {
   })
 })
 
-# ---- shared save handlers ----
+# ============================================================================ #
+# Shared Save Handlers                                                         #
+# ---------------------------------------------------------------------------- #
+# Autosave, quicksave, and save-and-exit flows via testServer().               #
+# ============================================================================ #
 
 test_that("save handler: autosave=FALSE writes no file on session end", {
   skip_on_cran()

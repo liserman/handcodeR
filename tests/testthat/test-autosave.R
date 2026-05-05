@@ -1,6 +1,10 @@
 # All autosave / recovery tests. Helper fixtures live in helper-mocks.R and helper-fixtures.R.
 
-# ---- config: .autosave_config_path, .read_last_save_dir, .write_last_save_dir ----
+# ============================================================================ #
+# Config: .autosave_config_path, .read_last_save_dir, .write_last_save_dir     #
+# ---------------------------------------------------------------------------- #
+# Persistent config file for last-used save directory.                         #
+# ============================================================================ #
 
 test_that(".autosave_config_path returns path ending with last_save_dir.txt", {
   expect_true(endsWith(handcodeR:::.autosave_config_path(), "last_save_dir.txt"))
@@ -34,7 +38,11 @@ test_that(".write_last_save_dir and .read_last_save_dir round-trip correctly", {
   expect_equal(handcodeR:::.read_last_save_dir(), getwd())
 })
 
-# ---- resume: .resume_menu ----
+# ============================================================================ #
+# Resume: .resume_menu                                                         #
+# ---------------------------------------------------------------------------- #
+# Recovery selection menu presented to the user at session start.              #
+# ============================================================================ #
 
 test_that(".resume_menu returns data unchanged when save_loc is NULL", {
   df <- make_ann_df()
@@ -108,7 +116,11 @@ test_that(".resume_menu Escape (choice 0) stops execution", {
   )
 })
 
-# ---- resume: .load_rdata ----
+# ============================================================================ #
+# Resume: .load_rdata                                                          #
+# ---------------------------------------------------------------------------- #
+# Fail-safe RData loader used by resume and autosave recovery.                 #
+# ============================================================================ #
 
 test_that(".load_rdata round-trips an RData file correctly", {
   tmp <- tempfile(fileext = ".RData")
@@ -133,7 +145,11 @@ test_that(".load_rdata returns NULL for a nonexistent file path", {
   expect_null(result)
 })
 
-# ---- menu: .autosave_menu ----
+# ============================================================================ #
+# Menu: .autosave_menu                                                         #
+# ---------------------------------------------------------------------------- #
+# Interactive prompt for save location and filename prefix.                    #
+# ============================================================================ #
 
 test_that(".autosave_menu Cancel (last choice) stops execution", {
   tmp <- tempfile(); on.exit(unlink(tmp))
@@ -249,7 +265,6 @@ test_that(".autosave_menu prefix prompt shows 'enter to resume' when recovery fi
   call_n <- 0L; captured_prompt <- NULL
   local_mocked_bindings(
     .menu_wrapper     = function(choices, ...) 3L,
-    # call 1 = "Path: " prompt → return tmp_dir; call 2 = prefix prompt → capture it
     .readline_wrapper = function(prompt = "") {
       call_n <<- call_n + 1L
       if (call_n == 1L) { tmp_dir }
@@ -281,7 +296,11 @@ test_that(".autosave_menu prefix prompt shows 'default' when no recovery file ex
   expect_true(grepl("default", captured_prompt))
 })
 
-# ---- integration: autosave default + cancel/abort flows across all entry points ----
+# ============================================================================ #
+# Integration: Autosave Default and Cancel / Abort Flows                       #
+# ---------------------------------------------------------------------------- #
+# End-to-end cancel and abort handling across both entry points.               #
+# ============================================================================ #
 
 test_that("handcode autosave default is FALSE", {
   expect_identical(formals(handcodeR:::handcode)[["autosave"]], FALSE)

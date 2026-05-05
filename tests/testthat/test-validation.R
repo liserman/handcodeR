@@ -1,7 +1,11 @@
 # All input-validation tests. Autosave cancel/abort flows live in test-autosave.R.
 # Tests mock .interactive to bypass the session guard; validation fires before any Shiny call.
 
-# ---- common: .check_common_params ----
+# ============================================================================ #
+# Common: .check_common_params                                                 #
+# ---------------------------------------------------------------------------- #
+# Validates start, randomize, context, pre, and post parameters.               #
+# ============================================================================ #
 
 test_that(".check_common_params rejects start vector longer than 1", {
   df <- data.frame(texts = "a", stringsAsFactors = FALSE)
@@ -62,7 +66,11 @@ test_that(".check_common_params rejects post with wrong length", {
   )
 })
 
-# ---- common: .check_data_first_col ----
+# ============================================================================ #
+# Common: .check_data_first_col                                                #
+# ---------------------------------------------------------------------------- #
+# Enforces the texts-column contract shared by all entry points.               #
+# ============================================================================ #
 
 test_that(".check_data_first_col accepts valid texts column", {
   df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
@@ -85,7 +93,11 @@ test_that(".check_data_first_col rejects non-character texts column", {
   )
 })
 
-# ---- categorial: handcode() validation ----
+# ============================================================================ #
+# Categorial: handcode() Validation                                            #
+# ---------------------------------------------------------------------------- #
+# All input guards for the categorial annotation entry point.                  #
+# ============================================================================ #
 
 test_that("non-interactive session throws error", {
   local_mocked_bindings(.interactive = function() FALSE, .package = "handcodeR")
@@ -236,7 +248,11 @@ test_that("missing overlapping across multiple category vectors throws error", {
   )
 })
 
-# ---- binary: handcode_binary() validation ----
+# ============================================================================ #
+# Binary: handcode_binary() Validation                                         #
+# ---------------------------------------------------------------------------- #
+# All input guards for the binary annotation entry point.                      #
+# ============================================================================ #
 
 test_that("non-interactive session throws error (binary)", {
   local_mocked_bindings(.interactive = function() FALSE, .package = "handcodeR")
@@ -413,7 +429,11 @@ test_that("context FLEX is accepted without error (binary)", {
   )
 })
 
-# ---- comparison: .check_comparison_* ----
+# ============================================================================ #
+# Comparison: .check_comparison_*                                              #
+# ---------------------------------------------------------------------------- #
+# Validates comparison vector, column presence, and context lengths.           #
+# ============================================================================ #
 
 test_that(".check_comparison_args errors when comparison is NULL", {
   expect_error(

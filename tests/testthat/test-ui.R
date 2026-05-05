@@ -1,7 +1,11 @@
 # UI builder smoke tests and app launcher dispatch via mocked shiny::runApp().
 # Launcher tests skip_on_cran() because they drive shiny::shinyApp().
 
-# ---- .build_app_shell ----
+# ============================================================================ #
+# .build_app_shell                                                             #
+# ---------------------------------------------------------------------------- #
+# Structural tests for the shared fluidPage wrapper.                           #
+# ============================================================================ #
 
 test_that(".build_app_shell returns a shiny tag or tag list", {
   app_data <- make_app_data(mode = "categorial", n = 2, vars = list(cat1 = c("A", "B")))
@@ -45,7 +49,11 @@ test_that(".build_app_shell embeds the supplied title", {
   expect_true(grepl("My Custom Title", html, fixed = TRUE))
 })
 
-# ---- .build_categorial_ui ----
+# ============================================================================ #
+# .build_categorial_ui                                                         #
+# ---------------------------------------------------------------------------- #
+# Smoke tests for categorial annotation UI output.                             #
+# ============================================================================ #
 
 test_that(".build_categorial_ui returns a shiny tag or tag list", {
   app_data <- make_app_data(mode = "categorial", n = 2, vars = list(cat1 = c("A", "B")))
@@ -59,7 +67,11 @@ test_that(".build_categorial_ui HTML contains handcodeR - Categorial title", {
   expect_true(grepl("Categorial", html, fixed = TRUE))
 })
 
-# ---- .build_binary_ui ----
+# ============================================================================ #
+# .build_binary_ui                                                             #
+# ---------------------------------------------------------------------------- #
+# Smoke tests for binary annotation UI output.                                 #
+# ============================================================================ #
 
 test_that(".build_binary_ui returns a shiny tag or tag list", {
   app_data <- make_app_data(mode = "binary", n = 2, vars = list(lr = c("L", "R")))
@@ -81,7 +93,11 @@ test_that(".binary_styles injects colors used by .build_binary_ui", {
   expect_true(grepl("#dc2626", styles, fixed = TRUE))
 })
 
-# ---- .build_comparison_ui ----
+# ============================================================================ #
+# .build_comparison_ui                                                         #
+# ---------------------------------------------------------------------------- #
+# Smoke tests for comparison annotation UI output.                             #
+# ============================================================================ #
 
 test_that(".build_comparison_ui returns a shiny tag or tag list", {
   app_data <- make_app_data(mode = "comparison", n = 2, vars = list(cat1 = c("A", "B")))
@@ -101,7 +117,11 @@ test_that(".build_comparison_ui HTML contains comparison-col CSS class", {
   expect_true(grepl("comparison-col", html, fixed = TRUE))
 })
 
-# ---- app launcher dispatch ----
+# ============================================================================ #
+# App Launcher Dispatch                                                        #
+# ---------------------------------------------------------------------------- #
+# Verifies each .run_*_app() calls shiny::runApp() exactly once.               #
+# ============================================================================ #
 
 test_that(".run_categorial_app calls shiny::runApp once", {
   skip_on_cran()

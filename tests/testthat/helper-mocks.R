@@ -1,7 +1,9 @@
-# Mocking utilities, autosave fixture writers, and shared assertions.
-# Loaded automatically by testthat before any test file.
-
-# ---- I/O mock factories ----
+# ============================================================================ #
+# I/O Mock Factories                                                           #
+# ---------------------------------------------------------------------------- #
+# Factories for .interactive, .menu_wrapper, and .readline_wrapper mocks.      #
+# Loaded automatically by testthat before any test file.                       #
+# ============================================================================ #
 
 mock_interactive <- function(value = TRUE) function() value
 
@@ -28,7 +30,11 @@ with_mocked_io <- function(interactive_val = TRUE, menu_choice = 1L, readline_an
   force(code)
 }
 
-# ---- autosave fixture writers ----
+# ============================================================================ #
+# Autosave Fixture Writers                                                     #
+# ---------------------------------------------------------------------------- #
+# Helpers that write fake autosave and quicksave RData files to tempdir.       #
+# ============================================================================ #
 
 write_fake_autosave <- function(dir, prefix, n = 4) {
   var_name <- paste0(prefix, "_autosave")
@@ -47,7 +53,11 @@ write_fake_quicksave <- function(dir, prefix, n = 4) {
   invisible(df)
 }
 
-# ---- shared entry-point assertions ----
+# ============================================================================ #
+# Shared Entry-Point Assertions                                                #
+# ---------------------------------------------------------------------------- #
+# Reusable expect_* helpers for autosave cancel and resume abort flows.       #
+# ============================================================================ #
 
 # Returns NULL when .autosave_menu raises a cancellation error.
 expect_autosave_cancel_returns_null <- function(entry_fn, data, ...) {
