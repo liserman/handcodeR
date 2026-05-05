@@ -11,7 +11,7 @@ NULL
 
 .load_rdata <- function(path, var_name) {
   # Recovery loads are fail-safe: unreadable files resolve to NULL instead of terminating the session flow.
-  tryCatch({ env <- new.env(); load(path, envir = env); env[[var_name]] }, error = function(err) NULL)}
+  tryCatch({ env <- new.env(); suppressWarnings(load(path, envir = env)); env[[var_name]] }, error = function(err) NULL)}
 
 # CRAN policy forbids writing to user filespace without explicit per-session confirmation.
 # Prompt user for directory + filename prefix when autosave is opted in.
