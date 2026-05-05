@@ -56,7 +56,7 @@ write_fake_quicksave <- function(dir, prefix, n = 4) {
 # ============================================================================ #
 # Shared Entry-Point Assertions                                                #
 # ---------------------------------------------------------------------------- #
-# Reusable expect_* helpers for autosave cancel and resume abort flows.       #
+# Reusable expect_* helpers for autosave cancel and resume abort flows.        #
 # ============================================================================ #
 
 # Returns NULL when .autosave_menu raises a cancellation error.
