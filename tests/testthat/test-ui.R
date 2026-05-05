@@ -1,6 +1,5 @@
-# UI builder and app launcher smoke tests.
-# UI builders return htmltools tag structures; launchers are exercised with mocked runApp.
-# Launcher tests guarded with skip_on_cran() because they drive shiny::shinyApp().
+# UI builder smoke tests and app launcher dispatch via mocked shiny::runApp().
+# Launcher tests skip_on_cran() because they drive shiny::shinyApp().
 
 # ---- .build_app_shell ----
 

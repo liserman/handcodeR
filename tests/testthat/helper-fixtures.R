@@ -1,4 +1,9 @@
-# Pure data builders — no I/O, no Shiny. Loaded automatically by testthat before any test file.
+# ============================================================================ #
+# Text and annotation data builders                                            #
+# ---------------------------------------------------------------------------- #
+# Pure data builders — no I/O, no Shiny. Loaded automatically by testthat      #
+# before any test file.                                                        #
+# ============================================================================ #
 
 make_text_vec <- function(n = 5) paste0("text", seq_len(n))
 
@@ -20,8 +25,13 @@ make_ann_df <- function(n = 3, vars = "cat1") {
   df
 }
 
-# Builds a minimal valid app_data list as produced by the handcode() / handcode_binary() entry points.
-# mode: "categorial" | "binary" | "comparison"
+# ============================================================================ #
+# App_data builder                                                             #
+# ---------------------------------------------------------------------------- #
+# Builds a minimal valid app_data list as produced by the entry points.        #
+# Accepts mode = "categorial", "binary", or "comparison".                      #
+# ============================================================================ #
+
 make_app_data <- function(
   mode           = "categorial",
   n              = 3,

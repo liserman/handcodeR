@@ -1,6 +1,8 @@
 # Mocking utilities, autosave fixture writers, and shared assertions.
 # Loaded automatically by testthat before any test file.
 
+# ---- I/O mock factories ----
+
 mock_interactive <- function(value = TRUE) function() value
 
 mock_menu <- function(choice) {
@@ -26,6 +28,8 @@ with_mocked_io <- function(interactive_val = TRUE, menu_choice = 1L, readline_an
   force(code)
 }
 
+# ---- autosave fixture writers ----
+
 write_fake_autosave <- function(dir, prefix, n = 4) {
   var_name <- paste0(prefix, "_autosave")
   df       <- make_ann_df(n)
@@ -43,8 +47,9 @@ write_fake_quicksave <- function(dir, prefix, n = 4) {
   invisible(df)
 }
 
-# Consolidated assertion: entry_fn(data, ..., autosave = TRUE) must return NULL
-# when .autosave_menu raises a cancellation error.
+# ---- shared entry-point assertions ----
+
+# Returns NULL when .autosave_menu raises a cancellation error.
 expect_autosave_cancel_returns_null <- function(entry_fn, data, ...) {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   local_mocked_bindings(
@@ -54,8 +59,7 @@ expect_autosave_cancel_returns_null <- function(entry_fn, data, ...) {
   expect_null(entry_fn(data, ..., autosave = TRUE))
 }
 
-# Consolidated assertion: entry_fn(data, ..., autosave = TRUE) must return NULL
-# when .resume_menu raises an abort error.
+# Returns NULL when .resume_menu raises an abort error.
 expect_resume_abort_returns_null <- function(entry_fn, data, ...) {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   local_mocked_bindings(

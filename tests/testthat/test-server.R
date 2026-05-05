@@ -1,7 +1,5 @@
-# Shiny server reactive tests via shiny::testServer().
-# shiny is already an Imports dependency — no new package needed.
-# All blocks are guarded with skip_on_cran() because reactive timing can be
-# flaky on minimal CRAN environments.
+# Shiny server reactive tests via shiny::testServer(). All blocks skip_on_cran()
+# because reactive timing can be flaky on minimal CRAN check environments.
 
 # ---- categorial server ----
 
