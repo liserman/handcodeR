@@ -1,6 +1,7 @@
 # handcodeR V2
 # nolint start 
 #' @importFrom utils menu
+#' @importFrom stats setNames
 NULL
 
 # ============================================================================ #

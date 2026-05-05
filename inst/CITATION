@@ -5,12 +5,12 @@ note <- sprintf("R package version %s", meta$Version)
 bibentry(
   bibtype  = "Misc",
   title    = "handcodeR: Text annotation app",
-  author   = as.person("Lukas Isermann"),
-  year     = "2023",
+  author   = c(as.person("Lukas Isermann"), as.person("Dennis Klingenspohr")),
+  year     = "2026",
   note     = note,
   doi      = "10.5281/zenodo.8075100",
   url      = "https://github.com/liserman/handcodeR",
-  textVersion = paste0("Isermann, Lukas. 2023. handcodeR: Text annotation app. ", note, ". https://doi.org/10.5281/zenodo.8075100")
+  textVersion = paste0("Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. ", note, ". https://doi.org/10.5281/zenodo.8075100")
 )
 
 
