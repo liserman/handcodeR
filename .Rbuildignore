@@ -1,3 +1,4 @@
+^App$
 ^renv$
 ^renv\.lock$
 ^.*\.Rproj$
