@@ -29,7 +29,7 @@ make_ann_df <- function(n = 3, vars = "cat1") {
 # App_data builder                                                             #
 # ---------------------------------------------------------------------------- #
 # Builds a minimal valid app_data list as produced by the entry points.        #
-# Accepts mode = "categorial", "binary", or "comparison".                      #
+# Accepts mode = "categorial", "binary", "comparison", or "binary_comparison". #
 # ============================================================================ #
 
 make_app_data <- function(
@@ -48,11 +48,11 @@ make_app_data <- function(
   for (v in names(vars)) {
     df[[v]] <- factor("", levels = c("", missing_sentinel, vars[[v]]))
   }
-  if (mode == "comparison") df$comparison <- paste0("comp", seq_len(n))
+  if (mode %in% c("comparison", "binary_comparison")) df$comparison <- paste0("comp", seq_len(n))
   if (!isFALSE(context)) {
     df$before <- c("", texts[-n])
     df$after  <- c(texts[-1], "")
-    if (mode == "comparison") {
+    if (mode %in% c("comparison", "binary_comparison")) {
       df$before_comparison <- c("", df$comparison[-n])
       df$after_comparison  <- c(df$comparison[-1], "")
     }
@@ -70,7 +70,7 @@ make_app_data <- function(
     add_notes       = add_notes,
     save_loc        = save_loc
   )
-  if (mode == "binary") {
+  if (mode %in% c("binary", "binary_comparison")) {
     app_data$multifactorial <- TRUE
     app_data$enable_numeric <- FALSE
     app_data$quickcode      <- FALSE

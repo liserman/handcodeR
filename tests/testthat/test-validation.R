@@ -429,6 +429,47 @@ test_that("context FLEX is accepted without error (binary)", {
   )
 })
 
+test_that("non-logical quickcode throws error", {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  expect_error(
+    handcodeR:::handcode_binary(data = c("text1"), c("Yes", "No"), quickcode = "yes"),
+    "quickcode must be a single logical value"
+  )
+})
+
+test_that("quickcode=TRUE and enable_numeric=TRUE throws error", {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  expect_error(
+    handcodeR:::handcode_binary(
+      data = c("text1"), c("Yes", "No"),
+      quickcode = TRUE, enable_numeric = TRUE, multifactorial = TRUE
+    ),
+    "mutually exclusive"
+  )
+})
+
+test_that("quickcode=TRUE and multifactorial=FALSE throws error", {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  expect_error(
+    handcodeR:::handcode_binary(
+      data = c("text1"), c("Yes", "No"),
+      quickcode = TRUE, multifactorial = FALSE
+    ),
+    "mutually exclusive"
+  )
+})
+
+test_that("quickcode=TRUE with more than 1 variable throws error", {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  expect_error(
+    handcodeR:::handcode_binary(
+      data = c("text1"), c("Yes", "No"), c("A", "B"),
+      quickcode = TRUE, multifactorial = TRUE
+    ),
+    "supports at most 1 classification variable"
+  )
+})
+
 # ============================================================================ #
 # Comparison: .check_comparison_*                                              #
 # ---------------------------------------------------------------------------- #

@@ -255,3 +255,67 @@ test_that("save handler: quicksave writes timestamped file when save_loc is set"
   qs_files <- list.files(tmp_dir, pattern = "_quicksave_[0-9]+\\.RData$")
   expect_equal(length(qs_files), 1L)
 })
+
+# ============================================================================ #
+# Binary Comparison Server                                                     #
+# ---------------------------------------------------------------------------- #
+# Reactive tests for .binary_comparison_server via shiny::testServer().       #
+# ============================================================================ #
+
+test_that("binary_comparison server: initial counter equals start_val", {
+  skip_on_cran()
+  app_data  <- make_app_data(mode = "binary_comparison", n = 3, vars = list(lr = c("L", "R")))
+  server_fn <- handcodeR:::.binary_comparison_server(app_data, autosave = FALSE)
+  shiny::testServer(server_fn, {
+    expect_equal(values$counter, 1L)
+  })
+})
+
+test_that("binary_comparison server: left button click writes left value", {
+  skip_on_cran()
+  app_data  <- make_app_data(mode = "binary_comparison", n = 3, vars = list(lr = c("L", "R")))
+  server_fn <- handcodeR:::.binary_comparison_server(app_data, autosave = FALSE)
+  shiny::testServer(server_fn, {
+    session$setInputs(btn_lr_1 = 1)
+    expect_equal(values$annotations$lr[1], "L")
+  })
+})
+
+test_that("binary_comparison server: comparison_text renders comparison column", {
+  skip_on_cran()
+  app_data  <- make_app_data(mode = "binary_comparison", n = 3, vars = list(lr = c("L", "R")))
+  server_fn <- handcodeR:::.binary_comparison_server(app_data, autosave = FALSE)
+  shiny::testServer(server_fn, {
+    rendered <- output$comparison_text
+    expect_true(any(grepl("comp1", as.character(rendered))))
+  })
+})
+
+test_that("binary_comparison server: next advances counter", {
+  skip_on_cran()
+  app_data  <- make_app_data(mode = "binary_comparison", n = 3, vars = list(lr = c("L", "R")))
+  server_fn <- handcodeR:::.binary_comparison_server(app_data, autosave = FALSE)
+  shiny::testServer(server_fn, {
+    session$setInputs(`next` = 1)
+    expect_equal(values$counter, 2L)
+  })
+})
+
+test_that("binary_comparison server: autosave writes file without comparison context columns", {
+  skip_on_cran()
+  tmp_dir  <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
+  save_loc <- list(dir = tmp_dir, prefix = "bc_test")
+  app_data <- make_app_data(mode = "binary_comparison", n = 2, vars = list(lr = c("L", "R")),
+                              save_loc = save_loc)
+  server_fn <- handcodeR:::.binary_comparison_server(app_data, autosave = TRUE)
+  shiny::testServer(server_fn, {
+    session$close()
+  })
+  saved_file <- file.path(tmp_dir, "bc_test_autosave.RData")
+  expect_true(file.exists(saved_file))
+  env <- new.env()
+  load(saved_file, envir = env)
+  saved_df <- env[["bc_test_autosave"]]
+  expect_false("before_comparison" %in% names(saved_df))
+  expect_false("after_comparison"  %in% names(saved_df))
+})

@@ -548,3 +548,134 @@ test_that(".gen_output applies extra_cleanup_function", {
   )
   expect_false("extra_col" %in% names(result))
 })
+
+# ============================================================================ #
+# Recovery: .validate_recovery_df                                              #
+# ---------------------------------------------------------------------------- #
+# NULL-guard for loaded RData objects before they enter resume logic.          #
+# ============================================================================ #
+
+test_that(".validate_recovery_df returns NULL for NULL input", {
+  expect_null(handcodeR:::.validate_recovery_df(NULL))
+})
+
+test_that(".validate_recovery_df returns NULL for non-data-frame input", {
+  expect_null(handcodeR:::.validate_recovery_df(list(texts = "a")))
+  expect_null(handcodeR:::.validate_recovery_df(c("a", "b")))
+})
+
+test_that(".validate_recovery_df returns NULL for data frame without texts column", {
+  df <- data.frame(x = 1:3)
+  expect_null(handcodeR:::.validate_recovery_df(df))
+})
+
+test_that(".validate_recovery_df returns df unchanged when valid", {
+  df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
+  expect_identical(handcodeR:::.validate_recovery_df(df), df)
+})
+
+test_that(".validate_recovery_df returns empty df with texts column unchanged", {
+  df <- data.frame(texts = character(0), stringsAsFactors = FALSE)
+  expect_identical(handcodeR:::.validate_recovery_df(df), df)
+})
+
+test_that(".validate_recovery_df accepts df with texts plus extra columns", {
+  df <- data.frame(texts = "a", cat1 = "X", id = 1L, stringsAsFactors = FALSE)
+  expect_identical(handcodeR:::.validate_recovery_df(df), df)
+})
+
+# ============================================================================ #
+# Data Prep: .init_comparison_context                                          #
+# ---------------------------------------------------------------------------- #
+# Adds before_comparison/after_comparison columns for paired-text display.    #
+# ============================================================================ #
+
+test_that(".init_comparison_context context=FALSE adds no comparison context columns", {
+  df <- make_text_df(3, with_comparison = TRUE)
+  result <- handcodeR:::.init_comparison_context(df, context = FALSE,
+                                                  pre_comparison = NULL, post_comparison = NULL)
+  expect_false("before_comparison" %in% names(result))
+  expect_false("after_comparison"  %in% names(result))
+})
+
+test_that(".init_comparison_context context=TRUE auto-fills before/after from neighbours", {
+  df <- make_text_df(3, with_comparison = TRUE)
+  result <- handcodeR:::.init_comparison_context(df, context = TRUE,
+                                                  pre_comparison = NULL, post_comparison = NULL)
+  expect_equal(result$before_comparison, c("", df$comparison[1:2]))
+  expect_equal(result$after_comparison,  c(df$comparison[2:3], ""))
+})
+
+test_that(".init_comparison_context caller-supplied pre/post take precedence", {
+  df  <- make_text_df(3, with_comparison = TRUE)
+  pre <- c("P1", "P2", "P3")
+  pst <- c("Q1", "Q2", "Q3")
+  result <- handcodeR:::.init_comparison_context(df, context = TRUE,
+                                                  pre_comparison = pre, post_comparison = pst)
+  expect_equal(result$before_comparison, pre)
+  expect_equal(result$after_comparison,  pst)
+})
+
+test_that(".init_comparison_context single-row: boundary columns are empty strings", {
+  df <- make_text_df(1, with_comparison = TRUE)
+  result <- handcodeR:::.init_comparison_context(df, context = TRUE,
+                                                  pre_comparison = NULL, post_comparison = NULL)
+  expect_equal(result$before_comparison, "")
+  expect_equal(result$after_comparison,  "")
+})
+
+test_that(".init_comparison_context context=FLEX triggers auto-fill", {
+  df <- make_text_df(3, with_comparison = TRUE)
+  result <- handcodeR:::.init_comparison_context(df, context = "FLEX",
+                                                  pre_comparison = NULL, post_comparison = NULL)
+  expect_true("before_comparison" %in% names(result))
+})
+
+test_that(".init_comparison_context errors when pre_comparison has wrong length", {
+  df <- make_text_df(3, with_comparison = TRUE)
+  expect_error(
+    handcodeR:::.init_comparison_context(df, context = TRUE,
+                                          pre_comparison = c("a"), post_comparison = NULL),
+    "pre_comparison must have the same length as data"
+  )
+})
+
+# ============================================================================ #
+# Data Prep: .cleanup_comparison_columns                                       #
+# ---------------------------------------------------------------------------- #
+# Strips runtime-only comparison context columns before returning to caller.  #
+# ============================================================================ #
+
+test_that(".cleanup_comparison_columns removes both context columns", {
+  df <- data.frame(texts = "a", before_comparison = "x", after_comparison = "y",
+                   stringsAsFactors = FALSE)
+  result <- handcodeR:::.cleanup_comparison_columns(df)
+  expect_false("before_comparison" %in% names(result))
+  expect_false("after_comparison"  %in% names(result))
+})
+
+test_that(".cleanup_comparison_columns removes only before_comparison when present alone", {
+  df <- data.frame(texts = "a", before_comparison = "x", stringsAsFactors = FALSE)
+  result <- handcodeR:::.cleanup_comparison_columns(df)
+  expect_false("before_comparison" %in% names(result))
+})
+
+test_that(".cleanup_comparison_columns removes only after_comparison when present alone", {
+  df <- data.frame(texts = "a", after_comparison = "y", stringsAsFactors = FALSE)
+  result <- handcodeR:::.cleanup_comparison_columns(df)
+  expect_false("after_comparison" %in% names(result))
+})
+
+test_that(".cleanup_comparison_columns returns df unchanged when neither column present", {
+  df <- data.frame(texts = "a", cat1 = "X", stringsAsFactors = FALSE)
+  expect_identical(handcodeR:::.cleanup_comparison_columns(df), df)
+})
+
+test_that(".cleanup_comparison_columns leaves standard before/after columns intact", {
+  df <- data.frame(texts = "a", before = "x", after = "y",
+                   before_comparison = "p", after_comparison = "q",
+                   stringsAsFactors = FALSE)
+  result <- handcodeR:::.cleanup_comparison_columns(df)
+  expect_true("before" %in% names(result))
+  expect_true("after"  %in% names(result))
+})
