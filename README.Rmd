@@ -211,6 +211,8 @@ To facilitate the classification process, `handcode()` supports the following ke
 - **Space**: go to the **previous** text.
 - **Enter**: go to the **next** text.
 
+You can also enable numeric shortcuts by setting `enable_numeric = TRUE`. With this option, pressing keys **1**–**9** cycles through the radio choices of the variable at the corresponding position (1 = first variable, 2 = second, …). At most 9 classification variables are supported when `enable_numeric = TRUE`.
+
 When navigating to previously coded lines, the app automatically displays your **existing annotations**. For new lines, the default values for all annotation variables are `""`. If you reach the **last row** of your data, pressing **Enter** will automatically save your annotations and exit the Shiny app.
 
 ### Comparing texts
@@ -254,7 +256,7 @@ knitr::include_graphics("man/figures/App4.png")
 
 As before, you can use the option `context = TRUE` to display the preceding and following text for both the `data` and the `comparison` input.
 
-If you want to provide custom context instead of relying on automatically adjacent text, you can use `comparison_pre` and `comparison_post` to specify custom vectors to display before and after each comparison text—analogous to the `pre` and `post` arguments for the main `data` input.
+If you want to provide custom context instead of relying on automatically adjacent text, you can use `pre_comparison` and `post_comparison` to specify custom vectors to display before and after each comparison text—analogous to the `pre` and `post` arguments for the main `data` input.
 
 
 ### Adding notes
@@ -334,11 +336,14 @@ binary_annotated <- handcode_binary(data = sentences,
 knitr::include_graphics("man/figures/App7.png")
 ```
 
-`handcode_binary()` adds three options on top of the standard `handcode()` arguments:
+`handcode_binary()` adds several options on top of the standard `handcode()` arguments:
 
 - **`colors`**: a list with `left` and `right` 6-digit hex strings to override the default green/red palette, e.g. `colors = list(left = "#2563eb", right = "#f97316")`.
 - **`multifactorial`** (default `TRUE`): when set to `FALSE`, choosing the *left* value for any variable automatically sets all other variables on that row to their *right* value, except those already explicitly marked as missing. This is useful for "mutually exclusive" coding tasks where exactly one variable should receive the positive label.
-- **`enable_numeric`** (default `FALSE`): activates numeric keyboard shortcuts. Pressing keys **1**–**9** clicks the *left* button of the corresponding variable in display order. Limited to 9 variables.
+- **`enable_numeric`** (default `FALSE`): activates numeric keyboard shortcuts. Pressing keys **1**–**9** clicks the *left* button of the corresponding variable in display order. Limited to 9 variables. Mutually exclusive with `quickcode`.
+- **`quickcode`** (default `FALSE`): for single-variable workflows requiring maximum throughput. Collapses the variable into three side-by-side keys — **1** (left), **2** (right), **3** (missing) — and auto-advances on selection. Requires exactly one classification variable and `multifactorial = TRUE`. Mutually exclusive with `enable_numeric`.
+
+`handcode_binary()` also supports the `comparison` argument (and `pre_comparison` / `post_comparison`) for side-by-side text comparison, identical to `handcode()`.
 
 The standard navigation shortcuts (Space = previous, Enter = next) and all `handcode()` features — `context`, `pre`/`post`, `randomize`, `start`, `add_notes`, autosave, quicksave, resume — apply to `handcode_binary()` as well.
 

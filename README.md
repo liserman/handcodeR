@@ -1,4 +1,4 @@
-# handcodeR <img src="man/figures/logo.png" align="right" height="139" />
+﻿# handcodeR <img src="man/figures/logo.png" align="right" height="139" />
 
 [![codecov](https://codecov.io/gh/liserman/handcodeR/branch/master/graph/badge.svg?token=GVL875HZ14)](https://app.codecov.io/gh/liserman/handcodeR)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/handcodeR)](https://cran.r-project.org/package=handcodeR)
@@ -361,6 +361,7 @@ applies to `handcode_binary()`.
 | `post_comparison` | `NULL`                | Per-row next-text override for the `comparison` vector.                                                                                                                                                           |
 | `autosave`        | `TRUE`                | Write `<name>_autosave.RData` on unexpected termination. Save & Exit never triggers autosave.                                                                                                                     |
 | `add_notes`       | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                            |
+| `enable_numeric`  | `FALSE`               | If `TRUE`, numeric keys `1`–`9` cycle through the radio choices of the variable at that position. At most 9 classification variables supported.                                                                   |
 
 ### Binary annotation with `handcode_binary()`
 
@@ -383,23 +384,56 @@ binary_annotated <- handcode_binary(data = sentences,
 
 <img src="man/figures/App7.png" width="100%" />
 
+#### Quickcode mode
+
+For single-variable workflows that require maximum throughput, set
+`quickcode = TRUE`. This collapses the variable into a single
+three-button row — **1** (left), **2** (right), **3** (missing) — and
+automatically advances to the next row as soon as any button is pressed.
+`quickcode` is mutually exclusive with `enable_numeric` and requires
+`multifactorial = TRUE` (the default).
+
+```r
+binary_annotated <- handcode_binary(data = sentences,
+                                    sentiment = c("Positive", "Negative"),
+                                    quickcode = TRUE)
+```
+
+#### Comparison mode
+
+`handcode_binary()` also supports side-by-side comparison of two text
+vectors via the `comparison` argument, identical to `handcode()`. Pass a
+second character vector as `comparison` to render both texts in parallel
+while coding. Resume a session that already has a `comparison` column by
+passing the previous output data frame directly.
+
+```r
+binary_comparison <- handcode_binary(data = wombat_1$text,
+                                     comparison = wombat_2$text,
+                                     content_changed = c("Yes", "No"))
+```
+
 #### `handcode_binary()` arguments
 
-| Arg              | Default               | Description                                                                                                                                                                                                                        |
-| ---------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`           | —                     | Character vector of texts to annotate, **or** a `data.frame` from a previous `handcode_binary()` session (first column must be `texts`, character).                                                                                |
-| `...`            | —                     | Named character vectors of **exactly length 2**, defining the left/right button labels per variable. Empty strings rejected. Unnamed entries are auto-named `bin1`, `bin2`, …                                                      |
-| `start`          | `"first_empty"`       | Row to begin at. Numeric = explicit row index. `"first_empty"` = first row with no completed classifications across all variables. `"all_empty"` = filter the workload to uncoded rows only and restart at row 1.                  |
-| `randomize`      | `FALSE`               | If `TRUE`, shuffle the order of _uncoded_ rows only. Single logical.                                                                                                                                                               |
-| `context`        | `FALSE`               | `TRUE` = always show before/after text, `FALSE` = never show, `"FLEX"` = runtime toggle.                                                                                                                                           |
-| `missing`        | `c("Not applicable")` | Single missing-value label (binary mode requires exactly one — the UI has one shared `(missing)` button per variable). Stored internally as `_label_`.                                                                             |
-| `pre`            | `NULL`                | Per-row previous-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                           |
-| `post`           | `NULL`                | Per-row next-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                               |
-| `autosave`       | `TRUE`                | Write `<name>_autosave.RData` on unexpected termination. Save & Exit never triggers autosave.                                                                                                                                      |
-| `multifactorial` | `TRUE`                | If `TRUE`, each variable is coded independently. If `FALSE`, selecting the _left_ value on one variable force-sets all other (non-missing) variables to their _right_ value, enforcing a single positive-class assignment per row. |
-| `enable_numeric` | `FALSE`               | If `TRUE`, keys `1`–`9` click the left button of the variable at that position (1 = first variable, 2 = second, …). Caps the number of classification variables at 9.                                                              |
-| `colors`         | `list()`              | Named list overriding the left/right button colors. Defaults: `list(left = "#10b981", right = "#dc2626")`. Both must be valid 6-digit hex (`^#[0-9A-Fa-f]{6}$`). Partial overrides supported (e.g. `list(left = "#0066cc")`).      |
-| `add_notes`      | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                                             |
+| Arg               | Default               | Description                                                                                                                                                                                                                                       |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`            | —                     | Character vector of texts to annotate, **or** a `data.frame` from a previous `handcode_binary()` session (first column must be `texts`, character).                                                                                               |
+| `...`             | —                     | Named character vectors of **exactly length 2**, defining the left/right button labels per variable. Empty strings rejected. Unnamed entries are auto-named `bin1`, `bin2`, …                                                                     |
+| `start`           | `"first_empty"`       | Row to begin at. Numeric = explicit row index. `"first_empty"` = first row with no completed classifications across all variables. `"all_empty"` = filter the workload to uncoded rows only and restart at row 1.                                 |
+| `randomize`       | `FALSE`               | If `TRUE`, shuffle the order of _uncoded_ rows only. Single logical.                                                                                                                                                                              |
+| `context`         | `FALSE`               | `TRUE` = always show before/after text, `FALSE` = never show, `"FLEX"` = runtime toggle.                                                                                                                                                          |
+| `missing`         | `c("Not applicable")` | Single missing-value label (binary mode requires exactly one — the UI has one shared `(missing)` button per variable). Stored internally as `_label_`.                                                                                            |
+| `pre`             | `NULL`                | Per-row previous-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                          |
+| `post`            | `NULL`                | Per-row next-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                              |
+| `autosave`        | `TRUE`                | Write `<name>_autosave.RData` on unexpected termination. Save & Exit never triggers autosave.                                                                                                                                                     |
+| `multifactorial`  | `TRUE`                | If `TRUE`, each variable is coded independently. If `FALSE`, selecting the _left_ value on one variable force-sets all other (non-missing) variables to their _right_ value, enforcing a single positive-class assignment per row.                |
+| `enable_numeric`  | `FALSE`               | If `TRUE`, keys `1`–`9` click the left button of the variable at that position (1 = first variable, 2 = second, …). Caps the number of classification variables at 9. Mutually exclusive with `quickcode`.                                        |
+| `quickcode`       | `FALSE`               | If `TRUE`, renders three side-by-side keys (1 = left, 2 = right, 3 = missing) and auto-advances to the next row on selection. Requires exactly one classification variable and `multifactorial = TRUE`. Mutually exclusive with `enable_numeric`. |
+| `colors`          | `list()`              | Named list overriding the left/right button colors. Defaults: `list(left = "#10b981", right = "#dc2626")`. Both must be valid 6-digit hex (`^#[0-9A-Fa-f]{6}$`). Partial overrides supported (e.g. `list(left = "#0066cc")`).                     |
+| `comparison`      | `NULL`                | Optional second character vector displayed side-by-side with `data`. Enables comparison mode.                                                                                                                                                     |
+| `pre_comparison`  | `NULL`                | Per-row previous-text override for the `comparison` vector.                                                                                                                                                                                       |
+| `post_comparison` | `NULL`                | Per-row next-text override for the `comparison` vector.                                                                                                                                                                                           |
+| `add_notes`       | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                                                            |
 
 The standard navigation shortcuts (Space = previous, Enter = next) and
 all `handcode()` features — `context`, `pre`/`post`, `randomize`,
