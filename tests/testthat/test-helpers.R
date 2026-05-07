@@ -7,32 +7,32 @@
 # ============================================================================ #
 
 test_that(".darken_hex darkens white correctly", {
-  result <- handcodeR::.darken_hex("#ffffff", 0.65)
+  result <- handcodeR:::.darken_hex("#ffffff", 0.65)
   expect_equal(result, "#a5a5a5")
 })
 
 test_that(".darken_hex darkens a mixed color correctly", {
-  result <- handcodeR::.darken_hex("#10b981", 0.65)
+  result <- handcodeR:::.darken_hex("#10b981", 0.65)
   expect_equal(result, "#0a7853")
 })
 
 test_that(".darken_hex works without leading hash", {
-  result <- handcodeR::.darken_hex("ffffff", 0.65)
+  result <- handcodeR:::.darken_hex("ffffff", 0.65)
   expect_equal(result, "#a5a5a5")
 })
 
 test_that(".darken_hex factor=1 returns same color", {
-  result <- handcodeR::.darken_hex("#ffffff", 1.0)
+  result <- handcodeR:::.darken_hex("#ffffff", 1.0)
   expect_equal(result, "#ffffff")
 })
 
 test_that(".darken_hex factor=0 returns black", {
-  result <- handcodeR::.darken_hex("#ff0000", 0)
+  result <- handcodeR:::.darken_hex("#ff0000", 0)
   expect_equal(result, "#000000")
 })
 
 test_that(".darken_hex handles short lowercase hex", {
-  expect_equal(handcodeR::.darken_hex("#000000", 0.5), "#000000")
+  expect_equal(handcodeR:::.darken_hex("#000000", 0.5), "#000000")
 })
 
 # ============================================================================ #
@@ -42,27 +42,27 @@ test_that(".darken_hex handles short lowercase hex", {
 # ============================================================================ #
 
 test_that(".lighten_hex lightens black correctly", {
-  result <- handcodeR::.lighten_hex("#000000", 0.88)
+  result <- handcodeR:::.lighten_hex("#000000", 0.88)
   expect_equal(result, "#e0e0e0")
 })
 
 test_that(".lighten_hex leaves white unchanged", {
-  result <- handcodeR::.lighten_hex("#ffffff", 0.88)
+  result <- handcodeR:::.lighten_hex("#ffffff", 0.88)
   expect_equal(result, "#ffffff")
 })
 
 test_that(".lighten_hex lightens a mixed color correctly", {
-  result <- handcodeR::.lighten_hex("#10b981", 0.88)
+  result <- handcodeR:::.lighten_hex("#10b981", 0.88)
   expect_equal(result, "#e2f6ef")
 })
 
 test_that(".lighten_hex factor=0 returns original color", {
-  result <- handcodeR::.lighten_hex("#aabbcc", 0)
+  result <- handcodeR:::.lighten_hex("#aabbcc", 0)
   expect_equal(result, "#aabbcc")
 })
 
 test_that(".lighten_hex factor=1 returns white", {
-  result <- handcodeR::.lighten_hex("#aabbcc", 1)
+  result <- handcodeR:::.lighten_hex("#aabbcc", 1)
   expect_equal(result, "#ffffff")
 })
 
@@ -73,11 +73,11 @@ test_that(".lighten_hex factor=1 returns white", {
 # ============================================================================ #
 
 test_that(".format_NA wraps single value in underscores", {
-  expect_equal(handcodeR::.format_NA("NA"), "_NA_")
+  expect_equal(handcodeR:::.format_NA("NA"), "_NA_")
 })
 
 test_that(".format_NA works with custom missing label", {
-  expect_equal(handcodeR::.format_NA("missing"), "_missing_")
+  expect_equal(handcodeR:::.format_NA("missing"), "_missing_")
 })
 
 # ============================================================================ #
@@ -87,15 +87,15 @@ test_that(".format_NA works with custom missing label", {
 # ============================================================================ #
 
 test_that(".sanitize_id replaces spaces with underscores", {
-  expect_equal(handcodeR::.sanitize_id("my var"), "my_var")
+  expect_equal(handcodeR:::.sanitize_id("my var"), "my_var")
 })
 
 test_that(".sanitize_id replaces special characters", {
-  expect_equal(handcodeR::.sanitize_id("var.name-1"), "var_name_1")
+  expect_equal(handcodeR:::.sanitize_id("var.name-1"), "var_name_1")
 })
 
 test_that(".sanitize_id leaves valid identifiers unchanged", {
-  expect_equal(handcodeR::.sanitize_id("valid_ID123"), "valid_ID123")
+  expect_equal(handcodeR:::.sanitize_id("valid_ID123"), "valid_ID123")
 })
 
 # ============================================================================ #
@@ -106,17 +106,17 @@ test_that(".sanitize_id leaves valid identifiers unchanged", {
 
 test_that(".get_current_value returns value when set", {
   values <- list(annotations = list(cat1 = c("A", "B", "")))
-  expect_equal(handcodeR::.get_current_value(values, "cat1", 1), "A")
+  expect_equal(handcodeR:::.get_current_value(values, "cat1", 1), "A")
 })
 
 test_that(".get_current_value returns empty string for unset row", {
   values <- list(annotations = list(cat1 = c("A", "", "")))
-  expect_equal(handcodeR::.get_current_value(values, "cat1", 2), "")
+  expect_equal(handcodeR:::.get_current_value(values, "cat1", 2), "")
 })
 
 test_that(".get_current_value returns empty string for NA", {
   values <- list(annotations = list(cat1 = c(NA_character_, "B")))
-  expect_equal(handcodeR::.get_current_value(values, "cat1", 1), "")
+  expect_equal(handcodeR:::.get_current_value(values, "cat1", 1), "")
 })
 
 # ============================================================================ #
@@ -200,7 +200,7 @@ test_that(".comparison_styles output contains comparison-col CSS class", {
 # ============================================================================ #
 
 test_that(".character_to_data creates texts column", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("hello", "world"),
     list(sentiment = c("pos", "neg")),
     missing = "NA"
@@ -209,7 +209,7 @@ test_that(".character_to_data creates texts column", {
 })
 
 test_that(".character_to_data creates factor column with correct levels", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("t1"),
     list(cat1 = c("A", "B")),
     missing = "NA"
@@ -219,7 +219,7 @@ test_that(".character_to_data creates factor column with correct levels", {
 })
 
 test_that(".character_to_data initialises all rows to empty string", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("t1", "t2"),
     list(cat1 = c("A", "B")),
     missing = "NA"
@@ -228,7 +228,7 @@ test_that(".character_to_data initialises all rows to empty string", {
 })
 
 test_that(".character_to_data auto-names unnamed variables with prefix", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("t1"),
     list(c("A", "B")),
     missing = "NA",
@@ -238,7 +238,7 @@ test_that(".character_to_data auto-names unnamed variables with prefix", {
 })
 
 test_that(".character_to_data adds comparison column when provided", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("t1", "t2"),
     list(cat1 = c("A", "B")),
     missing = "NA",
@@ -248,7 +248,7 @@ test_that(".character_to_data adds comparison column when provided", {
 })
 
 test_that(".character_to_data handles comparison and multi-variable list together", {
-  df <- handcodeR::.character_to_data(
+  df <- handcodeR:::.character_to_data(
     c("t1", "t2"),
     list(cat1 = c("A", "B"), cat2 = c("X", "Y")),
     missing = "NA",
@@ -266,20 +266,20 @@ test_that(".character_to_data handles comparison and multi-variable list togethe
 
 test_that(".prepare_data assigns sequential IDs", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
   expect_equal(result$data$id, 1:3)
 })
 
 test_that(".prepare_data generates before/after context from neighbours", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = TRUE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = TRUE, pre = NULL, post = NULL)
   expect_equal(result$data$before, c("", "a", "b"))
   expect_equal(result$data$after, c("b", "c", ""))
 })
 
 test_that(".prepare_data uses caller-supplied pre/post over neighbour generation", {
   df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = 1, randomize = FALSE, context = TRUE,
     pre = c("X", "Y"), post = c("P", "Q")
   )
@@ -292,26 +292,26 @@ test_that(".prepare_data skips context generation if columns already exist", {
     texts = c("a", "b"), before = c("old_b", "old_b2"),
     after = c("old_a", "old_a2"), stringsAsFactors = FALSE
   )
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = TRUE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = TRUE, pre = NULL, post = NULL)
   expect_equal(result$data$before, c("old_b", "old_b2"))
 })
 
 test_that(".prepare_data context=FALSE adds no before/after columns", {
   df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
   expect_false("before" %in% names(result$data))
   expect_false("after" %in% names(result$data))
 })
 
 test_that(".prepare_data numeric start sets start_val", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 3, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 3, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
   expect_equal(result$start_val, 3L)
 })
 
 test_that(".prepare_data first_empty finds first uncoded row", {
   df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", ""), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = "first_empty", randomize = FALSE,
     context = FALSE, pre = NULL, post = NULL
   )
@@ -320,7 +320,7 @@ test_that(".prepare_data first_empty finds first uncoded row", {
 
 test_that(".prepare_data all_empty filters to uncoded rows only", {
   df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", ""), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = "all_empty", randomize = FALSE,
     context = FALSE, pre = NULL, post = NULL
   )
@@ -329,7 +329,7 @@ test_that(".prepare_data all_empty filters to uncoded rows only", {
 
 test_that(".prepare_data original_data preserves all rows after all_empty filter", {
   df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", ""), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = "all_empty", randomize = FALSE,
     context = FALSE, pre = NULL, post = NULL
   )
@@ -341,13 +341,13 @@ test_that(".prepare_data detects class_cols correctly", {
     texts = "a", before = "x", after = "y", notes = "n",
     cat1 = "A", stringsAsFactors = FALSE
   )
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
   expect_equal(result$class_cols, "cat1")
 })
 
 test_that(".prepare_data extra_exclude removes columns from class_cols", {
   df <- data.frame(texts = "a", cat1 = "A", comparison = "c", stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = 1, randomize = FALSE, context = FALSE,
     pre = NULL, post = NULL, extra_exclude = "comparison"
   )
@@ -357,7 +357,7 @@ test_that(".prepare_data extra_exclude removes columns from class_cols", {
 test_that(".prepare_data randomize=TRUE shuffles uncoded rows", {
   set.seed(42)
   df <- data.frame(texts = paste0("t", 1:10), cat1 = rep("", 10), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
   expect_equal(nrow(result$data), 10L)
   expect_false(identical(result$data$texts, df$texts))
 })
@@ -365,13 +365,13 @@ test_that(".prepare_data randomize=TRUE shuffles uncoded rows", {
 test_that(".prepare_data randomize with first_empty: start_val is 1", {
   set.seed(1)
   df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", ""), stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = TRUE, context = FALSE, pre = NULL, post = NULL)
   expect_equal(result$start_val, 1L)
 })
 
 test_that(".prepare_data extra_exclude with non-existent column is a no-op", {
   df <- data.frame(texts = "a", cat1 = "A", stringsAsFactors = FALSE)
-  result <- handcodeR::.prepare_data(df,
+  result <- handcodeR:::.prepare_data(df,
     start = 1, randomize = FALSE, context = FALSE,
     pre = NULL, post = NULL, extra_exclude = "nonexistent"
   )
@@ -386,12 +386,12 @@ test_that(".prepare_data extra_exclude with non-existent column is a no-op", {
 
 test_that(".count_annotations returns 0 for fully empty df", {
   df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
+  expect_equal(handcodeR:::.count_annotations(df), 0L)
 })
 
 test_that(".count_annotations counts rows with at least one annotation", {
   df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", "Y"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 2L)
+  expect_equal(handcodeR:::.count_annotations(df), 2L)
 })
 
 test_that(".count_annotations ignores technical columns", {
@@ -399,17 +399,17 @@ test_that(".count_annotations ignores technical columns", {
     texts = "a", id = 1L, before = "x", after = "y", notes = "note",
     stringsAsFactors = FALSE
   )
-  expect_equal(handcodeR::.count_annotations(df), 0L)
+  expect_equal(handcodeR:::.count_annotations(df), 0L)
 })
 
 test_that(".count_annotations returns 0L for df with no annotation columns", {
   df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
+  expect_equal(handcodeR:::.count_annotations(df), 0L)
 })
 
 test_that(".count_annotations treats NA as unannotated", {
   df <- data.frame(texts = "a", cat1 = NA_character_, stringsAsFactors = FALSE)
-  expect_equal(handcodeR::.count_annotations(df), 0L)
+  expect_equal(handcodeR:::.count_annotations(df), 0L)
 })
 
 test_that(".count_annotations mixed annotated/empty/NA rows", {
@@ -418,7 +418,7 @@ test_that(".count_annotations mixed annotated/empty/NA rows", {
     cat1 = c("X", "", NA, "Y"),
     stringsAsFactors = FALSE
   )
-  expect_equal(handcodeR::.count_annotations(df), 2L)
+  expect_equal(handcodeR:::.count_annotations(df), 2L)
 })
 
 # ============================================================================ #
@@ -464,7 +464,7 @@ test_that(".gen_output merges annotations back by id", {
     texts = c("a", "b", "c"), cat1 = c("", "", ""), id = 1:3,
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(
+  result <- handcodeR:::.gen_output(
     original_data  = original,
     current_ids    = c(1L, 2L, 3L),
     annotations    = list(cat1 = c("X", "Y", "Z"))
@@ -474,7 +474,7 @@ test_that(".gen_output merges annotations back by id", {
 
 test_that(".gen_output removes id column from output", {
   original <- data.frame(texts = "a", cat1 = "", id = 1L, stringsAsFactors = FALSE)
-  result <- handcodeR::.gen_output(original, 1L, list(cat1 = "X"))
+  result <- handcodeR:::.gen_output(original, 1L, list(cat1 = "X"))
   expect_false("id" %in% names(result))
 })
 
@@ -483,7 +483,7 @@ test_that(".gen_output removes before/after columns from output", {
     texts = "a", cat1 = "", id = 1L, before = "x", after = "y",
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(original, 1L, list(cat1 = "X"))
+  result <- handcodeR:::.gen_output(original, 1L, list(cat1 = "X"))
   expect_false("before" %in% names(result))
   expect_false("after" %in% names(result))
 })
@@ -493,7 +493,7 @@ test_that(".gen_output preserves rows not in current_ids", {
     texts = c("a", "b"), cat1 = c("seen", ""), id = 1:2,
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(original, current_ids = 2L, annotations = list(cat1 = "X"))
+  result <- handcodeR:::.gen_output(original, current_ids = 2L, annotations = list(cat1 = "X"))
   expect_equal(result$cat1[1], "seen")
   expect_equal(result$cat1[2], "X")
 })
@@ -501,7 +501,7 @@ test_that(".gen_output preserves rows not in current_ids", {
 test_that(".gen_output warns on unmatched row IDs", {
   original <- data.frame(texts = "a", cat1 = "", id = 1L, stringsAsFactors = FALSE)
   expect_warning(
-    handcodeR::.gen_output(original, current_ids = 99L, annotations = list(cat1 = "X")),
+    handcodeR:::.gen_output(original, current_ids = 99L, annotations = list(cat1 = "X")),
     "row ID"
   )
 })
@@ -511,7 +511,7 @@ test_that(".gen_output writes notes when add_notes=TRUE", {
     texts = c("a", "b"), cat1 = c("", ""), id = 1:2,
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(
+  result <- handcodeR:::.gen_output(
     original,
     current_ids = 1:2,
     annotations = list(cat1 = c("X", "Y")),
@@ -525,7 +525,7 @@ test_that(".gen_output with add_notes=TRUE and empty notes column creates the co
     texts = c("a", "b"), cat1 = c("", ""), id = 1:2,
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(
+  result <- handcodeR:::.gen_output(
     original,
     current_ids = 1:2,
     annotations = list(cat1 = c("X", "Y")),
@@ -539,7 +539,7 @@ test_that(".gen_output applies extra_cleanup_function", {
     texts = "a", cat1 = "", extra_col = "drop", id = 1L,
     stringsAsFactors = FALSE
   )
-  result <- handcodeR::.gen_output(
+  result <- handcodeR:::.gen_output(
     original, 1L, list(cat1 = "X"),
     extra_cleanup_function = function(df) {
       df$extra_col <- NULL

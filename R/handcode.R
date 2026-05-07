@@ -122,8 +122,7 @@ NULL
   list(dir = dir_out, prefix = prefix_out)
 }
 
-#' @keywords internal
-#' @export
+#' @noRd
 .count_annotations <- function(df) {
   # Annotation count excludes technical/context columns so progress reflects coding work only.
   cols <- setdiff(names(df), c(
@@ -264,8 +263,7 @@ NULL
   "))
 }
 
-#' @keywords internal
-#' @export
+#' @noRd
 .darken_hex <- function(hex, factor = 0.65) {
   # Darkening is used for selected-button states to preserve color identity with stronger contrast.
   hex <- gsub("^#", "", hex)
@@ -275,8 +273,7 @@ NULL
   sprintf("#%02x%02x%02x", as.integer(r * factor), as.integer(g * factor), as.integer(b * factor))
 }
 
-#' @keywords internal
-#' @export
+#' @noRd
 .lighten_hex <- function(hex, factor = 0.88) {
   # Lightening is used for unselected-button backgrounds to keep emphasis on active choices.
   hex <- gsub("^#", "", hex)
@@ -297,20 +294,17 @@ NULL
 # ID sanitizer, interactive() wrapper for testability, missing formatter       #
 # ============================================================================ #
 
-#' @keywords internal
-#' @export
+#' @noRd
 .sanitize_id <- function(x) gsub("[^A-Za-z0-9_]", "_", x)
 
 .interactive <- function() interactive()
 .menu_wrapper <- function(...) utils::menu(...)
 .readline_wrapper <- function(prompt = "") readline(prompt)
 
-#' @keywords internal
-#' @export
+#' @noRd
 .format_NA <- function(missing) paste0("_", missing, "_")
 
-#' @keywords internal
-#' @export
+#' @noRd
 .get_current_value <- function(values, var_name, counter) {
   val <- values$annotations[[var_name]][counter]
   if (!is.na(val) && val != "") val else ""
@@ -443,8 +437,7 @@ NULL
 # Normalizes input data, applies start/randomize rules, inits annotation state #
 # ============================================================================ #
 
-#' @keywords internal
-#' @export
+#' @noRd
 .prepare_data <- function(data, start, randomize, context, pre, post, extra_exclude = character(0)) {
   # Returns list(data, original_data, start_val, class_cols). data may be filtered/reordered by
   # start and randomize rules; original_data is preserved at full row count for save-back merge.
@@ -745,8 +738,7 @@ NULL
 # Builds output data frame and converts character input to annotation schema   #
 # ============================================================================ #
 
-#' @keywords internal
-#' @export
+#' @noRd
 .gen_output <- function(original_data, current_ids, annotations, notes = NULL,
                         add_notes = FALSE, extra_cleanup_function = NULL) {
   # Merges annotation buffers back into the full original dataset by id, so subsetting from
@@ -775,8 +767,7 @@ NULL
   annotated
 }
 
-#' @keywords internal
-#' @export
+#' @noRd
 .character_to_data <- function(data, arg_list, missing, prefix = "cat", comparison = NULL) {
   # Promotes a raw character vector to the annotation data-frame schema. Each classification
   # becomes a factor column with empty-string + missing sentinels + caller-supplied levels.
@@ -920,7 +911,57 @@ NULL
 # Entry point, UI, server, and runner for categorial and comparison annotation #
 # ============================================================================ #
 
-# Categorial annotation entry point for multi-class coding workflows.
+#' Categorial Text Annotation
+#'
+#' Launch a Shiny app for hand-coding texts into one or more categorial
+#' classification variables. Each variable is defined by name and its
+#' set of allowed categories passed via \code{...}.
+#'
+#' @param data A character vector of texts, or a data frame with a
+#'   \code{texts} column (and optionally pre-existing classification
+#'   columns to resume coding).
+#' @param ... Named character vectors defining classification variables.
+#'   Each name becomes a variable, each vector its category levels.
+#' @param start Either \code{"first_empty"} (default) or an integer index
+#'   indicating which row to start coding at.
+#' @param randomize Logical. If \code{TRUE}, randomize text order. Default \code{FALSE}.
+#' @param context Logical. If \code{TRUE}, show preceding/following texts as
+#'   context. Default \code{FALSE}.
+#' @param missing Character vector of labels for missing/not-applicable
+#'   values. Default \code{c("Not applicable")}.
+#' @param pre Optional character vector of texts to prepend as context
+#'   (one per row).
+#' @param post Optional character vector of texts to append as context
+#'   (one per row).
+#' @param comparison Optional character vector for paired-text comparison
+#'   workflows.
+#' @param pre_comparison Optional context-before vector for the comparison
+#'   text.
+#' @param post_comparison Optional context-after vector for the comparison
+#'   text.
+#' @param autosave Logical. If \code{TRUE}, periodically save progress to
+#'   disk after the user confirms a save location. Requires an interactive
+#'   session. Default \code{FALSE}.
+#' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
+#'   in the UI. Default \code{FALSE}.
+#' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
+#'   shortcuts for category selection. Default \code{FALSE}.
+#'
+#' @return A data frame containing the original texts plus one column per
+#'   classification variable. Returns \code{invisible(NULL)} if the user
+#'   cancels the autosave or recovery setup.
+#'
+#' @examples
+#' \dontrun{
+#'   texts <- c("I love this product", "Worst purchase ever", "It's okay")
+#'   result <- handcode(
+#'     texts,
+#'     sentiment = c("positive", "neutral", "negative")
+#'   )
+#' }
+#'
+#' @seealso \code{\link{handcode_binary}} for two-choice annotation.
+#' @export
 handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      context = FALSE, missing = c("Not applicable"),
                      pre = NULL, post = NULL,
@@ -1176,7 +1217,71 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 # Entry point, UI, server, and runner for two-choice binary annotation         #
 # ============================================================================ #
 
-# Binary annotation entry point for two-choice (left/right) coding workflows.
+#' Binary Text Annotation
+#'
+#' Launch a Shiny app for hand-coding texts into two-choice (left/right)
+#' classification variables. Each variable is defined by name and a
+#' length-2 character vector via \code{...}, where the first entry is
+#' the left choice and the second is the right choice.
+#'
+#' @param data A character vector of texts, or a data frame with a
+#'   \code{texts} column (and optionally pre-existing classification
+#'   columns to resume coding).
+#' @param ... Named length-2 character vectors defining binary
+#'   classification variables. The first element labels the left choice,
+#'   the second labels the right choice.
+#' @param start Either \code{"first_empty"} (default) or an integer index
+#'   indicating which row to start coding at.
+#' @param randomize Logical. If \code{TRUE}, randomize text order. Default
+#'   \code{FALSE}.
+#' @param context Logical. If \code{TRUE}, show preceding/following texts
+#'   as context. Default \code{FALSE}.
+#' @param missing Character vector of labels for missing/not-applicable
+#'   values. Default \code{c("Not applicable")}.
+#' @param pre Optional character vector of texts to prepend as context
+#'   (one per row).
+#' @param post Optional character vector of texts to append as context
+#'   (one per row).
+#' @param comparison Optional character vector for paired-text comparison
+#'   workflows.
+#' @param pre_comparison Optional context-before vector for the comparison
+#'   text.
+#' @param post_comparison Optional context-after vector for the comparison
+#'   text.
+#' @param autosave Logical. If \code{TRUE}, periodically save progress to
+#'   disk after the user confirms a save location. Requires an interactive
+#'   session. Default \code{FALSE}.
+#' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
+#'   in the UI. Default \code{FALSE}.
+#' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
+#'   shortcuts for category selection. Mutually exclusive with
+#'   \code{quickcode = TRUE}. Default \code{FALSE}.
+#' @param multifactorial Logical. If \code{TRUE} (default), allow multiple
+#'   classification variables. If \code{FALSE}, exactly one variable is
+#'   permitted.
+#' @param quickcode Logical. If \code{TRUE}, enable single-key quickcoding
+#'   mode for one classification variable. Mutually exclusive with
+#'   \code{enable_numeric = TRUE} and \code{multifactorial = FALSE}, and
+#'   limited to a single \code{...} variable. Default \code{FALSE}.
+#' @param colors Named list with \code{left} and \code{right} hex color
+#'   strings used for the binary buttons. Defaults to
+#'   \code{list(left = "#10b981", right = "#dc2626")}.
+#'
+#' @return A data frame containing the original texts plus one column per
+#'   binary classification variable. Returns \code{invisible(NULL)} if the
+#'   user cancels the autosave or recovery setup.
+#'
+#' @examples
+#' \dontrun{
+#'   texts <- c("I love this product", "Worst purchase ever", "It's okay")
+#'   result <- handcode_binary(
+#'     texts,
+#'     sentiment = c("positive", "negative")
+#'   )
+#' }
+#'
+#' @seealso \code{\link{handcode}} for multi-class categorial annotation.
+#' @export
 handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             context = FALSE, missing = c("Not applicable"),
                             pre = NULL, post = NULL,

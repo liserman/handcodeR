@@ -13,3 +13,5 @@ _\.new\.png$
 ^README_020_md\.txt$
 ^README_020_rmd\.txt$
 ^handcode_020\.txt$
+^\.claude
+^cran-comments\.md$
