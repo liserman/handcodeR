@@ -63,7 +63,7 @@ write_fake_quicksave <- function(dir, prefix, n = 4) {
 expect_autosave_cancel_returns_null <- function(entry_fn, data, ...) {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   local_mocked_bindings(
-    .autosave_menu = function(...) stop("Autosave setup cancelled."),
+    .autosave_menu = function(...) stop("autosave setup cancelled."),
     .package       = "handcodeR"
   )
   expect_null(entry_fn(data, ..., autosave = TRUE))

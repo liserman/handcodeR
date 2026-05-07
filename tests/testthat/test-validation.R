@@ -81,7 +81,7 @@ test_that(".check_data_first_col rejects wrong column name", {
   df <- data.frame(content = "a", stringsAsFactors = FALSE)
   expect_error(
     handcodeR:::.check_data_first_col(df),
-    "First column must be texts"
+    "first column must be texts"
   )
 })
 
@@ -89,7 +89,7 @@ test_that(".check_data_first_col rejects non-character texts column", {
   df <- data.frame(texts = 1:3)
   expect_error(
     handcodeR:::.check_data_first_col(df),
-    "First column must be texts"
+    "first column must be texts"
   )
 })
 
@@ -119,7 +119,7 @@ test_that("no classification variables throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode(data = c("text1")),
-    "At least one classification variable must be provided"
+    "at least one classification variable must be provided"
   )
 })
 
@@ -127,7 +127,7 @@ test_that("non-character classification variable throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode(data = c("text1"), 1:3),
-    "All classification arguments must be character vectors"
+    "all classification arguments must be character vectors"
   )
 })
 
@@ -135,7 +135,7 @@ test_that("empty string in category values throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode(data = c("text1"), c("A", "")),
-    "Empty strings are not allowed as category values"
+    "empty strings are not allowed as category values"
   )
 })
 
@@ -143,7 +143,7 @@ test_that("duplicate category values throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode(data = c("text1"), c("A", "A")),
-    "Duplicate categories are not allowed"
+    "duplicate categories are not allowed"
   )
 })
 
@@ -155,7 +155,7 @@ test_that("missing value overlapping category throws error", {
       c("foo", "bar"),
       missing = c("foo")
     ),
-    "Missing values cannot overlap with category values"
+    "missing values cannot overlap with category values"
   )
 })
 
@@ -244,7 +244,7 @@ test_that("missing overlapping across multiple category vectors throws error", {
       c("C", "D"),
       missing = c("C")
     ),
-    "Missing values cannot overlap with category values"
+    "missing values cannot overlap with category values"
   )
 })
 
@@ -274,7 +274,7 @@ test_that("no binary variables throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode_binary(data = c("text1")),
-    "At least one binary classification variable must be provided"
+    "at least one binary classification variable must be provided"
   )
 })
 
@@ -282,7 +282,7 @@ test_that("binary variable with more than 2 values throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode_binary(data = c("text1"), c("Yes", "No", "Maybe")),
-    "All binary classification arguments must be character vectors with exactly two values"
+    "all binary classification arguments must be character vectors with exactly two values"
   )
 })
 
@@ -290,7 +290,7 @@ test_that("binary variable with only 1 value throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode_binary(data = c("text1"), c("Yes")),
-    "All binary classification arguments must be character vectors with exactly two values"
+    "all binary classification arguments must be character vectors with exactly two values"
   )
 })
 
@@ -298,7 +298,7 @@ test_that("empty string in binary values throws error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode_binary(data = c("text1"), c("Yes", "")),
-    "Empty strings are not allowed as binary values"
+    "empty strings are not allowed as binary values"
   )
 })
 
@@ -417,7 +417,7 @@ test_that("missing with length > 1 throws error", {
       c("Yes", "No"),
       missing = c("NA", "Other")
     ),
-    "Missing argument must be a single value"
+    "missing argument must be a single value"
   )
 })
 
@@ -498,5 +498,42 @@ test_that(".check_comparison_context accepts NULL pre/post (no context columns)"
 test_that(".check_comparison_context accepts correctly sized pre/post", {
   expect_no_error(
     handcodeR:::.check_comparison_context(c("a", "b", "c"), c("x", "y", "z"), 3)
+  )
+})
+
+# ============================================================================ #
+# Resume: .relevel_data_factors                                                #
+# ---------------------------------------------------------------------------- #
+# Warns when an existing factor column lacks the new missing sentinel so that  #
+# previously coded missing values silently keeping their old label is visible. #
+# ============================================================================ #
+
+test_that(".relevel_data_factors warns when new missing sentinel absent from existing levels", {
+  df <- data.frame(
+    texts = "a",
+    cat1 = factor("", levels = c("", "_Not applicable_", "X")),
+    stringsAsFactors = FALSE
+  )
+  expect_warning(
+    handcodeR:::.relevel_data_factors(df, list(cat1 = c("X", "Y")), missing = "Other"),
+    "do not contain new missing sentinel"
+  )
+})
+
+test_that(".relevel_data_factors stays silent when new missing sentinel already present", {
+  df <- data.frame(
+    texts = "a",
+    cat1 = factor("", levels = c("", "_Not applicable_", "X")),
+    stringsAsFactors = FALSE
+  )
+  expect_no_warning(
+    handcodeR:::.relevel_data_factors(df, list(cat1 = c("X", "Y")), missing = "Not applicable")
+  )
+})
+
+test_that(".relevel_data_factors stays silent for new variable not yet in data", {
+  df <- data.frame(texts = "a", stringsAsFactors = FALSE)
+  expect_no_warning(
+    handcodeR:::.relevel_data_factors(df, list(cat1 = c("X", "Y")), missing = "Other")
   )
 })
