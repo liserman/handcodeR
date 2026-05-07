@@ -26,7 +26,7 @@ test_that(".check_common_params rejects invalid start string", {
 test_that(".check_common_params accepts first_empty and all_empty", {
   df <- data.frame(texts = "a", stringsAsFactors = FALSE)
   expect_no_error(handcodeR:::.check_common_params(df, "first_empty", FALSE, FALSE, NULL, NULL))
-  expect_no_error(handcodeR:::.check_common_params(df, "all_empty",   FALSE, FALSE, NULL, NULL))
+  expect_no_error(handcodeR:::.check_common_params(df, "all_empty", FALSE, FALSE, NULL, NULL))
 })
 
 test_that(".check_common_params rejects non-logical randomize", {
