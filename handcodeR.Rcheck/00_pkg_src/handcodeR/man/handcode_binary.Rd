@@ -60,10 +60,9 @@ text.}
 \item{post_comparison}{Optional context-after vector for the comparison
 text.}
 
-\item{autosave}{Either \code{FALSE} (default; no files are written to
-disk) or a character path to an existing directory. When a directory
-is given, autosave/quicksave \code{.RData} files are written there as
-the session progresses. The directory must already exist.}
+\item{autosave}{Logical. If \code{TRUE}, periodically save progress to
+disk after the user confirms a save location. Requires an interactive
+session. Default \code{FALSE}.}
 
 \item{add_notes}{Logical. If \code{TRUE}, show a free-text notes input
 in the UI. Default \code{FALSE}.}

@@ -261,26 +261,6 @@ test_that("save handler: autosave=TRUE writes autosave file on unexpected close"
   expect_equal(length(list.files(tmp_dir, pattern = "_autosave\\.RData$")), 1L)
 })
 
-test_that("save handler: unexpected close returns annotated data to the workspace without an autosave dir", {
-  skip_on_cran()
-  # No save_loc: nothing is written to disk, but the work must still come back to the R session.
-  captured <- list()
-  local_mocked_bindings(
-    stopApp = function(returnValue = invisible()) {
-      captured[[length(captured) + 1L]] <<- returnValue
-      invisible()
-    },
-    .package = "shiny"
-  )
-  app_data <- make_app_data(mode = "categorial", n = 2, vars = list(cat1 = c("A", "B")))
-  server_fn <- handcodeR:::.categorial_server(app_data, autosave = FALSE)
-  shiny::testServer(server_fn, {
-    session$close()
-  })
-  returned_dfs <- Filter(function(v) is.data.frame(v) && "cat1" %in% names(v), captured)
-  expect_true(length(returned_dfs) >= 1L)
-})
-
 test_that("save handler: quicksave writes timestamped file when save_loc is set", {
   skip_on_cran()
   tmp_dir <- tempfile()

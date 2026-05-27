@@ -1,0 +1,56 @@
+
+R version 4.6.0 (2026-04-24) -- "Because it was There"
+Copyright (C) 2026 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(testthat)
+> library(handcodeR)
+> 
+> test_check("handcodeR")
+What should your subdirectory be called?
+What should your subdirectory be called?
+What path should your auto- and quicksave files be saved to?
+What path should your auto- and quicksave files be saved to?
+autosave setup cancelled.
+handcodeR: session aborted by user.
+autosave setup cancelled.
+handcodeR: session aborted by user.
+
+Your data was saved to the R workspace.
+
+Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR
+
+Your data was saved to the R workspace.
+
+Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR
+[ FAIL 0 | WARN 0 | SKIP 30 | PASS 237 ]
+
+══ Skipped tests (30) ══════════════════════════════════════════════════════════
+• On CRAN (30): 'test-server.R:11:3', 'test-server.R:20:3',
+  'test-server.R:29:3', 'test-server.R:39:3', 'test-server.R:49:3',
+  'test-server.R:62:3', 'test-server.R:73:3', 'test-server.R:86:3',
+  'test-server.R:95:3', 'test-server.R:122:3', 'test-server.R:131:3',
+  'test-server.R:141:3', 'test-server.R:151:3', 'test-server.R:161:3',
+  'test-server.R:171:3', 'test-server.R:191:3', 'test-server.R:200:3',
+  'test-server.R:210:3', 'test-server.R:231:3', 'test-server.R:248:3',
+  'test-server.R:265:3', 'test-server.R:289:3', 'test-server.R:298:3',
+  'test-server.R:308:3', 'test-server.R:318:3', 'test-server.R:328:3',
+  'test-ui.R:131:3', 'test-ui.R:143:3', 'test-ui.R:155:3', 'test-ui.R:296:3'
+
+[ FAIL 0 | WARN 0 | SKIP 30 | PASS 237 ]
+> 
+> proc.time()
+   user  system elapsed 
+  2.404   0.124   2.522 

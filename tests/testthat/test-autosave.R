@@ -1,41 +1,37 @@
 # All autosave / recovery tests. Helper fixtures live in helper-mocks.R and helper-fixtures.R.
 
 # ============================================================================ #
-# Config: .autosave_config_path, .read_last_save_dir, .write_last_save_dir     #
+# Setup: .autosave_setup                                                       #
 # ---------------------------------------------------------------------------- #
-# Persistent config file for last-used save directory.                         #
+# Resolves the autosave argument: FALSE disables, a path enables + locates.    #
 # ============================================================================ #
 
-test_that(".autosave_config_path returns path ending with last_save_dir.txt", {
-  expect_true(endsWith(handcodeR:::.autosave_config_path(), "last_save_dir.txt"))
+test_that(".autosave_setup returns NULL when autosave is FALSE", {
+  expect_null(handcodeR:::.autosave_setup(FALSE, "mydata"))
 })
 
-test_that(".read_last_save_dir returns NULL when config file absent", {
-  tmp <- tempfile()
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  expect_null(handcodeR:::.read_last_save_dir())
+test_that(".autosave_setup returns NULL when autosave is NULL", {
+  expect_null(handcodeR:::.autosave_setup(NULL, "mydata"))
 })
 
-test_that(".read_last_save_dir returns NULL when stored path does not exist on disk", {
-  tmp <- tempfile()
-  writeLines("/nonexistent/path/xyz_abc_123", tmp)
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  expect_null(handcodeR:::.read_last_save_dir())
+test_that(".autosave_setup errors when autosave is a bare TRUE", {
+  expect_error(handcodeR:::.autosave_setup(TRUE, "mydata"), "FALSE or a path")
 })
 
-test_that(".read_last_save_dir returns NULL for empty config file", {
-  tmp <- tempfile()
-  writeLines("", tmp)
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  expect_null(handcodeR:::.read_last_save_dir())
+test_that(".autosave_setup errors when autosave is an empty/blank string", {
+  expect_error(handcodeR:::.autosave_setup("   ", "mydata"), "FALSE or a path")
 })
 
-test_that(".write_last_save_dir and .read_last_save_dir round-trip correctly", {
-  tmp <- tempfile()
-  on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  handcodeR:::.write_last_save_dir(getwd())
-  expect_equal(handcodeR:::.read_last_save_dir(), getwd())
+test_that(".autosave_setup errors when directory does not exist", {
+  missing_dir <- file.path(tempfile(), "nope")
+  expect_error(handcodeR:::.autosave_setup(missing_dir, "mydata"), "does not exist")
+})
+
+test_that(".autosave_setup returns dir and sanitized prefix for an existing directory", {
+  tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
+  result  <- handcodeR:::.autosave_setup(tmp_dir, "my data$1")
+  expect_equal(result$dir, normalizePath(tmp_dir))
+  expect_equal(result$prefix, "my_data_1")
 })
 
 # ============================================================================ #
@@ -62,17 +58,26 @@ test_that(".resume_menu returns data unchanged when df has no texts column", {
 test_that(".resume_menu returns data unchanged when no recovery files exist", {
   df      <- make_ann_df()
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_identical(
     handcodeR:::.resume_menu(df, "norecover", list(dir = tmp_dir, prefix = "norecover")),
     df
   )
 })
 
+test_that(".resume_menu returns data unchanged in a non-interactive session", {
+  df      <- make_ann_df(3)
+  tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
+  write_fake_autosave(tmp_dir, "mydata", n = 5)
+  local_mocked_bindings(.interactive = function() FALSE, .package = "handcodeR")
+  expect_identical(handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata")), df)
+})
+
 test_that(".resume_menu choice 1 returns original passed data", {
   df      <- make_ann_df(3)
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
   write_fake_autosave(tmp_dir, "mydata", n = 5)
-  local_mocked_bindings(.menu_wrapper = function(...) 1L, .package = "handcodeR")
+  local_mocked_bindings(.interactive = function() TRUE, .menu_wrapper = function(...) 1L, .package = "handcodeR")
   expect_identical(handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata")), df)
 })
 
@@ -80,7 +85,7 @@ test_that(".resume_menu choice 2 returns autosave data", {
   df      <- make_ann_df(3)
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
   write_fake_autosave(tmp_dir, "mydata", n = 5)
-  local_mocked_bindings(.menu_wrapper = function(...) 2L, .package = "handcodeR")
+  local_mocked_bindings(.interactive = function() TRUE, .menu_wrapper = function(...) 2L, .package = "handcodeR")
   result <- handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata"))
   expect_equal(nrow(result), 5L)
 })
@@ -89,7 +94,7 @@ test_that(".resume_menu quicksave can be selected", {
   df      <- make_ann_df(3)
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
   write_fake_quicksave(tmp_dir, "mydata", n = 6)
-  local_mocked_bindings(.menu_wrapper = function(...) 2L, .package = "handcodeR")
+  local_mocked_bindings(.interactive = function() TRUE, .menu_wrapper = function(...) 2L, .package = "handcodeR")
   result <- handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata"))
   expect_equal(nrow(result), 6L)
 })
@@ -98,7 +103,7 @@ test_that(".resume_menu Abort (last choice) stops execution", {
   df      <- make_ann_df()
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
   write_fake_autosave(tmp_dir, "mydata")
-  local_mocked_bindings(.menu_wrapper = function(choices, ...) length(choices), .package = "handcodeR")
+  local_mocked_bindings(.interactive = function() TRUE, .menu_wrapper = function(choices, ...) length(choices), .package = "handcodeR")
   expect_error(
     handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata")),
     "aborted"
@@ -109,7 +114,7 @@ test_that(".resume_menu Escape (choice 0) stops execution", {
   df      <- make_ann_df()
   tmp_dir <- tempfile(); dir.create(tmp_dir); on.exit(unlink(tmp_dir, recursive = TRUE))
   write_fake_autosave(tmp_dir, "mydata")
-  local_mocked_bindings(.menu_wrapper = function(...) 0L, .package = "handcodeR")
+  local_mocked_bindings(.interactive = function() TRUE, .menu_wrapper = function(...) 0L, .package = "handcodeR")
   expect_error(
     handcodeR:::.resume_menu(df, "mydata", list(dir = tmp_dir, prefix = "mydata")),
     "aborted"
@@ -146,157 +151,6 @@ test_that(".load_rdata returns NULL for a nonexistent file path", {
 })
 
 # ============================================================================ #
-# Menu: .autosave_menu                                                         #
-# ---------------------------------------------------------------------------- #
-# Interactive prompt for save location and filename prefix.                    #
-# ============================================================================ #
-
-test_that(".autosave_menu Cancel (last choice) stops execution", {
-  tmp <- tempfile(); on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) length(choices),
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  expect_error(handcodeR:::.autosave_menu("mydata"), "cancelled")
-})
-
-test_that(".autosave_menu Escape (choice 0) stops execution", {
-  tmp <- tempfile(); on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(...) 0L,
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  expect_error(handcodeR:::.autosave_menu("mydata"), "cancelled")
-})
-
-test_that(".autosave_menu cwd choice returns correct dir and default prefix", {
-  tmp <- tempfile(); on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 1L,
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  result <- handcodeR:::.autosave_menu("mydata")
-  expect_equal(result$dir, getwd())
-  expect_equal(result$prefix, "mydata")
-})
-
-test_that(".autosave_menu custom prefix overrides default", {
-  tmp <- tempfile(); on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 1L,
-    .readline_wrapper = function(...) "custom_prefix",
-    .package          = "handcodeR"
-  )
-  expect_equal(handcodeR:::.autosave_menu("mydata")$prefix, "custom_prefix")
-})
-
-test_that(".autosave_menu writes chosen dir to config", {
-  tmp <- tempfile(); on.exit(unlink(tmp))
-  local_mocked_bindings(.autosave_config_path = function() tmp, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 1L,
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  handcodeR:::.autosave_menu("mydata")
-  expect_equal(trimws(readLines(tmp, n = 1, warn = FALSE)), getwd())
-})
-
-test_that(".autosave_menu subdir choice creates directory and returns its path", {
-  tmp_cfg    <- tempfile()
-  tmp_parent <- tempfile(); dir.create(tmp_parent)
-  on.exit({ unlink(tmp_cfg); unlink(tmp_parent, recursive = TRUE) })
-  old_wd <- setwd(tmp_parent); on.exit(setwd(old_wd), add = TRUE)
-  local_mocked_bindings(.autosave_config_path = function() tmp_cfg, .package = "handcodeR")
-  call_n <- 0L
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 2L,
-    .readline_wrapper = function(prompt = "") { call_n <<- call_n + 1L; if (call_n == 1L) "saves" else "" },
-    .package          = "handcodeR"
-  )
-  result <- handcodeR:::.autosave_menu("mydata")
-  expect_true(dir.exists(result$dir))
-  expect_equal(basename(result$dir), "saves")
-})
-
-test_that(".autosave_menu empty subdir name stops execution", {
-  tmp_cfg    <- tempfile()
-  tmp_parent <- tempfile(); dir.create(tmp_parent)
-  on.exit({ unlink(tmp_cfg); unlink(tmp_parent, recursive = TRUE) })
-  old_wd <- setwd(tmp_parent); on.exit(setwd(old_wd), add = TRUE)
-  local_mocked_bindings(.autosave_config_path = function() tmp_cfg, .package = "handcodeR")
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 2L,
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  expect_error(handcodeR:::.autosave_menu("mydata"), "cancelled")
-})
-
-test_that(".autosave_menu shows last location when saved dir exists and differs from cwd", {
-  tmp_cfg <- tempfile()
-  tmp_dir <- tempfile(); dir.create(tmp_dir)
-  on.exit({ unlink(tmp_cfg); unlink(tmp_dir, recursive = TRUE) })
-  writeLines(tmp_dir, tmp_cfg)
-  local_mocked_bindings(.autosave_config_path = function() tmp_cfg, .package = "handcodeR")
-  captured <- NULL
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) { captured <<- choices; length(choices) },
-    .readline_wrapper = function(...) "",
-    .package          = "handcodeR"
-  )
-  expect_error(handcodeR:::.autosave_menu("mydata"), "cancelled")
-  expect_true(any(grepl("Use last location", captured)))
-})
-
-test_that(".autosave_menu prefix prompt shows 'enter to resume' when recovery file exists", {
-  tmp_cfg <- tempfile()
-  tmp_dir <- tempfile(); dir.create(tmp_dir)
-  on.exit({ unlink(tmp_cfg); unlink(tmp_dir, recursive = TRUE) })
-  write_fake_autosave(tmp_dir, "mydata")
-  local_mocked_bindings(.autosave_config_path = function() tmp_cfg, .package = "handcodeR")
-  call_n <- 0L; captured_prompt <- NULL
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 3L,
-    .readline_wrapper = function(prompt = "") {
-      call_n <<- call_n + 1L
-      if (call_n == 1L) { tmp_dir }
-      else { captured_prompt <<- prompt; "" }
-    },
-    .package = "handcodeR"
-  )
-  handcodeR:::.autosave_menu("mydata")
-  expect_true(grepl("enter to resume", captured_prompt))
-})
-
-test_that(".autosave_menu prefix prompt shows 'default' when no recovery file exists", {
-  tmp_cfg <- tempfile()
-  tmp_dir <- tempfile(); dir.create(tmp_dir)
-  on.exit({ unlink(tmp_cfg); unlink(tmp_dir, recursive = TRUE) })
-  local_mocked_bindings(.autosave_config_path = function() tmp_cfg, .package = "handcodeR")
-  call_n <- 0L; captured_prompt <- NULL
-  local_mocked_bindings(
-    .menu_wrapper     = function(choices, ...) 3L,
-    # call 1 = "Path: " prompt → return tmp_dir; call 2 = prefix prompt → capture it
-    .readline_wrapper = function(prompt = "") {
-      call_n <<- call_n + 1L
-      if (call_n == 1L) { tmp_dir }
-      else { captured_prompt <<- prompt; "" }
-    },
-    .package = "handcodeR"
-  )
-  handcodeR:::.autosave_menu("mydata")
-  expect_true(grepl("default", captured_prompt))
-})
-
-# ============================================================================ #
 # Integration: Autosave Default and Cancel / Abort Flows                       #
 # ---------------------------------------------------------------------------- #
 # End-to-end cancel and abort handling across both entry points.               #
@@ -310,8 +164,8 @@ test_that("handcode_binary autosave default is FALSE", {
   expect_identical(formals(handcodeR:::handcode_binary)[["autosave"]], FALSE)
 })
 
-test_that("handcode returns NULL when autosave menu is cancelled", {
-  expect_autosave_cancel_returns_null(
+test_that("handcode returns NULL when autosave = TRUE carries no path", {
+  expect_autosave_true_returns_null(
     handcodeR:::handcode,
     c("text1", "text2"), cat = c("A", "B")
   )
@@ -324,8 +178,8 @@ test_that("handcode returns NULL when resume menu is aborted", {
   )
 })
 
-test_that("handcode_binary returns NULL when autosave menu is cancelled", {
-  expect_autosave_cancel_returns_null(
+test_that("handcode_binary returns NULL when autosave = TRUE carries no path", {
+  expect_autosave_true_returns_null(
     handcodeR:::handcode_binary,
     c("t1", "t2"), lr = c("L", "R")
   )

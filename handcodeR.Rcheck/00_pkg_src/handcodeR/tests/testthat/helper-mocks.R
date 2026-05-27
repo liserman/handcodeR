@@ -59,18 +59,23 @@ write_fake_quicksave <- function(dir, prefix, n = 4) {
 # Reusable expect_* helpers for autosave cancel and resume abort flows.        #
 # ============================================================================ #
 
-# Returns NULL when autosave = TRUE carries no path (setup error -> caught).
-expect_autosave_true_returns_null <- function(entry_fn, data, ...) {
+# Returns NULL when .autosave_menu raises a cancellation error.
+expect_autosave_cancel_returns_null <- function(entry_fn, data, ...) {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  local_mocked_bindings(
+    .autosave_menu = function(...) stop("autosave setup cancelled."),
+    .package       = "handcodeR"
+  )
   expect_null(entry_fn(data, ..., autosave = TRUE))
 }
 
-# Returns NULL when .resume_menu raises an abort error (with a valid autosave path).
+# Returns NULL when .resume_menu raises an abort error.
 expect_resume_abort_returns_null <- function(entry_fn, data, ...) {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   local_mocked_bindings(
-    .interactive = function() TRUE,
-    .resume_menu = function(...) stop("handcodeR: session aborted by user."),
-    .package     = "handcodeR"
+    .autosave_menu = function(...) list(dir = tempdir(), prefix = "x"),
+    .resume_menu   = function(...) stop("handcodeR: session aborted by user."),
+    .package       = "handcodeR"
   )
-  expect_null(entry_fn(data, ..., autosave = tempdir()))
+  expect_null(entry_fn(data, ..., autosave = TRUE))
 }

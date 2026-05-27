@@ -27,23 +27,99 @@ NULL
   if (!is.null(df) && is.data.frame(df) && "texts" %in% names(df)) df else NULL
 }
 
-# CRAN policy forbids writing to user filespace without explicit user direction.
-# The autosave argument doubles as that direction: FALSE disables it, a directory path enables it
-# and names the target. The filename prefix is derived from the data variable name and sanitized
-# for filesystem use. A bare TRUE carries no location and is therefore rejected.
+# CRAN policy forbids writing to user filespace without explicit per-session confirmation.
+# Prompt user for directory + filename prefix when autosave is opted in.
+# Last-used directory is persisted in tools::R_user_dir("handcodeR","config") (CRAN-allowed for config files).
 
-.autosave_setup <- function(autosave, default_name) {
-  if (is.null(autosave) || isFALSE(autosave)) {
+.autosave_config_path <- function() {
+  cfg_dir <- tools::R_user_dir("handcodeR", "config")
+  if (!dir.exists(cfg_dir)) dir.create(cfg_dir, recursive = TRUE, showWarnings = FALSE)
+  file.path(cfg_dir, "last_save_dir.txt")
+}
+
+.read_last_save_dir <- function() {
+  p <- .autosave_config_path()
+  if (!file.exists(p)) {
     return(NULL)
   }
-  if (!is.character(autosave) || length(autosave) != 1 || !nzchar(trimws(autosave))) {
-    stop("autosave must be FALSE or a path to an existing directory.")
+  dir <- tryCatch(readLines(p, n = 1, warn = FALSE), error = function(e) NULL)
+  if (is.null(dir) || length(dir) == 0 || !nchar(trimws(dir))) {
+    return(NULL)
   }
-  dir_out <- normalizePath(trimws(autosave), mustWork = FALSE)
-  if (!dir.exists(dir_out)) {
-    stop(sprintf("autosave path does not exist: '%s'", dir_out))
+  dir <- trimws(dir)
+  if (!dir.exists(dir)) {
+    return(NULL)
   }
-  list(dir = dir_out, prefix = .sanitize_id(default_name))
+  dir
+}
+
+.write_last_save_dir <- function(dir) {
+  tryCatch(writeLines(dir, .autosave_config_path()), error = function(e) NULL)
+}
+
+.autosave_menu <- function(default_name) {
+  cwd <- getwd()
+  last_dir <- .read_last_save_dir()
+  has_last <- !is.null(last_dir) && last_dir != cwd
+
+  # actions parallels labels so choice index maps to a stable action key regardless of whether
+  # the optional last-dir entry is present.
+  actions <- c(if (has_last) "last", "cwd", "subdir", "path", "cancel")
+  labels <- c(
+    if (has_last) paste0("Use last location [", last_dir, "]"),
+    paste0("Work in current working directory [", cwd, "]"),
+    "Create a subdirectory for auto- and quicksaves",
+    "Specify a different path",
+    "Cancel and quit"
+  )
+
+  loc_choice <- .menu_wrapper(
+    choices = labels,
+    title = paste0(
+      "\nAutosave is enabled. Recovery files (autosave + quicksave) will be ",
+      "written to disk. Please choose a location:"
+    )
+  )
+
+  if (loc_choice == 0) stop("autosave setup cancelled.")
+  action <- actions[loc_choice]
+  if (action == "cancel") stop("autosave setup cancelled.")
+
+  dir_out <- switch(action,
+    last = last_dir,
+    cwd = cwd,
+    subdir = {
+      cat("What should your subdirectory be called?\n")
+      subdir_in <- .readline_wrapper(sprintf("[%s]: ", cwd))
+      if (nchar(trimws(subdir_in)) == 0) stop("autosave setup cancelled.")
+      subdir_path <- file.path(cwd, trimws(subdir_in))
+      if (!dir.exists(subdir_path)) dir.create(subdir_path, recursive = TRUE)
+      subdir_path
+    },
+    path = {
+      cat("What path should your auto- and quicksave files be saved to?\n")
+      path_in <- .readline_wrapper("Path: ")
+      if (nchar(trimws(path_in)) == 0) stop("autosave setup cancelled.")
+      path_out <- normalizePath(trimws(path_in), mustWork = FALSE)
+      if (!dir.exists(path_out)) {
+        create <- .menu_wrapper(
+          c("Yes", "No"),
+          title = sprintf("Directory '%s' does not exist. Create it?", path_out)
+        )
+        if (create == 1) dir.create(path_out, recursive = TRUE) else stop("autosave setup cancelled.")
+      }
+      path_out
+    }
+  )
+
+  .write_last_save_dir(dir_out)
+
+  has_recovery <- file.exists(file.path(dir_out, paste0(default_name, "_autosave.RData"))) ||
+    length(list.files(dir_out, pattern = paste0("^", default_name, "_quicksave_[0-9]+\\.RData$"))) > 0
+  prefix_label <- if (has_recovery) "enter to resume" else "default"
+  prefix_in <- .readline_wrapper(sprintf("Filename prefix [%s: %s]: ", prefix_label, default_name))
+  prefix_out <- if (nchar(trimws(prefix_in)) == 0) default_name else trimws(prefix_in)
+  list(dir = dir_out, prefix = prefix_out)
 }
 
 #' @noRd
@@ -67,10 +143,6 @@ NULL
 # ============================================================================ #
 
 .resume_menu <- function(data, original_name, save_loc = NULL) {
-  # menu() needs an interactive session; non-interactive resume is a no-op returning the passed data.
-  if (!.interactive()) {
-    return(data)
-  }
   # Autosave is a single file overwritten each session; quicksave accumulates timestamped snapshots.
   # Menu presents annotation counts for passed data, autosave, and most-recent quicksave so the
   # operator can select the most complete recoverable state.
@@ -503,7 +575,7 @@ NULL
     # Quicksave requires opt-in save_loc; without it, button is informational only.
     if (is.null(app_data$save_loc)) {
       shiny::showNotification(
-        "Quicksave disabled. Restart with autosave = \"<dir>\" to enable.",
+        "Quicksave disabled. Restart with autosave = TRUE to enable.",
         type = "warning", duration = 4
       )
       return()
@@ -530,9 +602,8 @@ NULL
 .setup_save_handler <- function(input, session, values, app_data, autosave, save_function, extra_cleanup_function = NULL) {
   # Two exit paths: Save&Exit sets intentional_close, skips autosave, shows confirmation modal,
   # then calls stopApp(). Browser close / kill / disconnect leaves intentional_close = FALSE so
-  # onSessionEnded returns the annotated data to the R session via stopApp() (always), and writes
-  # an autosave file to disk as well when an autosave directory was configured. This dual path is
-  # the safety net for the whole annotation session.
+  # onSessionEnded writes an autosave file as the recovery checkpoint. This dual path is the
+  # safety net for the whole annotation session.
   close_state <- shiny::reactiveValues(intentional_close = FALSE, autosave_written = FALSE)
 
   do_save <- function(perform_autosave = TRUE) {
@@ -580,7 +651,7 @@ NULL
         style = "min-height: 150px;",
         shiny::tags$small(
           style = "color:#64748b;",
-          shiny::p("Your data was returned to the R workspace."),
+          shiny::p("Your data was saved to the R workspace."),
           "Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR"
         )
       ),
@@ -595,10 +666,7 @@ NULL
   session$onSessionEnded(function() {
     shiny::isolate({
       if (!close_state$intentional_close) {
-        # Even without Save & Exit, the work is always returned to the R workspace via stopApp();
-        # do_save additionally writes the recovery file to disk when an autosave directory is set.
-        annotated <- do_save(perform_autosave = TRUE)
-        shiny::stopApp(annotated)
+        do_save(perform_autosave = TRUE)
       }
     })
   })
@@ -871,10 +939,9 @@ NULL
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param autosave Either \code{FALSE} (default; no files are written to
-#'   disk) or a character path to an existing directory. When a directory
-#'   is given, autosave/quicksave \code{.RData} files are written there as
-#'   the session progresses. The directory must already exist.
+#' @param autosave Logical. If \code{TRUE}, periodically save progress to
+#'   disk after the user confirms a save location. Requires an interactive
+#'   session. Default \code{FALSE}.
 #' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
 #' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
@@ -906,11 +973,19 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   original_name <- deparse(substitute(data))
   .check_cat_session(.interactive(), arg_list, data)
 
-  # CRAN policy: writes to user filespace only when autosave names a directory path.
-  # tryCatch catches setup errors (invalid/non-existent path) and .resume_menu() abort.
+  # CRAN policy: writes to user filespace only with explicit interactive confirmation.
+  # tryCatch catches user-initiated cancellation from .autosave_menu() and .resume_menu().
   setup <- tryCatch(
     {
-      sl <- .autosave_setup(autosave, original_name)
+      sl <- if (isTRUE(autosave) && .interactive()) {
+        .autosave_menu(original_name)
+      } else {
+        if (isTRUE(autosave) && !.interactive()) {
+          warning("autosave = TRUE requires an interactive session; disabling autosave.")
+          autosave <- FALSE
+        }
+        NULL
+      }
       has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
       d <- .resume_menu(data, original_name, sl)
       list(save_loc = sl, data = d, has_comparison = has_comparison)
@@ -926,8 +1001,6 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   save_loc <- setup$save_loc
   data <- setup$data
   has_comparison <- setup$has_comparison
-  # Collapse autosave to a logical for downstream app/server gates now that the path is resolved.
-  autosave <- !is.null(save_loc)
 
   # Char-vector path: validate ... category specs before promoting to a data frame.
   if (is.character(data)) {
@@ -996,7 +1069,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_categorial_app(app_data, autosave)
   }
-  message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
+  message("\nYour data was saved to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
   result
 }
 
@@ -1175,10 +1248,9 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param autosave Either \code{FALSE} (default; no files are written to
-#'   disk) or a character path to an existing directory. When a directory
-#'   is given, autosave/quicksave \code{.RData} files are written there as
-#'   the session progresses. The directory must already exist.
+#' @param autosave Logical. If \code{TRUE}, periodically save progress to
+#'   disk after the user confirms a save location. Requires an interactive
+#'   session. Default \code{FALSE}.
 #' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
 #' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
@@ -1224,11 +1296,19 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   original_name <- deparse(substitute(data))
   .check_bin_session(.interactive(), data)
 
-  # CRAN policy: writes to user filespace only when autosave names a directory path.
-  # tryCatch catches setup errors (invalid/non-existent path) and .resume_menu() abort.
+  # CRAN policy: writes to user filespace only with explicit interactive confirmation.
+  # tryCatch catches user-initiated cancellation from .autosave_menu() and .resume_menu().
   setup <- tryCatch(
     {
-      sl <- .autosave_setup(autosave, original_name)
+      sl <- if (isTRUE(autosave) && .interactive()) {
+        .autosave_menu(original_name)
+      } else {
+        if (isTRUE(autosave) && !.interactive()) {
+          warning("autosave = TRUE requires an interactive session; disabling autosave.")
+          autosave <- FALSE
+        }
+        NULL
+      }
       has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
       d <- .resume_menu(data, original_name, sl)
       list(save_loc = sl, data = d, has_comparison = has_comparison)
@@ -1244,8 +1324,6 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   save_loc <- setup$save_loc
   data <- setup$data
   has_comparison <- setup$has_comparison
-  # Collapse autosave to a logical for downstream app/server gates now that the path is resolved.
-  autosave <- !is.null(save_loc)
 
   # Char-vector path: validate that each ... entry is a length-2 character vector.
   if (is.character(data)) {
@@ -1319,7 +1397,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_binary_app(app_data, autosave)
   }
-  message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
+  message("\nYour data was saved to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
   result
 }
 

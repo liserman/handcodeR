@@ -12,7 +12,7 @@
 ```
 
 The single NOTE is environmental ("unable to verify current time") and not
-related to the package.
+related to the package.1
 
 ## Release summary
 
@@ -22,15 +22,16 @@ This release (0.2.1) is a substantial rewrite of the package:
   `handcode_binary()`, package-level help).
 - Cleaned NAMESPACE: internal helpers are no longer exported.
 - New features: `quickcode` mode, comparison annotation workflow, autosave
-  with explicit user-confirmed save location (CRAN-policy compliant).
+  to a directory path supplied via the `autosave` argument (CRAN-policy
+  compliant).
 - Extended test suite.
 - Updated documentation (DESCRIPTION, README, URL/BugReports fields).
 
 ## CRAN policy compliance
 
-- Writes to user filespace (autosave/quicksave) only occur after explicit
-  per-session user confirmation via an interactive menu.
-- Configuration (last-used save directory) is stored in
-  `tools::R_user_dir("handcodeR", "config")`, as permitted by CRAN policy.
+- Writes to user filespace (autosave/quicksave) only occur when the user
+  passes an explicit directory path as the `autosave` argument.
+- The default (`autosave = FALSE`) performs no disk writes outside of
+  `tempdir()`.
 - No examples write to disk; interactive Shiny entry points are wrapped in
   `\dontrun{}`.

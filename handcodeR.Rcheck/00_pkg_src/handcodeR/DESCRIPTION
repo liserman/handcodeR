@@ -1,0 +1,32 @@
+Type: Package
+Package: handcodeR
+Title: Text Annotation App
+Version: 0.2.1
+Authors@R: c(
+    person(given = "Lukas", family = "Isermann", role = c("aut", "cre"),
+        email = "lukas.isermann@uni-mannheim.de",
+        comment = c(ORCID = "0000-0002-7195-9302")),
+    person(given = "Dennis", family = "Klingenspohr", role = "aut",
+        email = "dennis.klingenspohr@gmail.com",
+        comment = c(ORCID = "0009-0000-7876-5634")))
+Description: Shiny-App that allows to annotate vectors of texts to predefined
+    categories by hand. Features a modern UI with unlimited classification
+    variables.
+License: MIT + file LICENSE
+URL: https://github.com/liserman/handcodeR
+BugReports: https://github.com/liserman/handcodeR/issues
+Depends: R (>= 4.0)
+Imports: shiny (>= 1.7.0), shinyWidgets (>= 0.7.6), bslib (>= 0.5.0),
+        shinyjs (>= 2.1.0)
+Suggests: testthat (>= 3.0.0)
+Encoding: UTF-8
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3
+NeedsCompilation: no
+Packaged: 2026-05-10 15:31:14 UTC; neodymio
+Author: Lukas Isermann [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-7195-9302>),
+  Dennis Klingenspohr [aut] (ORCID:
+    <https://orcid.org/0009-0000-7876-5634>)
+Maintainer: Lukas Isermann <lukas.isermann@uni-mannheim.de>

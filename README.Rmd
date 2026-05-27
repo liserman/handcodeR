@@ -358,19 +358,22 @@ Clicking **"Save and Exit"** in the app cleanly closes the Shiny session and ret
 
 #### Quicksave
 
-Clicking the **"Quicksave"** button writes a timestamped `.RData` snapshot of the current annotation state to your working directory, **without** ending the session. Files are named `<object_name>_quicksave_<timestamp>.RData`. Quicksaves accumulate, so multiple checkpoints can coexist for the same object.
+Clicking the **"Quicksave"** button writes a timestamped `.RData` snapshot of the current annotation state to the autosave directory, **without** ending the session. Files are named `<object_name>_quicksave_<timestamp>.RData`. Quicksaves accumulate, so multiple checkpoints can coexist for the same object. Quicksave requires that autosave is enabled (see below); without a save location the button is informational only.
 
 #### Autosave
 
-If the app terminates **unexpectedly** (browser closed, R session killed, network drop), the package writes an autosave file `<object_name>_autosave.RData` to the working directory. The autosave is overwritten on each unexpected close, so it always reflects the most recent recoverable state. Autosave is disabled by setting `autosave = FALSE` in the call to `handcode()` or `handcode_binary()`.
+Autosave is enabled by passing a target directory to `autosave`, e.g. `autosave = "my_saves"`. The directory must already exist; it is never created automatically. If the app then terminates **unexpectedly** (browser closed, R session killed, network drop), the package writes an autosave file `<object_name>_autosave.RData` to that directory. The autosave is overwritten on each unexpected close, so it always reflects the most recent recoverable state. Autosave is off by default (`autosave = FALSE`), in which case nothing is written to disk.
+
+Independently of the `autosave` setting, closing the app **without** using Save & Exit always returns the annotated data to your R session as the function's return value (the "data saved to the R workspace" path), so in-progress work is never lost — the on-disk autosave file is an additional recovery layer for when the R session itself dies.
 
 #### Resume menu
 
-When you call `handcode()` (or `handcode_binary()`) with a data frame whose object name matches existing autosave or quicksave files, the function shows an interactive console menu that lists every recoverable state along with the number of annotated rows in each. You can then select the most complete version to continue from, or abort to keep the data frame as-is.
+When you call `handcode()` (or `handcode_binary()`) with `autosave = "<dir>"` and that directory already holds autosave or quicksave files for the same object name, the function shows an interactive console menu that lists every recoverable state along with the number of annotated rows in each. You can then select the most complete version to continue from, or abort to keep the data frame as-is.
 
 ```{r, eval = FALSE}
 annotated <- handcode(data = annotated,
-                      context = TRUE)
+                      context = TRUE,
+                      autosave = "my_saves")
 
 # Saved version(s) found. Which data do you want to use?
 #

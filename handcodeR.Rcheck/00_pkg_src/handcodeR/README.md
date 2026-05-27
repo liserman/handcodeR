@@ -359,7 +359,7 @@ applies to `handcode_binary()`.
 | `comparison`      | `NULL`                | Optional second character vector displayed side-by-side with `data`. Enables comparison mode.                                                                                                                     |
 | `pre_comparison`  | `NULL`                | Per-row previous-text override for the `comparison` vector.                                                                                                                                                       |
 | `post_comparison` | `NULL`                | Per-row next-text override for the `comparison` vector.                                                                                                                                                           |
-| `autosave`        | `FALSE`               | `FALSE` (no disk writes) or a path to an **existing** directory. When a directory is given, `<name>_autosave.RData` (and quicksaves) are written there on unexpected termination. Save & Exit never triggers autosave. |
+| `autosave`        | `TRUE`                | Write `<name>_autosave.RData` on unexpected termination. Save & Exit never triggers autosave.                                                                                                                     |
 | `add_notes`       | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                            |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, numeric keys `1`–`9` cycle through the radio choices of the variable at that position. At most 9 classification variables supported.                                                                   |
 
@@ -425,7 +425,7 @@ binary_comparison <- handcode_binary(data = wombat_1$text,
 | `missing`         | `c("Not applicable")` | Single missing-value label (binary mode requires exactly one — the UI has one shared `(missing)` button per variable). Stored internally as `_label_`.                                                                                            |
 | `pre`             | `NULL`                | Per-row previous-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                          |
 | `post`            | `NULL`                | Per-row next-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                              |
-| `autosave`        | `FALSE`               | `FALSE` (no disk writes) or a path to an **existing** directory. When a directory is given, `<name>_autosave.RData` (and quicksaves) are written there on unexpected termination. Save & Exit never triggers autosave.                            |
+| `autosave`        | `TRUE`                | Write `<name>_autosave.RData` on unexpected termination. Save & Exit never triggers autosave.                                                                                                                                                     |
 | `multifactorial`  | `TRUE`                | If `TRUE`, each variable is coded independently. If `FALSE`, selecting the _left_ value on one variable force-sets all other (non-missing) variables to their _right_ value, enforcing a single positive-class assignment per row.                |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, keys `1`–`9` click the left button of the variable at that position (1 = first variable, 2 = second, …). Caps the number of classification variables at 9. Mutually exclusive with `quickcode`.                                        |
 | `quickcode`       | `FALSE`               | If `TRUE`, renders three side-by-side keys (1 = left, 2 = right, 3 = missing) and auto-advances to the next row on selection. Requires exactly one classification variable and `multifactorial = TRUE`. Mutually exclusive with `enable_numeric`. |
@@ -454,44 +454,32 @@ dialog appears so you know your data was saved before the tab closes.
 #### Quicksave
 
 Clicking the **“Quicksave”** button writes a timestamped `.RData`
-snapshot of the current annotation state to the autosave directory,
+snapshot of the current annotation state to your working directory,
 **without** ending the session. Files are named
 `<object_name>_quicksave_<timestamp>.RData`. Quicksaves accumulate, so
-multiple checkpoints can coexist for the same object. Quicksave requires
-that autosave is enabled (see below); without a save location the button
-is informational only.
+multiple checkpoints can coexist for the same object.
 
 #### Autosave
 
-Autosave is enabled by passing a target directory to `autosave`, e.g.
-`autosave = "my_saves"`. The directory must already exist; it is never
-created automatically. If the app then terminates **unexpectedly**
-(browser closed, R session killed, network drop), the package writes an
-autosave file `<object_name>_autosave.RData` to that directory. The
-autosave is overwritten on each unexpected close, so it always reflects
-the most recent recoverable state. Autosave is off by default
-(`autosave = FALSE`), in which case nothing is written to disk.
-
-Independently of the `autosave` setting, closing the app **without** using
-Save & Exit always returns the annotated data to your R session as the
-function's return value (the “data saved to the R workspace” path), so
-in-progress work is never lost — the on-disk autosave file is an
-additional recovery layer for when the R session itself dies.
+If the app terminates **unexpectedly** (browser closed, R session
+killed, network drop), the package writes an autosave file
+`<object_name>_autosave.RData` to the working directory. The autosave is
+overwritten on each unexpected close, so it always reflects the most
+recent recoverable state. Autosave is disabled by setting
+`autosave = FALSE` in the call to `handcode()` or `handcode_binary()`.
 
 #### Resume menu
 
-When you call `handcode()` (or `handcode_binary()`) with
-`autosave = "<dir>"` and that directory already holds autosave or
-quicksave files for the same object name, the function shows an
-interactive console menu that lists every recoverable state along with
-the number of annotated rows in each. You can then select the most
-complete version to continue from, or abort to keep the data frame
-as-is.
+When you call `handcode()` (or `handcode_binary()`) with a data frame
+whose object name matches existing autosave or quicksave files, the
+function shows an interactive console menu that lists every recoverable
+state along with the number of annotated rows in each. You can then
+select the most complete version to continue from, or abort to keep the
+data frame as-is.
 
 ```r
 annotated <- handcode(data = annotated,
-                      context = TRUE,
-                      autosave = "my_saves")
+                      context = TRUE)
 
 # Saved version(s) found. Which data do you want to use?
 #
