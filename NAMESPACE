@@ -3,4 +3,3 @@
 export(handcode)
 export(handcode_binary)
 importFrom(stats,setNames)
-importFrom(utils,menu)

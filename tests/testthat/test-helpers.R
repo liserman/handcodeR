@@ -120,28 +120,6 @@ test_that(".get_current_value returns empty string for NA", {
 })
 
 # ============================================================================ #
-# Misc: .menu_wrapper and .readline_wrapper Pass-Through                       #
-# ---------------------------------------------------------------------------- #
-# Verifies wrapper functions dispatch to their underlying I/O calls.           #
-# ============================================================================ #
-
-test_that(".menu_wrapper dispatches to utils::menu", {
-  local_mocked_bindings(
-    .menu_wrapper = function(...) 42L,
-    .package      = "handcodeR"
-  )
-  expect_equal(handcodeR:::.menu_wrapper(c("a", "b")), 42L)
-})
-
-test_that(".readline_wrapper dispatches to readline", {
-  local_mocked_bindings(
-    .readline_wrapper = function(prompt = "") "hello",
-    .package          = "handcodeR"
-  )
-  expect_equal(handcodeR:::.readline_wrapper("prompt: "), "hello")
-})
-
-# ============================================================================ #
 # Misc: .interactive                                                           #
 # ---------------------------------------------------------------------------- #
 # Verifies that .interactive() returns a logical scalar.                       #
@@ -379,49 +357,6 @@ test_that(".prepare_data extra_exclude with non-existent column is a no-op", {
 })
 
 # ============================================================================ #
-# Output: .count_annotations                                                   #
-# ---------------------------------------------------------------------------- #
-# Counts rows with at least one non-empty annotation column.                   #
-# ============================================================================ #
-
-test_that(".count_annotations returns 0 for fully empty df", {
-  df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
-  expect_equal(handcodeR:::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations counts rows with at least one annotation", {
-  df <- data.frame(texts = c("a", "b", "c"), cat1 = c("X", "", "Y"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR:::.count_annotations(df), 2L)
-})
-
-test_that(".count_annotations ignores technical columns", {
-  df <- data.frame(
-    texts = "a", id = 1L, before = "x", after = "y", notes = "note",
-    stringsAsFactors = FALSE
-  )
-  expect_equal(handcodeR:::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations returns 0L for df with no annotation columns", {
-  df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
-  expect_equal(handcodeR:::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations treats NA as unannotated", {
-  df <- data.frame(texts = "a", cat1 = NA_character_, stringsAsFactors = FALSE)
-  expect_equal(handcodeR:::.count_annotations(df), 0L)
-})
-
-test_that(".count_annotations mixed annotated/empty/NA rows", {
-  df <- data.frame(
-    texts = c("a", "b", "c", "d"),
-    cat1 = c("X", "", NA, "Y"),
-    stringsAsFactors = FALSE
-  )
-  expect_equal(handcodeR:::.count_annotations(df), 2L)
-})
-
-# ============================================================================ #
 # Output: .init_annotations                                                    #
 # ---------------------------------------------------------------------------- #
 # Prefills annotation buffers to guarantee stable indexing.                    #
@@ -547,41 +482,6 @@ test_that(".gen_output applies extra_cleanup_function", {
     }
   )
   expect_false("extra_col" %in% names(result))
-})
-
-# ============================================================================ #
-# Recovery: .validate_recovery_df                                              #
-# ---------------------------------------------------------------------------- #
-# NULL-guard for loaded RData objects before they enter resume logic.          #
-# ============================================================================ #
-
-test_that(".validate_recovery_df returns NULL for NULL input", {
-  expect_null(handcodeR:::.validate_recovery_df(NULL))
-})
-
-test_that(".validate_recovery_df returns NULL for non-data-frame input", {
-  expect_null(handcodeR:::.validate_recovery_df(list(texts = "a")))
-  expect_null(handcodeR:::.validate_recovery_df(c("a", "b")))
-})
-
-test_that(".validate_recovery_df returns NULL for data frame without texts column", {
-  df <- data.frame(x = 1:3)
-  expect_null(handcodeR:::.validate_recovery_df(df))
-})
-
-test_that(".validate_recovery_df returns df unchanged when valid", {
-  df <- data.frame(texts = c("a", "b"), cat1 = c("", ""), stringsAsFactors = FALSE)
-  expect_identical(handcodeR:::.validate_recovery_df(df), df)
-})
-
-test_that(".validate_recovery_df returns empty df with texts column unchanged", {
-  df <- data.frame(texts = character(0), stringsAsFactors = FALSE)
-  expect_identical(handcodeR:::.validate_recovery_df(df), df)
-})
-
-test_that(".validate_recovery_df accepts df with texts plus extra columns", {
-  df <- data.frame(texts = "a", cat1 = "X", id = 1L, stringsAsFactors = FALSE)
-  expect_identical(handcodeR:::.validate_recovery_df(df), df)
 })
 
 # ============================================================================ #

@@ -135,7 +135,7 @@ test_that(".run_categorial_app calls shiny::runApp once", {
     called <<- called + 1L
     invisible(NULL)
   }, .package = "shiny")
-  handcodeR:::.run_categorial_app(app_data, autosave = FALSE)
+  handcodeR:::.run_categorial_app(app_data)
   expect_equal(called, 1L)
 })
 
@@ -147,7 +147,7 @@ test_that(".run_binary_app calls shiny::runApp once", {
     called <<- called + 1L
     invisible(NULL)
   }, .package = "shiny")
-  handcodeR:::.run_binary_app(app_data, autosave = FALSE)
+  handcodeR:::.run_binary_app(app_data)
   expect_equal(called, 1L)
 })
 
@@ -159,7 +159,7 @@ test_that(".run_comparison_app calls shiny::runApp once", {
     called <<- called + 1L
     invisible(NULL)
   }, .package = "shiny")
-  handcodeR:::.run_comparison_app(app_data, autosave = FALSE)
+  handcodeR:::.run_comparison_app(app_data)
   expect_equal(called, 1L)
 })
 
@@ -303,6 +303,6 @@ test_that(".run_binary_comparison_app calls shiny::runApp once", {
     },
     .package = "shiny"
   )
-  handcodeR:::.run_binary_comparison_app(app_data, autosave = FALSE)
+  handcodeR:::.run_binary_comparison_app(app_data)
   expect_equal(called, 1L)
 })

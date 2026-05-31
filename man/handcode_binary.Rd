@@ -16,7 +16,7 @@ handcode_binary(
   comparison = NULL,
   pre_comparison = NULL,
   post_comparison = NULL,
-  autosave = FALSE,
+  quicksave = FALSE,
   add_notes = FALSE,
   enable_numeric = FALSE,
   multifactorial = TRUE,
@@ -33,17 +33,23 @@ columns to resume coding).}
 classification variables. The first element labels the left choice,
 the second labels the right choice.}
 
-\item{start}{Either \code{"first_empty"} (default) or an integer index
-indicating which row to start coding at.}
+\item{start}{Row to start coding at. \code{"first_empty"} (default)
+begins at the first row with no completed classifications across all
+variables; \code{"all_empty"} filters the workload to uncoded rows
+only and restarts at row 1; a numeric value is an explicit row index.}
 
-\item{randomize}{Logical. If \code{TRUE}, randomize text order. Default
-\code{FALSE}.}
+\item{randomize}{Logical. If \code{TRUE}, shuffle the display order of
+uncoded rows only; the returned data frame keeps the original row
+order. Default \code{FALSE}.}
 
-\item{context}{Logical. If \code{TRUE}, show preceding/following texts
-as context. Default \code{FALSE}.}
+\item{context}{Context display mode. \code{TRUE} always shows the
+preceding/following texts, \code{FALSE} (default) never shows them,
+and \code{"FLEX"} adds a runtime checkbox to toggle context while
+coding.}
 
-\item{missing}{Character vector of labels for missing/not-applicable
-values. Default \code{c("Not applicable")}.}
+\item{missing}{Single label for missing/not-applicable values. Binary
+mode uses one shared missing button per variable, so exactly one
+label is allowed. Default \code{"Not applicable"}.}
 
 \item{pre}{Optional character vector of texts to prepend as context
 (one per row).}
@@ -60,21 +66,25 @@ text.}
 \item{post_comparison}{Optional context-after vector for the comparison
 text.}
 
-\item{autosave}{Either \code{FALSE} (default; no files are written to
-disk) or a character path to an existing directory. When a directory
-is given, autosave/quicksave \code{.RData} files are written there as
-the session progresses. The directory must already exist.}
+\item{quicksave}{Either \code{FALSE} (default; no Quicksave button is
+shown) or a character path to an existing directory. When a directory
+is given, a Quicksave button is shown that writes timestamped
+\code{<name>_quicksave_<timestamp>.RData} snapshots there. The
+directory must already exist. Not to be confused with
+\code{quickcode} below.}
 
 \item{add_notes}{Logical. If \code{TRUE}, show a free-text notes input
 in the UI. Default \code{FALSE}.}
 
-\item{enable_numeric}{Logical. If \code{TRUE}, enable numeric keyboard
-shortcuts for category selection. Mutually exclusive with
+\item{enable_numeric}{Logical. If \code{TRUE}, keys \code{1}-\code{9}
+click the left button of the variable at that position (at most 9
+classification variables). Mutually exclusive with
 \code{quickcode = TRUE}. Default \code{FALSE}.}
 
-\item{multifactorial}{Logical. If \code{TRUE} (default), allow multiple
-classification variables. If \code{FALSE}, exactly one variable is
-permitted.}
+\item{multifactorial}{Logical. If \code{TRUE} (default), each variable
+is coded independently. If \code{FALSE}, selecting the left value on
+one variable force-sets all other (non-missing) variables to their
+right value, enforcing a single positive-class assignment per row.}
 
 \item{quickcode}{Logical. If \code{TRUE}, enable single-key quickcoding
 mode for one classification variable. Mutually exclusive with
@@ -87,8 +97,8 @@ strings used for the binary buttons. Defaults to
 }
 \value{
 A data frame containing the original texts plus one column per
-  binary classification variable. Returns \code{invisible(NULL)} if the
-  user cancels the autosave or recovery setup.
+  binary classification variable. Closing the app (Save & Exit or
+  otherwise) returns the annotated data to the calling R session.
 }
 \description{
 Launch a Shiny app for hand-coding texts into two-choice (left/right)

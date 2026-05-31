@@ -1,4 +1,4 @@
-# All input-validation tests. Autosave cancel/abort flows live in test-autosave.R.
+# All input-validation tests. Quicksave setup/argument flows live in test-quicksave.R.
 # Tests mock .interactive to bypass the session guard; validation fires before any Shiny call.
 
 # ============================================================================ #

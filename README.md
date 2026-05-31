@@ -29,7 +29,7 @@ two complementary entry points:
   multi-/single-factorial coding.
 
 Both functions return a data frame with your coded annotations, support
-resuming an existing coding session, autosave and quicksave recovery,
+resuming an existing coding session, optional quicksave snapshots,
 free-text notes, randomized order, and contextual display of preceding
 and following texts.
 
@@ -110,9 +110,8 @@ The workflow of the package follows a simple rule:
       previous session as the `data` input.
     - This allows you to pick up where you left off without losing any
       previous annotations.
-    - If autosave or quicksave files exist for the same object name, a
-      recovery menu will appear at session start to let you choose the
-      most complete state.
+    - To resume from a `quicksave` snapshot, `load()` the `.RData` file
+      and pass the restored object back as `data`.
 
 ### handcode
 
@@ -260,9 +259,10 @@ following keyboard shortcuts:
 
 When navigating to previously coded lines, the app automatically
 displays your **existing annotations**. For new lines, the default
-values for all annotation variables are `""`. If you reach the **last
-row** of your data, pressing **Enter** will automatically save your
-annotations and exit the Shiny app.
+values for all annotation variables are `""`. On the **last row**,
+pressing **Enter** keeps you on the last row (your selections are saved
+continuously); click **“Save and Exit”** or simply close the app to
+finish and return your data to R.
 
 ### Comparing texts
 
@@ -359,7 +359,7 @@ applies to `handcode_binary()`.
 | `comparison`      | `NULL`                | Optional second character vector displayed side-by-side with `data`. Enables comparison mode.                                                                                                                     |
 | `pre_comparison`  | `NULL`                | Per-row previous-text override for the `comparison` vector.                                                                                                                                                       |
 | `post_comparison` | `NULL`                | Per-row next-text override for the `comparison` vector.                                                                                                                                                           |
-| `autosave`        | `FALSE`               | `FALSE` (no disk writes) or a path to an **existing** directory. When a directory is given, `<name>_autosave.RData` (and quicksaves) are written there on unexpected termination. Save & Exit never triggers autosave. |
+| `quicksave`       | `FALSE`               | `FALSE` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically. |
 | `add_notes`       | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                            |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, numeric keys `1`–`9` cycle through the radio choices of the variable at that position. At most 9 classification variables supported.                                                                   |
 
@@ -425,7 +425,7 @@ binary_comparison <- handcode_binary(data = wombat_1$text,
 | `missing`         | `c("Not applicable")` | Single missing-value label (binary mode requires exactly one — the UI has one shared `(missing)` button per variable). Stored internally as `_label_`.                                                                                            |
 | `pre`             | `NULL`                | Per-row previous-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                          |
 | `post`            | `NULL`                | Per-row next-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                              |
-| `autosave`        | `FALSE`               | `FALSE` (no disk writes) or a path to an **existing** directory. When a directory is given, `<name>_autosave.RData` (and quicksaves) are written there on unexpected termination. Save & Exit never triggers autosave.                            |
+| `quicksave`       | `FALSE`               | `FALSE` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically.                            |
 | `multifactorial`  | `TRUE`                | If `TRUE`, each variable is coded independently. If `FALSE`, selecting the _left_ value on one variable force-sets all other (non-missing) variables to their _right_ value, enforcing a single positive-class assignment per row.                |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, keys `1`–`9` click the left button of the variable at that position (1 = first variable, 2 = second, …). Caps the number of classification variables at 9. Mutually exclusive with `quickcode`.                                        |
 | `quickcode`       | `FALSE`               | If `TRUE`, renders three side-by-side keys (1 = left, 2 = right, 3 = missing) and auto-advances to the next row on selection. Requires exactly one classification variable and `multifactorial = TRUE`. Mutually exclusive with `enable_numeric`. |
@@ -437,69 +437,48 @@ binary_comparison <- handcode_binary(data = wombat_1$text,
 
 The standard navigation shortcuts (Space = previous, Enter = next) and
 all `handcode()` features — `context`, `pre`/`post`, `randomize`,
-`start`, `add_notes`, autosave, quicksave, resume — apply to
+`start`, `add_notes`, `quicksave`, resume — apply to
 `handcode_binary()` as well.
 
-### Saving and resuming work
+### Saving your work
 
-handcodeR provides three layers of save functionality so coding progress
-is never lost.
+#### Closing the app always returns your data
 
-#### Save and exit
+However you close the app — clicking **“Save and Exit”**, closing the
+browser tab, or losing the R connection — the annotated data is returned
+to your R session as the function’s return value. So in-progress work is
+never lost; just assign the call to a variable:
 
-Clicking **“Save and Exit”** in the app cleanly closes the Shiny session
-and returns the annotated data frame to your R session. A confirmation
-dialog appears so you know your data was saved before the tab closes.
+```r
+annotated <- handcode(data = sentences,
+                      sentiment = c("positive", "neutral", "negative"))
+```
+
+Clicking **“Save and Exit”** additionally shows a confirmation dialog so
+you know your data came back before the tab closes.
 
 #### Quicksave
 
-Clicking the **“Quicksave”** button writes a timestamped `.RData`
-snapshot of the current annotation state to the autosave directory,
-**without** ending the session. Files are named
-`<object_name>_quicksave_<timestamp>.RData`. Quicksaves accumulate, so
-multiple checkpoints can coexist for the same object. Quicksave requires
-that autosave is enabled (see below); without a save location the button
-is informational only.
-
-#### Autosave
-
-Autosave is enabled by passing a target directory to `autosave`, e.g.
-`autosave = "my_saves"`. The directory must already exist; it is never
-created automatically. If the app then terminates **unexpectedly**
-(browser closed, R session killed, network drop), the package writes an
-autosave file `<object_name>_autosave.RData` to that directory. The
-autosave is overwritten on each unexpected close, so it always reflects
-the most recent recoverable state. Autosave is off by default
-(`autosave = FALSE`), in which case nothing is written to disk.
-
-Independently of the `autosave` setting, closing the app **without** using
-Save & Exit always returns the annotated data to your R session as the
-function's return value (the “data saved to the R workspace” path), so
-in-progress work is never lost — the on-disk autosave file is an
-additional recovery layer for when the R session itself dies.
-
-#### Resume menu
-
-When you call `handcode()` (or `handcode_binary()`) with
-`autosave = "<dir>"` and that directory already holds autosave or
-quicksave files for the same object name, the function shows an
-interactive console menu that lists every recoverable state along with
-the number of annotated rows in each. You can then select the most
-complete version to continue from, or abort to keep the data frame
-as-is.
+The optional `quicksave` argument enables an on-disk snapshot button.
+Pass a path to an **existing** directory, e.g. `quicksave = "my_saves"`,
+and a **“Quicksave”** button appears in the app. Clicking it writes a
+timestamped `.RData` snapshot of the current annotation state to that
+directory **without** ending the session. Files are named
+`<object_name>_quicksave_<timestamp>.RData`, so snapshots accumulate and
+multiple checkpoints can coexist for the same object.
 
 ```r
-annotated <- handcode(data = annotated,
-                      context = TRUE,
-                      autosave = "my_saves")
-
-# Saved version(s) found. Which data do you want to use?
-#
-# 1: Passed data frame (12 of 60 rows annotated)
-# 2: Autosave 'annotated_autosave.RData' (24 of 60 rows annotated)
-# 3: Latest quicksave 'annotated_quicksave_1714387234.RData' (31 of 60 rows, saved 2026-04-29 14:20)
-# 4: Abort
+annotated <- handcode(data = sentences,
+                      sentiment = c("positive", "neutral", "negative"),
+                      quicksave = "my_saves")
 ```
 
-The resume menu is skipped when no recovery files exist or when `data`
-is a raw character vector.
+`quicksave` defaults to `FALSE` (no button, nothing written to disk). If
+the directory does not exist, the call stops with an error rather than
+creating it. To resume from a quicksave file later, load it manually and
+pass it back to `handcode()`:
+
+```r
+load("my_saves/sentences_quicksave_1714387234.RData")
+annotated <- handcode(data = sentences, sentiment = c("positive", "neutral", "negative"))
+```

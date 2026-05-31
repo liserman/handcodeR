@@ -1,143 +1,32 @@
 # handcodeR text annotation app
 # Lukas Isermann and Dennis Klingenspohr, 2026
 # nolint start
-#' @importFrom utils menu
 #' @importFrom stats setNames
 NULL
 
 # ============================================================================ #
-# Recovery Utilities                                                           #
+# Quicksave Setup                                                              #
 # ---------------------------------------------------------------------------- #
-# Helpers for loading RData files and counting annotations                     #
+# Resolves the quicksave argument into a save location for the Quicksave button #
 # ============================================================================ #
 
-.load_rdata <- function(path, var_name) {
-  # Recovery loads are fail-safe: unreadable files resolve to NULL instead of terminating the session flow.
-  tryCatch(
-    {
-      env <- new.env()
-      suppressWarnings(load(path, envir = env))
-      env[[var_name]]
-    },
-    error = function(err) NULL
-  )
-}
-
-.validate_recovery_df <- function(df) {
-  if (!is.null(df) && is.data.frame(df) && "texts" %in% names(df)) df else NULL
-}
-
 # CRAN policy forbids writing to user filespace without explicit user direction.
-# The autosave argument doubles as that direction: FALSE disables it, a directory path enables it
+# The quicksave argument doubles as that direction: FALSE disables it, a directory path enables it
 # and names the target. The filename prefix is derived from the data variable name and sanitized
 # for filesystem use. A bare TRUE carries no location and is therefore rejected.
 
-.autosave_setup <- function(autosave, default_name) {
-  if (is.null(autosave) || isFALSE(autosave)) {
+.quicksave_setup <- function(quicksave, default_name) {
+  if (is.null(quicksave) || isFALSE(quicksave)) {
     return(NULL)
   }
-  if (!is.character(autosave) || length(autosave) != 1 || !nzchar(trimws(autosave))) {
-    stop("autosave must be FALSE or a path to an existing directory.")
+  if (!is.character(quicksave) || length(quicksave) != 1 || !nzchar(trimws(quicksave))) {
+    stop("quicksave must be FALSE or a path to an existing directory.")
   }
-  dir_out <- normalizePath(trimws(autosave), mustWork = FALSE)
+  dir_out <- normalizePath(trimws(quicksave), mustWork = FALSE)
   if (!dir.exists(dir_out)) {
-    stop(sprintf("autosave path does not exist: '%s'", dir_out))
+    stop(sprintf("quicksave path does not exist: '%s'", dir_out))
   }
   list(dir = dir_out, prefix = .sanitize_id(default_name))
-}
-
-#' @noRd
-.count_annotations <- function(df) {
-  # Annotation count excludes technical/context columns so progress reflects coding work only.
-  cols <- setdiff(names(df), c(
-    "texts", "id", "before", "after", "notes",
-    "comparison", "before_comparison", "after_comparison"
-  ))
-  if (length(cols) == 0) {
-    return(0L)
-  }
-  # A row is considered annotated when at least one classification field contains a non-empty value.
-  sum(apply(df[, cols, drop = FALSE], 1, function(x) any(x != "" & !is.na(x))))
-}
-
-# ============================================================================ #
-# Resume Menu                                                                  #
-# ---------------------------------------------------------------------------- #
-# Offers autosave / quicksave recovery to the user at session start            #
-# ============================================================================ #
-
-.resume_menu <- function(data, original_name, save_loc = NULL) {
-  # menu() needs an interactive session; non-interactive resume is a no-op returning the passed data.
-  if (!.interactive()) {
-    return(data)
-  }
-  # Autosave is a single file overwritten each session; quicksave accumulates timestamped snapshots.
-  # Menu presents annotation counts for passed data, autosave, and most-recent quicksave so the
-  # operator can select the most complete recoverable state.
-  # Resume handling applies only to data-frame sessions that already contain annotation structure.
-  if (!is.data.frame(data) || !"texts" %in% names(data)) {
-    return(data)
-  }
-  # Without an opt-in save_loc, no scan: CRAN policy forbids reading user filespace silently as a default.
-  if (is.null(save_loc)) {
-    return(data)
-  }
-
-  # Autosave is treated as a single recovery checkpoint for the current prefix.
-  autosave_var <- paste0(save_loc$prefix, "_autosave")
-  autosave_path <- file.path(save_loc$dir, paste0(save_loc$prefix, "_autosave.RData"))
-  loaded_autosave <- if (file.exists(autosave_path)) .validate_recovery_df(.load_rdata(autosave_path, autosave_var)) else NULL
-
-  # Quicksave can have multiple snapshots; latest modification time is used as recovery default.
-  quicksave_pat <- paste0("^", save_loc$prefix, "_quicksave_[0-9]+\\.RData$")
-  quicksave_files <- list.files(save_loc$dir, pattern = quicksave_pat, full.names = TRUE)
-  quicksave_path <- if (length(quicksave_files) > 0) quicksave_files[which.max(file.mtime(quicksave_files))] else NULL
-  loaded_quicksave <- if (!is.null(quicksave_path)) .validate_recovery_df(.load_rdata(quicksave_path, save_loc$prefix)) else NULL
-
-  if (is.null(loaded_autosave) && is.null(loaded_quicksave)) {
-    return(data)
-  }
-
-  n_passed <- .count_annotations(data)
-  options <- list(
-    list(
-      label = paste0("Passed data frame (", n_passed, " of ", nrow(data), " rows annotated)"),
-      data = data
-    )
-  )
-
-  if (!is.null(loaded_autosave)) {
-    n_autosave <- .count_annotations(loaded_autosave)
-    options <- c(options, list(list(
-      label = paste0("Autosave '", autosave_path, "' (", n_autosave, " of ", nrow(loaded_autosave), " rows annotated)"),
-      data = loaded_autosave
-    )))
-  }
-  if (!is.null(loaded_quicksave)) {
-    n_quicksave <- .count_annotations(loaded_quicksave)
-    quicksave_time <- format(file.mtime(quicksave_path), "%Y-%m-%d %H:%M")
-    options <- c(options, list(list(
-      label = paste0("Latest quicksave '", quicksave_path, "' (", n_quicksave, " of ", nrow(loaded_quicksave), " rows, saved ", quicksave_time, ")"),
-      data = loaded_quicksave
-    )))
-  }
-  options <- c(options, list(list(label = "Abort", data = NULL)))
-
-  .check_aborted <- function(choice, n_options) {
-    # choice == 0 means Escape/Ctrl+C; last option is always the explicit "Abort" entry.
-    # Returns NULL on abort to allow graceful exit from interactive context.
-    if (choice == 0 || choice == n_options) {
-      return(NULL)
-    }
-    TRUE
-  }
-
-  # The menu surfaces annotation progress so users can choose the most complete recoverable state.
-  labels <- sapply(options, function(opt) opt$label)
-  choice <- .menu_wrapper(choices = labels, title = "\nSaved version(s) found. Which data do you want to use?")
-  abort_check <- .check_aborted(choice, length(labels))
-  if (is.null(abort_check)) stop("handcodeR: session aborted by user.")
-  options[[choice]]$data
 }
 
 # ============================================================================ #
@@ -226,8 +115,6 @@ NULL
 .sanitize_id <- function(x) gsub("[^A-Za-z0-9_]", "_", x)
 
 .interactive <- function() interactive()
-.menu_wrapper <- function(...) utils::menu(...)
-.readline_wrapper <- function(prompt = "") readline(prompt)
 
 #' @noRd
 .format_NA <- function(missing) paste0("_", missing, "_")
@@ -245,6 +132,7 @@ NULL
 # ============================================================================ #
 
 .check_common_params <- function(data, start, randomize, context, pre, post) {
+  # Shared by both entry points: validates the start/randomize/context/pre/post args common to either mode.
   if (length(start) > 1) stop("start must be a single value.")
   if (!is.numeric(start) && !start %in% c("first_empty", "all_empty")) stop("start must be numeric, first_empty, or all_empty.")
   if (!is.logical(randomize) || length(randomize) != 1) stop("randomize must be a single logical value.")
@@ -280,11 +168,13 @@ NULL
   if (any(vapply(arg_list, function(x) "" %in% x, logical(1)))) {
     stop("empty strings are not allowed as category values.")
   }
+  # Duplicates within a variable would collapse to one button, silently dropping a category.
   for (i in seq_along(arg_list)) {
     if (length(unique(arg_list[[i]])) < length(arg_list[[i]])) {
       stop("duplicate categories are not allowed.")
     }
   }
+  # missing labels render as their own buttons; overlap would make a value ambiguous between the two.
   for (cat_vec in arg_list) {
     if (any(missing %in% cat_vec)) stop("missing values cannot overlap with category values.")
   }
@@ -347,6 +237,7 @@ NULL
   if (!is.logical(enable_numeric) || length(enable_numeric) != 1) {
     stop("enable_numeric must be a single logical value.")
   }
+  # Keys 1–9 map to variables by position; more than 9 would exceed the available key range.
   if (enable_numeric && length(arg_list) > 9) {
     stop("enable_numeric = TRUE supports at most 9 classification variables.")
   }
@@ -499,17 +390,11 @@ NULL
 }
 
 .setup_quicksave_handler <- function(input, app_data, save_function) {
+  # The Quicksave button is only rendered when quicksave names a directory (app_data$save_loc set),
+  # so this observer never fires without a save location.
   shiny::observeEvent(input$quicksave, {
-    # Quicksave requires opt-in save_loc; without it, button is informational only.
-    if (is.null(app_data$save_loc)) {
-      shiny::showNotification(
-        "Quicksave disabled. Restart with autosave = \"<dir>\" to enable.",
-        type = "warning", duration = 4
-      )
-      return()
-    }
     # Quicksave captures current progress without ending the annotation session.
-    annotated <- save_function(perform_autosave = FALSE)
+    annotated <- save_function()
     # Timestamp naming keeps snapshots sortable and avoids overwriting prior checkpoints.
     quicksave_file <- file.path(
       app_data$save_loc$dir,
@@ -527,17 +412,16 @@ NULL
   })
 }
 
-.setup_save_handler <- function(input, session, values, app_data, autosave, save_function, extra_cleanup_function = NULL) {
-  # Two exit paths: Save&Exit sets intentional_close, skips autosave, shows confirmation modal,
-  # then calls stopApp(). Browser close / kill / disconnect leaves intentional_close = FALSE so
-  # onSessionEnded returns the annotated data to the R session via stopApp() (always), and writes
-  # an autosave file to disk as well when an autosave directory was configured. This dual path is
-  # the safety net for the whole annotation session.
-  close_state <- shiny::reactiveValues(intentional_close = FALSE, autosave_written = FALSE)
+.setup_save_handler <- function(input, session, values, app_data, save_function, extra_cleanup_function = NULL) {
+  # Two exit paths, both returning the annotated data to the R session via stopApp(): Save&Exit sets
+  # intentional_close and shows a confirmation modal; browser close / kill / disconnect leaves
+  # intentional_close = FALSE so onSessionEnded performs the same return. This is the safety net for
+  # the whole annotation session, so in-progress work is never lost regardless of how the app closes.
+  close_state <- shiny::reactiveValues(intentional_close = FALSE)
 
-  do_save <- function(perform_autosave = TRUE) {
+  do_save <- function() {
     save_function()
-    annotated <- .gen_output(
+    .gen_output(
       original_data          = values$original_data,
       current_ids            = values$data$id,
       annotations            = values$annotations,
@@ -545,34 +429,13 @@ NULL
       add_notes              = app_data$add_notes,
       extra_cleanup_function = extra_cleanup_function
     )
-    if (perform_autosave && autosave && !is.null(app_data$save_loc) &&
-      nchar(app_data$save_loc$prefix) > 0 && !close_state$autosave_written) {
-      # Autosave is reserved for unexpected termination to preserve explicit user exit behavior.
-      # Guard prevents double-write if both Save&Exit and onSessionEnded fire.
-      autosave_file <- file.path(
-        app_data$save_loc$dir,
-        paste0(app_data$save_loc$prefix, "_autosave.RData")
-      )
-      tryCatch(
-        {
-          autosave_var <- paste0(app_data$save_loc$prefix, "_autosave")
-          # assign() writes to local env so save() can locate the variable by name below.
-          assign(autosave_var, annotated, envir = environment())
-          save(list = autosave_var, file = autosave_file, envir = environment())
-          close_state$autosave_written <- TRUE
-          message(paste("Auto-saved to:", autosave_file))
-        },
-        error = function(e) warning("Auto-save failed: ", e$message)
-      )
-    }
-    return(annotated)
   }
 
   .setup_quicksave_handler(input, app_data, do_save)
 
   shiny::observeEvent(input$save_exit, {
     close_state$intentional_close <- TRUE
-    annotated <- do_save(perform_autosave = FALSE)
+    annotated <- do_save()
     shinyjs::runjs("document.head.insertAdjacentHTML('beforeend', '<style>#shiny-disconnected-overlay{display:none!important}</style>');")
     # Show dialog when save and exit is triggered to provide feedback that data was saved before the app closes.
     shiny::showModal(shiny::modalDialog(
@@ -595,10 +458,8 @@ NULL
   session$onSessionEnded(function() {
     shiny::isolate({
       if (!close_state$intentional_close) {
-        # Even without Save & Exit, the work is always returned to the R workspace via stopApp();
-        # do_save additionally writes the recovery file to disk when an autosave directory is set.
-        annotated <- do_save(perform_autosave = TRUE)
-        shiny::stopApp(annotated)
+        # Even without Save & Exit, the work is always returned to the R session via stopApp().
+        shiny::stopApp(do_save())
       }
     })
   })
@@ -854,11 +715,17 @@ NULL
 #'   columns to resume coding).
 #' @param ... Named character vectors defining classification variables.
 #'   Each name becomes a variable, each vector its category levels.
-#' @param start Either \code{"first_empty"} (default) or an integer index
-#'   indicating which row to start coding at.
-#' @param randomize Logical. If \code{TRUE}, randomize text order. Default \code{FALSE}.
-#' @param context Logical. If \code{TRUE}, show preceding/following texts as
-#'   context. Default \code{FALSE}.
+#' @param start Row to start coding at. \code{"first_empty"} (default)
+#'   begins at the first row with no completed classifications across all
+#'   variables; \code{"all_empty"} filters the workload to uncoded rows
+#'   only and restarts at row 1; a numeric value is an explicit row index.
+#' @param randomize Logical. If \code{TRUE}, shuffle the display order of
+#'   uncoded rows only; the returned data frame keeps the original row
+#'   order. Default \code{FALSE}.
+#' @param context Context display mode. \code{TRUE} always shows the
+#'   preceding/following texts, \code{FALSE} (default) never shows them,
+#'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
+#'   coding.
 #' @param missing Character vector of labels for missing/not-applicable
 #'   values. Default \code{c("Not applicable")}.
 #' @param pre Optional character vector of texts to prepend as context
@@ -871,18 +738,20 @@ NULL
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param autosave Either \code{FALSE} (default; no files are written to
-#'   disk) or a character path to an existing directory. When a directory
-#'   is given, autosave/quicksave \code{.RData} files are written there as
-#'   the session progresses. The directory must already exist.
+#' @param quicksave Either \code{FALSE} (default; no Quicksave button is
+#'   shown) or a character path to an existing directory. When a directory
+#'   is given, a Quicksave button is shown that writes timestamped
+#'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
+#'   directory must already exist.
 #' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
-#' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
-#'   shortcuts for category selection. Default \code{FALSE}.
+#' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
+#'   cycle through the radio choices of the variable at that position
+#'   (at most 9 classification variables). Default \code{FALSE}.
 #'
 #' @return A data frame containing the original texts plus one column per
-#'   classification variable. Returns \code{invisible(NULL)} if the user
-#'   cancels the autosave or recovery setup.
+#'   classification variable. Closing the app (Save & Exit or otherwise)
+#'   returns the annotated data to the calling R session.
 #'
 #' @examples
 #' \dontrun{
@@ -900,34 +769,16 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      pre = NULL, post = NULL,
                      comparison = NULL,
                      pre_comparison = NULL, post_comparison = NULL,
-                     autosave = FALSE, add_notes = FALSE,
+                     quicksave = FALSE, add_notes = FALSE,
                      enable_numeric = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_cat_session(.interactive(), arg_list, data)
 
-  # CRAN policy: writes to user filespace only when autosave names a directory path.
-  # tryCatch catches setup errors (invalid/non-existent path) and .resume_menu() abort.
-  setup <- tryCatch(
-    {
-      sl <- .autosave_setup(autosave, original_name)
-      has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
-      d <- .resume_menu(data, original_name, sl)
-      list(save_loc = sl, data = d, has_comparison = has_comparison)
-    },
-    error = function(e) {
-      message(conditionMessage(e))
-      NULL
-    }
-  )
-  if (is.null(setup)) {
-    return(invisible(NULL))
-  }
-  save_loc <- setup$save_loc
-  data <- setup$data
-  has_comparison <- setup$has_comparison
-  # Collapse autosave to a logical for downstream app/server gates now that the path is resolved.
-  autosave <- !is.null(save_loc)
+  # CRAN policy: writes to user filespace only when quicksave names an existing directory.
+  # An invalid/non-existent path stops here with a clear message before the app launches.
+  save_loc <- .quicksave_setup(quicksave, original_name)
+  has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
 
   # Char-vector path: validate ... category specs before promoting to a data frame.
   if (is.character(data)) {
@@ -992,9 +843,9 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 
   # UI execution is isolated in the app runner; this function only prepares and returns result data.
   result <- if (has_comparison) {
-    .run_comparison_app(app_data, autosave)
+    .run_comparison_app(app_data)
   } else {
-    .run_categorial_app(app_data, autosave)
+    .run_categorial_app(app_data)
   }
   message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
   result
@@ -1041,23 +892,23 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   )
 }
 
-.categorial_server <- function(app_data, autosave) {
+.categorial_server <- function(app_data) {
   function(input, output, session) {
     values <- .init_server_values(app_data)
     .setup_common_outputs(input, output, session, values, app_data)
     .setup_categorial_panels(output, values, app_data)
     handler <- .make_categorial_handler(input, session, values, app_data)
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
-    .setup_save_handler(input, session, values, app_data, autosave, handler$save_current)
+    .setup_save_handler(input, session, values, app_data, handler$save_current)
   }
 }
 
-.run_categorial_app <- function(app_data, autosave) {
+.run_categorial_app <- function(app_data) {
   # Wraps UI + server into a Shiny app and blocks until the user closes the session.
   # Return value is the annotated data frame propagated up via stopApp() in .setup_save_handler.
   shiny::runApp(shiny::shinyApp(
     ui     = .build_categorial_ui(app_data),
-    server = .categorial_server(app_data, autosave)
+    server = .categorial_server(app_data)
   ))
 }
 
@@ -1114,7 +965,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   })
 }
 
-.comparison_server <- function(app_data, autosave) {
+.comparison_server <- function(app_data) {
   # Comparison server extends categorial with a second text channel and strips runtime context columns on save.
   function(input, output, session) {
     values <- .init_server_values(app_data)
@@ -1124,17 +975,17 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     handler <- .make_categorial_handler(input, session, values, app_data)
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
 
-    .setup_save_handler(input, session, values, app_data, autosave, handler$save_current,
+    .setup_save_handler(input, session, values, app_data, handler$save_current,
       extra_cleanup_function = .cleanup_comparison_columns
     )
   }
 }
 
-.run_comparison_app <- function(app_data, autosave) {
+.run_comparison_app <- function(app_data) {
   # Comparison-mode equivalent of .run_categorial_app — same launch pattern, different UI/server.
   shiny::runApp(shiny::shinyApp(
     ui     = .build_comparison_ui(app_data),
-    server = .comparison_server(app_data, autosave)
+    server = .comparison_server(app_data)
   ))
 }
 
@@ -1157,14 +1008,20 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #' @param ... Named length-2 character vectors defining binary
 #'   classification variables. The first element labels the left choice,
 #'   the second labels the right choice.
-#' @param start Either \code{"first_empty"} (default) or an integer index
-#'   indicating which row to start coding at.
-#' @param randomize Logical. If \code{TRUE}, randomize text order. Default
-#'   \code{FALSE}.
-#' @param context Logical. If \code{TRUE}, show preceding/following texts
-#'   as context. Default \code{FALSE}.
-#' @param missing Character vector of labels for missing/not-applicable
-#'   values. Default \code{c("Not applicable")}.
+#' @param start Row to start coding at. \code{"first_empty"} (default)
+#'   begins at the first row with no completed classifications across all
+#'   variables; \code{"all_empty"} filters the workload to uncoded rows
+#'   only and restarts at row 1; a numeric value is an explicit row index.
+#' @param randomize Logical. If \code{TRUE}, shuffle the display order of
+#'   uncoded rows only; the returned data frame keeps the original row
+#'   order. Default \code{FALSE}.
+#' @param context Context display mode. \code{TRUE} always shows the
+#'   preceding/following texts, \code{FALSE} (default) never shows them,
+#'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
+#'   coding.
+#' @param missing Single label for missing/not-applicable values. Binary
+#'   mode uses one shared missing button per variable, so exactly one
+#'   label is allowed. Default \code{"Not applicable"}.
 #' @param pre Optional character vector of texts to prepend as context
 #'   (one per row).
 #' @param post Optional character vector of texts to append as context
@@ -1175,18 +1032,22 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param autosave Either \code{FALSE} (default; no files are written to
-#'   disk) or a character path to an existing directory. When a directory
-#'   is given, autosave/quicksave \code{.RData} files are written there as
-#'   the session progresses. The directory must already exist.
+#' @param quicksave Either \code{FALSE} (default; no Quicksave button is
+#'   shown) or a character path to an existing directory. When a directory
+#'   is given, a Quicksave button is shown that writes timestamped
+#'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
+#'   directory must already exist. Not to be confused with
+#'   \code{quickcode} below.
 #' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
-#' @param enable_numeric Logical. If \code{TRUE}, enable numeric keyboard
-#'   shortcuts for category selection. Mutually exclusive with
+#' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
+#'   click the left button of the variable at that position (at most 9
+#'   classification variables). Mutually exclusive with
 #'   \code{quickcode = TRUE}. Default \code{FALSE}.
-#' @param multifactorial Logical. If \code{TRUE} (default), allow multiple
-#'   classification variables. If \code{FALSE}, exactly one variable is
-#'   permitted.
+#' @param multifactorial Logical. If \code{TRUE} (default), each variable
+#'   is coded independently. If \code{FALSE}, selecting the left value on
+#'   one variable force-sets all other (non-missing) variables to their
+#'   right value, enforcing a single positive-class assignment per row.
 #' @param quickcode Logical. If \code{TRUE}, enable single-key quickcoding
 #'   mode for one classification variable. Mutually exclusive with
 #'   \code{enable_numeric = TRUE} and \code{multifactorial = FALSE}, and
@@ -1196,8 +1057,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   \code{list(left = "#10b981", right = "#dc2626")}.
 #'
 #' @return A data frame containing the original texts plus one column per
-#'   binary classification variable. Returns \code{invisible(NULL)} if the
-#'   user cancels the autosave or recovery setup.
+#'   binary classification variable. Closing the app (Save & Exit or
+#'   otherwise) returns the annotated data to the calling R session.
 #'
 #' @examples
 #' \dontrun{
@@ -1215,7 +1076,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             pre = NULL, post = NULL,
                             comparison = NULL,
                             pre_comparison = NULL, post_comparison = NULL,
-                            autosave = FALSE, add_notes = FALSE,
+                            quicksave = FALSE, add_notes = FALSE,
                             enable_numeric = FALSE,
                             multifactorial = TRUE,
                             quickcode = FALSE,
@@ -1224,28 +1085,10 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   original_name <- deparse(substitute(data))
   .check_bin_session(.interactive(), data)
 
-  # CRAN policy: writes to user filespace only when autosave names a directory path.
-  # tryCatch catches setup errors (invalid/non-existent path) and .resume_menu() abort.
-  setup <- tryCatch(
-    {
-      sl <- .autosave_setup(autosave, original_name)
-      has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
-      d <- .resume_menu(data, original_name, sl)
-      list(save_loc = sl, data = d, has_comparison = has_comparison)
-    },
-    error = function(e) {
-      message(conditionMessage(e))
-      NULL
-    }
-  )
-  if (is.null(setup)) {
-    return(invisible(NULL))
-  }
-  save_loc <- setup$save_loc
-  data <- setup$data
-  has_comparison <- setup$has_comparison
-  # Collapse autosave to a logical for downstream app/server gates now that the path is resolved.
-  autosave <- !is.null(save_loc)
+  # CRAN policy: writes to user filespace only when quicksave names an existing directory.
+  # An invalid/non-existent path stops here with a clear message before the app launches.
+  save_loc <- .quicksave_setup(quicksave, original_name)
+  has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
 
   # Char-vector path: validate that each ... entry is a length-2 character vector.
   if (is.character(data)) {
@@ -1315,9 +1158,9 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
 
   # Execution delegates to binary app runtime after input normalization is complete.
   result <- if (has_comparison) {
-    .run_binary_comparison_app(app_data, autosave)
+    .run_binary_comparison_app(app_data)
   } else {
-    .run_binary_app(app_data, autosave)
+    .run_binary_app(app_data)
   }
   message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
   result
@@ -1578,7 +1421,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   list(save_current = save_current, refresh_ui = refresh_ui)
 }
 
-.binary_server <- function(app_data, autosave) {
+.binary_server <- function(app_data) {
   # Binary server delegates panel rendering and observer registration to shared helpers,
   # mirroring the structure of .comparison_server() for consistency.
   function(input, output, session) {
@@ -1587,15 +1430,15 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_binary_panels(output, values, app_data)
     handler <- .make_binary_handler(input, session, values, app_data)
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
-    .setup_save_handler(input, session, values, app_data, autosave, handler$save_current)
+    .setup_save_handler(input, session, values, app_data, handler$save_current)
   }
 }
 
-.run_binary_app <- function(app_data, autosave) {
+.run_binary_app <- function(app_data) {
   # Binary-mode equivalent of .run_categorial_app — same launch pattern, different UI/server.
   shiny::runApp(shiny::shinyApp(
     ui     = .build_binary_ui(app_data),
-    server = .binary_server(app_data, autosave)
+    server = .binary_server(app_data)
   ))
 }
 
@@ -1635,7 +1478,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   )
 }
 
-.binary_comparison_server <- function(app_data, autosave) {
+.binary_comparison_server <- function(app_data) {
   # Structure mirrors .comparison_server(): init → common outputs → comparison outputs →
   # binary panels (comparison_layout = TRUE) → nav/save with cleanup.
   function(input, output, session) {
@@ -1645,17 +1488,17 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_binary_panels(output, values, app_data, comparison_layout = TRUE)
     handler <- .make_binary_handler(input, session, values, app_data)
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
-    .setup_save_handler(input, session, values, app_data, autosave, handler$save_current,
+    .setup_save_handler(input, session, values, app_data, handler$save_current,
       extra_cleanup_function = .cleanup_comparison_columns
     )
   }
 }
 
-.run_binary_comparison_app <- function(app_data, autosave) {
+.run_binary_comparison_app <- function(app_data) {
   # Binary comparison equivalent of .run_binary_app — same launch pattern, different UI/server.
   shiny::runApp(shiny::shinyApp(
     ui     = .build_binary_comparison_ui(app_data),
-    server = .binary_comparison_server(app_data, autosave)
+    server = .binary_comparison_server(app_data)
   ))
 }
 
