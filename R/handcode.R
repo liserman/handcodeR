@@ -121,6 +121,7 @@ NULL
 
 #' @noRd
 .get_current_value <- function(values, var_name, counter) {
+  # Normalizes NA/empty stored values to "" so the UI renders no spurious selection for uncoded rows.
   val <- values$annotations[[var_name]][counter]
   if (!is.na(val) && val != "") val else ""
 }
@@ -322,6 +323,7 @@ NULL
 # ============================================================================ #
 
 .init_server_values <- function(app_data) {
+  # Bundles all mutable session state into one reactiveValues store shared by every observer.
   shiny::reactiveValues(
     counter       = as.integer(app_data$start_val),
     data          = app_data$data,
@@ -852,6 +854,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 }
 
 .build_cat_keyboard_script <- function(app_data) {
+  # Keys 1-9 cycle the radio choices of the variable at that position. Only fires outside form
+  # fields. Sibling of .build_binary_keyboard_script(); cap of 9 matches the enable_numeric limit.
   var_names_js <- paste0('["', paste(names(app_data$classifications), collapse = '","'), '"]')
   paste0(
     "$(document).on('keyup', function(e) {",
@@ -893,6 +897,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 }
 
 .categorial_server <- function(app_data) {
+  # Wires shared outputs, category panels, and nav/save handlers into one server function.
   function(input, output, session) {
     values <- .init_server_values(app_data)
     .setup_common_outputs(input, output, session, values, app_data)
