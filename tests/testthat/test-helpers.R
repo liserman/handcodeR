@@ -413,7 +413,7 @@ test_that(".gen_output removes id column from output", {
   expect_false("id" %in% names(result))
 })
 
-test_that(".gen_output removes before/after columns from output", {
+test_that(".gen_output renames before/after columns to pre/post in output", {
   original <- data.frame(
     texts = "a", cat1 = "", id = 1L, before = "x", after = "y",
     stringsAsFactors = FALSE
@@ -421,6 +421,8 @@ test_that(".gen_output removes before/after columns from output", {
   result <- handcodeR:::.gen_output(original, 1L, list(cat1 = "X"))
   expect_false("before" %in% names(result))
   expect_false("after" %in% names(result))
+  expect_equal(result$pre, "x")
+  expect_equal(result$post, "y")
 })
 
 test_that(".gen_output preserves rows not in current_ids", {
@@ -553,45 +555,49 @@ test_that(".init_comparison_context errors when pre_comparison has wrong length"
 })
 
 # ============================================================================ #
-# Data Prep: .cleanup_comparison_columns                                       #
+# Data Prep: .rename_comparison_context_columns                                #
 # ---------------------------------------------------------------------------- #
-# Strips runtime-only comparison context columns before returning to caller.   #
+# Renames runtime-only comparison context columns to pre_comparison/post_comparison. #
 # ============================================================================ #
 
-test_that(".cleanup_comparison_columns removes both context columns", {
+test_that(".rename_comparison_context_columns renames both context columns", {
   df <- data.frame(
     texts = "a", before_comparison = "x", after_comparison = "y",
     stringsAsFactors = FALSE
   )
-  result <- handcodeR:::.cleanup_comparison_columns(df)
+  result <- handcodeR:::.rename_comparison_context_columns(df)
   expect_false("before_comparison" %in% names(result))
   expect_false("after_comparison" %in% names(result))
+  expect_equal(result$pre_comparison, "x")
+  expect_equal(result$post_comparison, "y")
 })
 
-test_that(".cleanup_comparison_columns removes only before_comparison when present alone", {
+test_that(".rename_comparison_context_columns renames only before_comparison when present alone", {
   df <- data.frame(texts = "a", before_comparison = "x", stringsAsFactors = FALSE)
-  result <- handcodeR:::.cleanup_comparison_columns(df)
+  result <- handcodeR:::.rename_comparison_context_columns(df)
   expect_false("before_comparison" %in% names(result))
+  expect_equal(result$pre_comparison, "x")
 })
 
-test_that(".cleanup_comparison_columns removes only after_comparison when present alone", {
+test_that(".rename_comparison_context_columns renames only after_comparison when present alone", {
   df <- data.frame(texts = "a", after_comparison = "y", stringsAsFactors = FALSE)
-  result <- handcodeR:::.cleanup_comparison_columns(df)
+  result <- handcodeR:::.rename_comparison_context_columns(df)
   expect_false("after_comparison" %in% names(result))
+  expect_equal(result$post_comparison, "y")
 })
 
-test_that(".cleanup_comparison_columns returns df unchanged when neither column present", {
+test_that(".rename_comparison_context_columns returns df unchanged when neither column present", {
   df <- data.frame(texts = "a", cat1 = "X", stringsAsFactors = FALSE)
-  expect_identical(handcodeR:::.cleanup_comparison_columns(df), df)
+  expect_identical(handcodeR:::.rename_comparison_context_columns(df), df)
 })
 
-test_that(".cleanup_comparison_columns leaves standard before/after columns intact", {
+test_that(".rename_comparison_context_columns leaves standard before/after columns intact", {
   df <- data.frame(
     texts = "a", before = "x", after = "y",
     before_comparison = "p", after_comparison = "q",
     stringsAsFactors = FALSE
   )
-  result <- handcodeR:::.cleanup_comparison_columns(df)
+  result <- handcodeR:::.rename_comparison_context_columns(df)
   expect_true("before" %in% names(result))
   expect_true("after" %in% names(result))
 })

@@ -539,7 +539,7 @@ NULL
   # Merges annotation buffers back into the full original dataset by id, so subsetting from
   # start = "all_empty" or randomize = TRUE never drops rows the user did not see.
   # extra_cleanup_function lets mode-specific runtime columns (e.g. comparison context) be
-  # stripped before the annotated frame is returned to the caller.
+  # stripped or renamed before the annotated frame is returned to the caller.
   annotated <- original_data
   idx_map <- match(current_ids, annotated$id)
   valid_idx <- !is.na(idx_map)
@@ -556,8 +556,8 @@ NULL
     annotated$notes <- notes_col
   }
   annotated$id <- NULL
-  if ("before" %in% names(annotated)) annotated$before <- NULL
-  if ("after" %in% names(annotated)) annotated$after <- NULL
+  if ("before" %in% names(annotated)) names(annotated)[names(annotated) == "before"] <- "pre"
+  if ("after" %in% names(annotated)) names(annotated)[names(annotated) == "after"] <- "post"
   if (!is.null(extra_cleanup_function)) annotated <- extra_cleanup_function(annotated)
   annotated
 }
@@ -631,10 +631,11 @@ NULL
   data
 }
 
-.cleanup_comparison_columns <- function(df) {
-  # Comparison context columns are runtime-only; strip before annotated frame returns to caller.
-  if ("before_comparison" %in% names(df)) df$before_comparison <- NULL
-  if ("after_comparison" %in% names(df)) df$after_comparison <- NULL
+.rename_comparison_context_columns <- function(df) {
+  # Comparison context columns surface in output under the pre_comparison/post_comparison
+  # argument names, mirroring how .gen_output renames before/after to pre/post.
+  if ("before_comparison" %in% names(df)) names(df)[names(df) == "before_comparison"] <- "pre_comparison"
+  if ("after_comparison" %in% names(df)) names(df)[names(df) == "after_comparison"] <- "post_comparison"
   df
 }
 
@@ -971,7 +972,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 }
 
 .comparison_server <- function(app_data) {
-  # Comparison server extends categorial with a second text channel and strips runtime context columns on save.
+  # Comparison server extends categorial with a second text channel and renames runtime context
+  # columns to pre_comparison/post_comparison on save.
   function(input, output, session) {
     values <- .init_server_values(app_data)
     .setup_common_outputs(input, output, session, values, app_data)
@@ -981,7 +983,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
 
     .setup_save_handler(input, session, values, app_data, handler$save_current,
-      extra_cleanup_function = .cleanup_comparison_columns
+      extra_cleanup_function = .rename_comparison_context_columns
     )
   }
 }
@@ -1485,7 +1487,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
 
 .binary_comparison_server <- function(app_data) {
   # Structure mirrors .comparison_server(): init → common outputs → comparison outputs →
-  # binary panels (comparison_layout = TRUE) → nav/save with cleanup.
+  # binary panels (comparison_layout = TRUE) → nav/save with context rename.
   function(input, output, session) {
     values <- .init_server_values(app_data)
     .setup_common_outputs(input, output, session, values, app_data)
@@ -1494,7 +1496,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     handler <- .make_binary_handler(input, session, values, app_data)
     .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
     .setup_save_handler(input, session, values, app_data, handler$save_current,
-      extra_cleanup_function = .cleanup_comparison_columns
+      extra_cleanup_function = .rename_comparison_context_columns
     )
   }
 }
