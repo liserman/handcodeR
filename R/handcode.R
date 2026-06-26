@@ -782,6 +782,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   # An invalid/non-existent path stops here with a clear message before the app launches.
   save_loc <- .quicksave_setup(quicksave, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
+  # A resumed session's notes column re-activates notes UI even if add_notes wasn't passed again.
+  has_notes <- add_notes || (is.data.frame(data) && "notes" %in% names(data))
 
   # Char-vector path: validate ... category specs before promoting to a data frame.
   if (is.character(data)) {
@@ -839,7 +841,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     classifications = factor_levels,
     missing         = missing,
     original_name   = original_name,
-    add_notes       = add_notes,
+    add_notes       = has_notes,
     save_loc        = save_loc,
     enable_numeric  = enable_numeric
   )
@@ -1096,6 +1098,8 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   # An invalid/non-existent path stops here with a clear message before the app launches.
   save_loc <- .quicksave_setup(quicksave, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
+  # A resumed session's notes column re-activates notes UI even if add_notes wasn't passed again.
+  has_notes <- add_notes || (is.data.frame(data) && "notes" %in% names(data))
 
   # Char-vector path: validate that each ... entry is a length-2 character vector.
   if (is.character(data)) {
@@ -1159,7 +1163,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     enable_numeric  = enable_numeric,
     quickcode       = quickcode,
     colors          = colors,
-    add_notes       = add_notes,
+    add_notes       = has_notes,
     save_loc        = save_loc
   )
 
