@@ -39,7 +39,7 @@ NULL
   # Common styles centralize shared layout tokens so all app modes keep one visual baseline.
   shiny::tags$style(shiny::HTML("
     .app-container { padding: 20px 2.5%; }
-    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; min-height: calc(14.08rem + 48px); display: flex; flex-direction: column; }
+    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; min-height: calc(14.08rem + 10px); display: flex; flex-direction: column; }
     .current-text { font-size: 1.1rem; line-height: 1.6; color: #1e293b; }
     .context-text { color: #94a3b8; font-size: 0.95rem; }
     .classifications-container { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
