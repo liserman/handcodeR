@@ -263,9 +263,19 @@ NULL
   # start and randomize rules; original_data is preserved at full row count for save-back merge.
   .check_data_first_col(data)
   if (!isFALSE(context)) {
-    # Caller-provided context takes precedence; otherwise context is generated from neighboring rows.
-    # Skip generation if context columns already exist (prior session).
-    if (!("before" %in% names(data)) && !("after" %in% names(data))) {
+    # A resumed session carries the prior save's pre/post columns; restore them to the working
+    # before/after names instead of regenerating, so they aren't duplicated on the next save.
+    if ("pre" %in% names(data) || "post" %in% names(data)) {
+      if ("pre" %in% names(data)) {
+        data$before <- data$pre
+        data$pre <- NULL
+      }
+      if ("post" %in% names(data)) {
+        data$after <- data$post
+        data$post <- NULL
+      }
+    } else if (!("before" %in% names(data)) && !("after" %in% names(data))) {
+      # Caller-provided context takes precedence; otherwise context is generated from neighboring rows.
       if (!is.null(pre) && !is.null(post)) {
         data$before <- pre
         data$after <- post
@@ -372,9 +382,14 @@ NULL
   })
 }
 
-.setup_nav_handler <- function(input, values, save_function, refresh_function) {
+.setup_nav_handler <- function(input, session, values, save_function, refresh_function) {
   # save_function() fires unconditionally on every navigation event, even at boundary (no-op row move).
   # Pending edits flush before the row index changes, so no annotation is silently lost.
+  # The notes textarea is static UI (not rendered reactively like the radio/button panels), so it only
+  # picks up a stored value via refresh_function(). Fire it once after the first flush so a resumed
+  # session shows the existing note for the start row instead of an empty box. The onFlushed callback
+  # runs outside a reactive context, so reads of values$ inside refresh_function() must be isolated.
+  session$onFlushed(function() shiny::isolate(refresh_function()), once = TRUE)
   shiny::observeEvent(input$prev, {
     save_function()
     if (values$counter > 1) {
@@ -620,12 +635,26 @@ NULL
   n_rows <- nrow(data)
   .check_comparison_context(pre_comparison, post_comparison, n_rows)
   if (!isFALSE(context)) {
-    if (!is.null(pre_comparison) && !is.null(post_comparison)) {
-      data$before_comparison <- pre_comparison
-      data$after_comparison <- post_comparison
-    } else {
-      data$before_comparison <- c("", data$comparison[-nrow(data)])
-      data$after_comparison <- c(data$comparison[-1], "")
+    # A resumed session carries the prior save's pre_comparison/post_comparison columns; restore
+    # them to the working before_comparison/after_comparison names instead of regenerating, so
+    # they aren't duplicated on the next save.
+    if ("pre_comparison" %in% names(data) || "post_comparison" %in% names(data)) {
+      if ("pre_comparison" %in% names(data)) {
+        data$before_comparison <- data$pre_comparison
+        data$pre_comparison <- NULL
+      }
+      if ("post_comparison" %in% names(data)) {
+        data$after_comparison <- data$post_comparison
+        data$post_comparison <- NULL
+      }
+    } else if (!("before_comparison" %in% names(data)) && !("after_comparison" %in% names(data))) {
+      if (!is.null(pre_comparison) && !is.null(post_comparison)) {
+        data$before_comparison <- pre_comparison
+        data$after_comparison <- post_comparison
+      } else {
+        data$before_comparison <- c("", data$comparison[-nrow(data)])
+        data$after_comparison <- c(data$comparison[-1], "")
+      }
     }
   }
   data
@@ -906,7 +935,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_common_outputs(input, output, session, values, app_data)
     .setup_categorial_panels(output, values, app_data)
     handler <- .make_categorial_handler(input, session, values, app_data)
-    .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
+    .setup_nav_handler(input, session, values, handler$save_current, handler$refresh_ui)
     .setup_save_handler(input, session, values, app_data, handler$save_current)
   }
 }
@@ -982,7 +1011,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_comparison_outputs(output, values)
     .setup_categorial_panels(output, values, app_data)
     handler <- .make_categorial_handler(input, session, values, app_data)
-    .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
+    .setup_nav_handler(input, session, values, handler$save_current, handler$refresh_ui)
 
     .setup_save_handler(input, session, values, app_data, handler$save_current,
       extra_cleanup_function = .rename_comparison_context_columns
@@ -1440,7 +1469,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_common_outputs(input, output, session, values, app_data)
     .setup_binary_panels(output, values, app_data)
     handler <- .make_binary_handler(input, session, values, app_data)
-    .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
+    .setup_nav_handler(input, session, values, handler$save_current, handler$refresh_ui)
     .setup_save_handler(input, session, values, app_data, handler$save_current)
   }
 }
@@ -1498,7 +1527,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     .setup_comparison_outputs(output, values)
     .setup_binary_panels(output, values, app_data, comparison_layout = TRUE)
     handler <- .make_binary_handler(input, session, values, app_data)
-    .setup_nav_handler(input, values, handler$save_current, handler$refresh_ui)
+    .setup_nav_handler(input, session, values, handler$save_current, handler$refresh_ui)
     .setup_save_handler(input, session, values, app_data, handler$save_current,
       extra_cleanup_function = .rename_comparison_context_columns
     )

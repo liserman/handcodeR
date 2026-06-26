@@ -274,6 +274,18 @@ test_that(".prepare_data skips context generation if columns already exist", {
   expect_equal(result$data$before, c("old_b", "old_b2"))
 })
 
+test_that(".prepare_data restores pre/post from a resumed session to before/after without duplicating", {
+  df <- data.frame(
+    texts = c("a", "b"), pre = c("old_p1", "old_p2"),
+    post = c("old_q1", "old_q2"), stringsAsFactors = FALSE
+  )
+  result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = TRUE, pre = NULL, post = NULL)
+  expect_equal(result$data$before, c("old_p1", "old_p2"))
+  expect_equal(result$data$after, c("old_q1", "old_q2"))
+  expect_false("pre" %in% names(result$data))
+  expect_false("post" %in% names(result$data))
+})
+
 test_that(".prepare_data context=FALSE adds no before/after columns", {
   df <- data.frame(texts = c("a", "b"), stringsAsFactors = FALSE)
   result <- handcodeR:::.prepare_data(df, start = 1, randomize = FALSE, context = FALSE, pre = NULL, post = NULL)
@@ -510,6 +522,20 @@ test_that(".init_comparison_context context=TRUE auto-fills before/after from ne
   )
   expect_equal(result$before_comparison, c("", df$comparison[1:2]))
   expect_equal(result$after_comparison, c(df$comparison[2:3], ""))
+})
+
+test_that(".init_comparison_context restores pre_comparison/post_comparison from a resumed session without duplicating", {
+  df <- make_text_df(3, with_comparison = TRUE)
+  df$pre_comparison <- c("old_p1", "old_p2", "old_p3")
+  df$post_comparison <- c("old_q1", "old_q2", "old_q3")
+  result <- handcodeR:::.init_comparison_context(df,
+    context = TRUE,
+    pre_comparison = NULL, post_comparison = NULL
+  )
+  expect_equal(result$before_comparison, c("old_p1", "old_p2", "old_p3"))
+  expect_equal(result$after_comparison, c("old_q1", "old_q2", "old_q3"))
+  expect_false("pre_comparison" %in% names(result))
+  expect_false("post_comparison" %in% names(result))
 })
 
 test_that(".init_comparison_context caller-supplied pre/post take precedence", {
