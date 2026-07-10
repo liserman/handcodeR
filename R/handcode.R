@@ -49,16 +49,16 @@ NULL
   "))
 }
 
-.binary_styles <- function(colors) {
-  # Binary styles are generated from runtime colors to keep semantic left/right mapping configurable.
-  shiny::tags$style(shiny::HTML(paste0("
+.binary_styles <- function() {
+  # Left/right colors are fixed; the colors argument was removed as unneeded configurability.
+  shiny::tags$style(shiny::HTML("
     .binary-button { display: inline-block; width: 45%; margin: 2%; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 1.2rem; transition: all 0.08s ease; }
-    .binary-left { border: 2px solid ", colors$left, "; background-color: ", .lighten_hex(colors$left), "; color: ", colors$left, "; }
-    .binary-left:hover { background-color: ", colors$left, "; color: white; }
-    .binary-right { border: 2px solid ", colors$right, "; background-color: ", .lighten_hex(colors$right), "; color: ", colors$right, "; }
-    .binary-right:hover { background-color: ", colors$right, "; color: white; }
-    .binary-left.selected { background-color: ", .darken_hex(colors$left), " !important; color: white !important; border-color: ", .darken_hex(colors$left), " !important; }
-    .binary-right.selected { background-color: ", .darken_hex(colors$right), " !important; color: white !important; border-color: ", .darken_hex(colors$right), " !important; }
+    .binary-left { border: 2px solid #10b981; background-color: #e2f6ef; color: #10b981; }
+    .binary-left:hover { background-color: #10b981; color: white; }
+    .binary-right { border: 2px solid #dc2626; background-color: #fae4e4; color: #dc2626; }
+    .binary-right:hover { background-color: #dc2626; color: white; }
+    .binary-left.selected { background-color: #0a7853 !important; color: white !important; border-color: #0a7853 !important; }
+    .binary-right.selected { background-color: #8f1818 !important; color: white !important; border-color: #8f1818 !important; }
     .missing-button { width: 96%; margin: 2%; padding: 10px; text-align: center; border: 2px solid #cbd5e1; border-radius: 8px; cursor: pointer; font-size: 1rem; background-color: #f1f5f9; color: #64748b; transition: all 0.08s ease; }
     .missing-button:hover { background-color: #cbd5e1; color: #334155; }
     .missing-button.selected { background-color: #64748b; color: white; }
@@ -66,7 +66,7 @@ NULL
     .quickcode-button-group { display: flex; flex-direction: row; width: 100%; gap: 2%; }
     .quickcode-button-group .binary-button { width: 32%; margin: 0; }
     .quickcode-button-group .missing-button { display: inline-block; width: 32%; margin: 0; padding: 20px; font-size: 1.2rem; box-sizing: border-box; }
-  ")))
+  "))
 }
 
 .comparison_styles <- function() {
@@ -78,31 +78,6 @@ NULL
     .text-display > .row { flex: 1; align-items: stretch; }
     .text-display > .row > .comparison-col { display: flex; flex-direction: column; }
   "))
-}
-
-#' @noRd
-.darken_hex <- function(hex, factor = 0.65) {
-  # Darkening is used for selected-button states to preserve color identity with stronger contrast.
-  hex <- gsub("^#", "", hex)
-  r <- strtoi(substr(hex, 1, 2), 16L)
-  g <- strtoi(substr(hex, 3, 4), 16L)
-  b <- strtoi(substr(hex, 5, 6), 16L)
-  sprintf("#%02x%02x%02x", as.integer(r * factor), as.integer(g * factor), as.integer(b * factor))
-}
-
-#' @noRd
-.lighten_hex <- function(hex, factor = 0.88) {
-  # Lightening is used for unselected-button backgrounds to keep emphasis on active choices.
-  hex <- gsub("^#", "", hex)
-  r <- strtoi(substr(hex, 1, 2), 16L)
-  g <- strtoi(substr(hex, 3, 4), 16L)
-  b <- strtoi(substr(hex, 5, 6), 16L)
-  sprintf(
-    "#%02x%02x%02x",
-    as.integer(r + (255 - r) * factor),
-    as.integer(g + (255 - g) * factor),
-    as.integer(b + (255 - b) * factor)
-  )
 }
 
 # ============================================================================ #
@@ -139,6 +114,10 @@ NULL
   if (!is.logical(randomize) || length(randomize) != 1) stop("randomize must be a single logical value.")
   # "FLEX" is a third context mode that renders a runtime toggle instead of a fixed on/off state.
   if (!(isTRUE(context) || isFALSE(context) || identical(context, "FLEX"))) stop("context must be TRUE, FALSE, or \"FLEX\".")
+  # pre/post are only used when context is on; reject the silent-drop case so the caller sets context.
+  if (isFALSE(context) && (!is.null(pre) || !is.null(post))) {
+    stop("context must be TRUE or \"FLEX\" when pre/post is supplied.")
+  }
   n_rows <- if (is.data.frame(data)) nrow(data) else length(data)
   if (!is.null(pre) && length(pre) != n_rows) stop("pre must have the same length as data.")
   if (!is.null(post) && length(post) != n_rows) stop("post must have the same length as data.")
@@ -153,8 +132,6 @@ NULL
 
 .check_cat_session <- function(interactive_mode, arg_list, data) {
   if (!interactive_mode) stop("handcode() can only be used in an interactive R session.")
-  # Guard against accidentally passing binary-mode args (colors) to the categorial entry point.
-  if ("colors" %in% names(arg_list)) stop("colors is not supported in categorial annotation.")
   if (!is.data.frame(data) && !is.character(data)) {
     stop("data must be a character vector or data frame from a previous handcode() session.")
   }
@@ -193,7 +170,11 @@ NULL
   if (!"comparison" %in% names(data)) stop("data frame must contain a comparison column.")
 }
 
-.check_comparison_context <- function(pre_comparison, post_comparison, n_rows) {
+.check_comparison_context <- function(pre_comparison, post_comparison, n_rows, context) {
+  # pre/post_comparison are only used when context is on; reject the silent-drop case like pre/post.
+  if (isFALSE(context) && (!is.null(pre_comparison) || !is.null(post_comparison))) {
+    stop("context must be TRUE or \"FLEX\" when pre_comparison/post_comparison is supplied.")
+  }
   # pre/post_comparison are optional; validate length only when the caller supplies them.
   if (!is.null(pre_comparison) && length(pre_comparison) != n_rows) {
     stop("pre_comparison must have the same length as data.")
@@ -242,13 +223,6 @@ NULL
   if (enable_numeric && length(arg_list) > 9) {
     stop("enable_numeric = TRUE supports at most 9 classification variables.")
   }
-}
-
-.check_colors_bin <- function(colors) {
-  # Hex validation prevents malformed strings from breaking CSS color injection in .binary_styles().
-  hex_pattern <- "^#[0-9A-Fa-f]{6}$"
-  if (!grepl(hex_pattern, colors$left)) stop("colors$left must be a valid 6-digit hex color (e.g. '#10b981').")
-  if (!grepl(hex_pattern, colors$right)) stop("colors$right must be a valid 6-digit hex color (e.g. '#dc2626').")
 }
 
 # ============================================================================ #
@@ -469,7 +443,7 @@ NULL
       easyClose = FALSE,
       size = "l"
     ))
-    shinyjs::delay(300, shiny::stopApp(annotated))
+    shinyjs::delay(2500, shiny::stopApp(annotated))
   })
 
   session$onSessionEnded(function() {
@@ -633,7 +607,7 @@ NULL
   # Comparison-side context columns mirror the primary text context: caller-supplied pre/post
   # take precedence, otherwise neighbouring rows fill before/after channels.
   n_rows <- nrow(data)
-  .check_comparison_context(pre_comparison, post_comparison, n_rows)
+  .check_comparison_context(pre_comparison, post_comparison, n_rows, context)
   if (!isFALSE(context)) {
     # A resumed session carries the prior save's pre_comparison/post_comparison columns; restore
     # them to the working before_comparison/after_comparison names instead of regenerating, so
@@ -761,9 +735,9 @@ NULL
 #' @param missing Character vector of labels for missing/not-applicable
 #'   values. Default \code{c("Not applicable")}.
 #' @param pre Optional character vector of texts to prepend as context
-#'   (one per row).
+#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
 #' @param post Optional character vector of texts to append as context
-#'   (one per row).
+#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
@@ -775,7 +749,7 @@ NULL
 #'   is given, a Quicksave button is shown that writes timestamped
 #'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
 #'   directory must already exist.
-#' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
+#' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
 #' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
 #'   cycle through the radio choices of the variable at that position
@@ -801,7 +775,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      pre = NULL, post = NULL,
                      comparison = NULL,
                      pre_comparison = NULL, post_comparison = NULL,
-                     quicksave = FALSE, add_notes = FALSE,
+                     quicksave = FALSE, notes = FALSE,
                      enable_numeric = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
@@ -811,8 +785,8 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   # An invalid/non-existent path stops here with a clear message before the app launches.
   save_loc <- .quicksave_setup(quicksave, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
-  # A resumed session's notes column re-activates notes UI even if add_notes wasn't passed again.
-  has_notes <- add_notes || (is.data.frame(data) && "notes" %in% names(data))
+  # A resumed session's notes column re-activates notes UI even if notes wasn't passed again.
+  has_notes <- notes || (is.data.frame(data) && "notes" %in% names(data))
 
   # Char-vector path: validate ... category specs before promoting to a data frame.
   if (is.character(data)) {
@@ -1061,9 +1035,9 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   mode uses one shared missing button per variable, so exactly one
 #'   label is allowed. Default \code{"Not applicable"}.
 #' @param pre Optional character vector of texts to prepend as context
-#'   (one per row).
+#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
 #' @param post Optional character vector of texts to append as context
-#'   (one per row).
+#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
@@ -1076,7 +1050,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
 #'   directory must already exist. Not to be confused with
 #'   \code{quickcode} below.
-#' @param add_notes Logical. If \code{TRUE}, show a free-text notes input
+#' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
 #' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
 #'   click the left button of the variable at that position (at most 9
@@ -1090,9 +1064,6 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   mode for one classification variable. Mutually exclusive with
 #'   \code{enable_numeric = TRUE} and \code{multifactorial = FALSE}, and
 #'   limited to a single \code{...} variable. Default \code{FALSE}.
-#' @param colors Named list with \code{left} and \code{right} hex color
-#'   strings used for the binary buttons. Defaults to
-#'   \code{list(left = "#10b981", right = "#dc2626")}.
 #'
 #' @return A data frame containing the original texts plus one column per
 #'   binary classification variable. Closing the app (Save & Exit or
@@ -1114,11 +1085,10 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             pre = NULL, post = NULL,
                             comparison = NULL,
                             pre_comparison = NULL, post_comparison = NULL,
-                            quicksave = FALSE, add_notes = FALSE,
+                            quicksave = FALSE, notes = FALSE,
                             enable_numeric = FALSE,
                             multifactorial = TRUE,
-                            quickcode = FALSE,
-                            colors = list()) {
+                            quickcode = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_bin_session(.interactive(), data)
@@ -1127,8 +1097,8 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   # An invalid/non-existent path stops here with a clear message before the app launches.
   save_loc <- .quicksave_setup(quicksave, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
-  # A resumed session's notes column re-activates notes UI even if add_notes wasn't passed again.
-  has_notes <- add_notes || (is.data.frame(data) && "notes" %in% names(data))
+  # A resumed session's notes column re-activates notes UI even if notes wasn't passed again.
+  has_notes <- notes || (is.data.frame(data) && "notes" %in% names(data))
 
   # Char-vector path: validate that each ... entry is a length-2 character vector.
   if (is.character(data)) {
@@ -1137,11 +1107,6 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   }
 
   .check_binary_params(missing, multifactorial, enable_numeric, arg_list, quickcode)
-
-  # Color inputs are validated early to avoid runtime UI inconsistencies.
-  default_colors <- list(left = "#10b981", right = "#dc2626")
-  colors <- utils::modifyList(default_colors, colors)
-  .check_colors_bin(colors)
 
   # Promote raw character vector to the schema-bearing annotation data frame.
   if (is.character(data)) {
@@ -1179,7 +1144,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     }
   }
 
-  # Binary-mode app_data carries extra UI flags: multifactorial, enable_numeric, colors.
+  # Binary-mode app_data carries extra UI flags: multifactorial, enable_numeric.
   app_data <- list(
     data            = prepared_data$data,
     original_data   = prepared_data$original_data,
@@ -1191,7 +1156,6 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     multifactorial  = multifactorial,
     enable_numeric  = enable_numeric,
     quickcode       = quickcode,
-    colors          = colors,
     add_notes       = has_notes,
     save_loc        = save_loc
   )
@@ -1264,7 +1228,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   )
   .build_app_shell(app_data, "handcodeR - Binary", body_slot,
     shiny::uiOutput("binary_panels_container"),
-    extra_styles = .binary_styles(app_data$colors),
+    extra_styles = .binary_styles(),
     keyboard_script = .build_binary_keyboard_script(app_data)
   )
 }
@@ -1513,7 +1477,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   # the two-column layout divider. tagList merges them into a single tags$head injection.
   .build_app_shell(app_data, "handcodeR - Binary (Comparison)", body_slot,
     shiny::uiOutput("binary_panels_container"),
-    extra_styles = shiny::tagList(.binary_styles(app_data$colors), .comparison_styles()),
+    extra_styles = shiny::tagList(.binary_styles(), .comparison_styles()),
     keyboard_script = .build_binary_keyboard_script(app_data)
   )
 }

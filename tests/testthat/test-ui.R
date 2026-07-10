@@ -89,10 +89,9 @@ test_that(".build_binary_ui HTML contains Binary title", {
   expect_true(grepl("Binary", html, fixed = TRUE))
 })
 
-test_that(".binary_styles injects colors used by .build_binary_ui", {
+test_that(".binary_styles uses the fixed binary colors", {
   # Test the style generator directly — the full fluidPage render doesn't expand nested CSS text
-  app_data <- make_app_data(mode = "binary", n = 2, vars = list(lr = c("L", "R")))
-  styles <- paste(as.character(handcodeR:::.binary_styles(app_data$colors)), collapse = "")
+  styles <- paste(as.character(handcodeR:::.binary_styles()), collapse = "")
   expect_true(grepl("#10b981", styles, fixed = TRUE))
   expect_true(grepl("#dc2626", styles, fixed = TRUE))
 })

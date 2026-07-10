@@ -74,7 +74,6 @@ make_app_data <- function(
     app_data$multifactorial <- TRUE
     app_data$enable_numeric <- FALSE
     app_data$quickcode      <- FALSE
-    app_data$colors         <- list(left = "#10b981", right = "#dc2626")
   }
   app_data
 }

@@ -53,7 +53,7 @@ test_that(".check_common_params accepts context FLEX", {
 test_that(".check_common_params rejects pre with wrong length", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
   expect_error(
-    handcodeR:::.check_common_params(df, 1, FALSE, FALSE, pre = c("x", "y"), post = NULL),
+    handcodeR:::.check_common_params(df, 1, FALSE, TRUE, pre = c("x", "y"), post = NULL),
     "pre must have the same length as data"
   )
 })
@@ -61,7 +61,7 @@ test_that(".check_common_params rejects pre with wrong length", {
 test_that(".check_common_params rejects post with wrong length", {
   df <- data.frame(texts = c("a", "b", "c"), stringsAsFactors = FALSE)
   expect_error(
-    handcodeR:::.check_common_params(df, 1, FALSE, FALSE, pre = NULL, post = c("x", "y")),
+    handcodeR:::.check_common_params(df, 1, FALSE, TRUE, pre = NULL, post = c("x", "y")),
     "post must have the same length as data"
   )
 })
@@ -197,6 +197,7 @@ test_that("pre with wrong length throws error", {
     handcodeR:::handcode(
       data = c("t1", "t2", "t3"),
       c("A", "B"),
+      context = TRUE,
       pre = c("x", "y")
     ),
     "pre must have the same length as data"
@@ -209,29 +210,30 @@ test_that("post with wrong length throws error", {
     handcodeR:::handcode(
       data = c("t1", "t2", "t3"),
       c("A", "B"),
+      context = TRUE,
       post = c("x", "y")
     ),
     "post must have the same length as data"
   )
 })
 
-test_that("colors argument throws error in categorial mode", {
-  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
-  expect_error(
-    handcodeR:::handcode(
-      data = c("text1"),
-      c("A", "B"),
-      colors = list(left = "#10b981", right = "#dc2626")
-    ),
-    "colors is not supported in categorial annotation"
-  )
-})
 
 test_that("context FLEX is accepted without error", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   local_mocked_bindings(runApp = function(...) invisible(NULL), .package = "shiny")
   expect_no_error(
     handcodeR:::handcode(data = c("text1"), c("A", "B"), context = "FLEX")
+  )
+})
+
+test_that("pre supplied with context FALSE throws error", {
+  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
+  expect_error(
+    handcodeR:::handcode(
+      data = c("t1", "t2"), c("A", "B"),
+      context = FALSE, pre = c("x", "y")
+    ),
+    "context must be TRUE or .* when pre/post is supplied"
   )
 })
 
@@ -363,34 +365,13 @@ test_that("enable_numeric with more than 9 variables throws error", {
   )
 })
 
-test_that("invalid left hex color throws error", {
-  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
-  expect_error(
-    handcodeR:::handcode_binary(
-      data = c("text1"), c("Yes", "No"),
-      colors = list(left = "notahex")
-    ),
-    "valid 6-digit hex color"
-  )
-})
-
-test_that("invalid right hex color throws error", {
-  local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
-  expect_error(
-    handcodeR:::handcode_binary(
-      data = c("text1"), c("Yes", "No"),
-      colors = list(right = "#GGGGGG")
-    ),
-    "valid 6-digit hex color"
-  )
-})
-
 test_that("pre with wrong length throws error (binary)", {
   local_mocked_bindings(.interactive = function() TRUE, .package = "handcodeR")
   expect_error(
     handcodeR:::handcode_binary(
       data = c("t1", "t2", "t3"),
       c("Yes", "No"),
+      context = TRUE,
       pre = c("x", "y")
     ),
     "pre must have the same length as data"
@@ -403,6 +384,7 @@ test_that("post with wrong length throws error (binary)", {
     handcodeR:::handcode_binary(
       data = c("t1", "t2", "t3"),
       c("Yes", "No"),
+      context = TRUE,
       post = c("x", "y")
     ),
     "post must have the same length as data"
@@ -518,27 +500,27 @@ test_that(".check_comparison_col accepts df with comparison column", {
 
 test_that(".check_comparison_context errors when pre_comparison wrong length", {
   expect_error(
-    handcodeR:::.check_comparison_context(pre_comparison = c("a"), post_comparison = NULL, n_rows = 3),
+    handcodeR:::.check_comparison_context(pre_comparison = c("a"), post_comparison = NULL, n_rows = 3, context = TRUE),
     "pre_comparison must have the same length as data"
   )
 })
 
 test_that(".check_comparison_context errors when post_comparison wrong length", {
   expect_error(
-    handcodeR:::.check_comparison_context(pre_comparison = NULL, post_comparison = c("a"), n_rows = 3),
+    handcodeR:::.check_comparison_context(pre_comparison = NULL, post_comparison = c("a"), n_rows = 3, context = TRUE),
     "post_comparison must have the same length as data"
   )
 })
 
 test_that(".check_comparison_context accepts NULL pre/post (no context columns)", {
   expect_no_error(
-    handcodeR:::.check_comparison_context(NULL, NULL, 3)
+    handcodeR:::.check_comparison_context(NULL, NULL, 3, context = TRUE)
   )
 })
 
 test_that(".check_comparison_context accepts correctly sized pre/post", {
   expect_no_error(
-    handcodeR:::.check_comparison_context(c("a", "b", "c"), c("x", "y", "z"), 3)
+    handcodeR:::.check_comparison_context(c("a", "b", "c"), c("x", "y", "z"), 3, context = TRUE)
   )
 })
 

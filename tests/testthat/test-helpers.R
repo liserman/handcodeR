@@ -1,72 +1,6 @@
 # Pure-logic helpers: color, misc, styles, data prep, output. No Shiny dependency.
 
 # ============================================================================ #
-# Color: .darken_hex                                                           #
-# ---------------------------------------------------------------------------- #
-# Tests for RGB darkening by scalar factor.                                    #
-# ============================================================================ #
-
-test_that(".darken_hex darkens white correctly", {
-  result <- handcodeR:::.darken_hex("#ffffff", 0.65)
-  expect_equal(result, "#a5a5a5")
-})
-
-test_that(".darken_hex darkens a mixed color correctly", {
-  result <- handcodeR:::.darken_hex("#10b981", 0.65)
-  expect_equal(result, "#0a7853")
-})
-
-test_that(".darken_hex works without leading hash", {
-  result <- handcodeR:::.darken_hex("ffffff", 0.65)
-  expect_equal(result, "#a5a5a5")
-})
-
-test_that(".darken_hex factor=1 returns same color", {
-  result <- handcodeR:::.darken_hex("#ffffff", 1.0)
-  expect_equal(result, "#ffffff")
-})
-
-test_that(".darken_hex factor=0 returns black", {
-  result <- handcodeR:::.darken_hex("#ff0000", 0)
-  expect_equal(result, "#000000")
-})
-
-test_that(".darken_hex handles short lowercase hex", {
-  expect_equal(handcodeR:::.darken_hex("#000000", 0.5), "#000000")
-})
-
-# ============================================================================ #
-# Color: .lighten_hex                                                          #
-# ---------------------------------------------------------------------------- #
-# Tests for RGB lightening by scalar factor.                                   #
-# ============================================================================ #
-
-test_that(".lighten_hex lightens black correctly", {
-  result <- handcodeR:::.lighten_hex("#000000", 0.88)
-  expect_equal(result, "#e0e0e0")
-})
-
-test_that(".lighten_hex leaves white unchanged", {
-  result <- handcodeR:::.lighten_hex("#ffffff", 0.88)
-  expect_equal(result, "#ffffff")
-})
-
-test_that(".lighten_hex lightens a mixed color correctly", {
-  result <- handcodeR:::.lighten_hex("#10b981", 0.88)
-  expect_equal(result, "#e2f6ef")
-})
-
-test_that(".lighten_hex factor=0 returns original color", {
-  result <- handcodeR:::.lighten_hex("#aabbcc", 0)
-  expect_equal(result, "#aabbcc")
-})
-
-test_that(".lighten_hex factor=1 returns white", {
-  result <- handcodeR:::.lighten_hex("#aabbcc", 1)
-  expect_equal(result, "#ffffff")
-})
-
-# ============================================================================ #
 # Misc: .format_NA                                                             #
 # ---------------------------------------------------------------------------- #
 # Wraps missing-value labels in underscore sentinels.                          #
@@ -147,18 +81,18 @@ test_that(".common_styles output contains app-container CSS class", {
 })
 
 test_that(".binary_styles returns a shiny tag", {
-  result <- handcodeR:::.binary_styles(list(left = "#10b981", right = "#dc2626"))
+  result <- handcodeR:::.binary_styles()
   expect_s3_class(result, "shiny.tag")
 })
 
-test_that(".binary_styles injects the supplied left color into CSS", {
-  result <- as.character(handcodeR:::.binary_styles(list(left = "#aabbcc", right = "#112233")))
-  expect_true(grepl("#aabbcc", result, fixed = TRUE))
+test_that(".binary_styles uses the fixed green left color", {
+  result <- as.character(handcodeR:::.binary_styles())
+  expect_true(grepl("#10b981", result, fixed = TRUE))
 })
 
-test_that(".binary_styles injects the supplied right color into CSS", {
-  result <- as.character(handcodeR:::.binary_styles(list(left = "#aabbcc", right = "#112233")))
-  expect_true(grepl("#112233", result, fixed = TRUE))
+test_that(".binary_styles uses the fixed red right color", {
+  result <- as.character(handcodeR:::.binary_styles())
+  expect_true(grepl("#dc2626", result, fixed = TRUE))
 })
 
 test_that(".comparison_styles returns a shiny tag", {
