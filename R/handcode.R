@@ -169,6 +169,15 @@ NULL
   }
 }
 
+.check_arg_names <- function(arg_list) {
+  # Shared by both entry points and by char-vector and resumed-data-frame sessions.
+  # Unnamed ... arguments used to be auto-named cat1/bin1: output columns whose names the
+  # caller never chose, and silently ignored entirely on the resume path.
+  if (length(arg_list) > 0 && (is.null(names(arg_list)) || !all(nzchar(names(arg_list))))) {
+    stop("all classification variables must be named, e.g. sentiment = c(\"positive\", \"negative\").")
+  }
+}
+
 .check_comparison_args <- function(comparison, data) {
   # Only called on the char-vector path; df sessions carry the comparison column already.
   if (is.null(comparison)) stop("comparison must be provided when data is a character vector.")
@@ -563,17 +572,14 @@ NULL
 }
 
 #' @noRd
-.character_to_data <- function(data, arg_list, missing, prefix = "cat", comparison = NULL) {
+.character_to_data <- function(data, arg_list, missing, comparison = NULL) {
   # Promotes a raw character vector to the annotation data-frame schema. Each classification
   # becomes a factor column with empty-string + missing sentinels + caller-supplied levels.
-  # Auto-named variables (cat1, cat2, ... or bin1, bin2, ...) keep behaviour stable when the
-  # caller passes unnamed ... arguments.
+  # arg_list is guaranteed fully named by .check_arg_names() upstream.
   df <- data.frame(texts = data, stringsAsFactors = FALSE)
   if (!is.null(comparison)) df$comparison <- comparison
   for (i in seq_along(arg_list)) {
-    var_name <- names(arg_list)[i]
-    if (is.null(var_name) || var_name == "") var_name <- paste0(prefix, i)
-    df[[var_name]] <- factor("", levels = c("", .format_NA(missing), arg_list[[i]]))
+    df[[names(arg_list)[i]]] <- factor("", levels = c("", .format_NA(missing), arg_list[[i]]))
   }
   df
 }
@@ -587,7 +593,6 @@ NULL
   new_sentinels <- .format_NA(missing)
   for (i in seq_along(arg_list)) {
     var_name <- names(arg_list)[i]
-    if (is.null(var_name) || var_name == "") next
     if (var_name %in% names(data)) {
       current_levels <- levels(data[[var_name]])
       # When resuming with a different missing argument, the new sentinel may not exist among
@@ -654,17 +659,17 @@ NULL
 }
 
 #' @noRd
-.prepare_app_data <- function(data, arg_list, missing, prefix, has_comparison, comparison,
+.prepare_app_data <- function(data, arg_list, missing, has_comparison, comparison,
                               start, randomize, context, pre, post,
                               pre_comparison, post_comparison) {
   # Shared prep path for both entry points: promote -> validate -> mutate -> prepare.
   # .check_common_params() must stay ahead of .init_comparison_context(), which branches on
   # context and writes columns, so context is never acted on before it has been validated.
+  .check_arg_names(arg_list)
 
   # Promote raw character vector to the schema-bearing annotation data frame.
   if (is.character(data)) {
     data <- .character_to_data(data, arg_list, missing,
-      prefix = prefix,
       comparison = if (has_comparison) comparison else NULL
     )
   }
@@ -868,7 +873,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     if (has_comparison) .check_comparison_args(comparison, data)
   }
 
-  prep <- .prepare_app_data(data, arg_list, missing, "cat", has_comparison, comparison,
+  prep <- .prepare_app_data(data, arg_list, missing, has_comparison, comparison,
     start, randomize, context, pre, post, pre_comparison, post_comparison
   )
   prepared_data <- prep$prepared_data
@@ -1149,7 +1154,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
 
   .check_binary_params(missing, multifactorial, enable_numeric, arg_list, quickcode)
 
-  prep <- .prepare_app_data(data, arg_list, missing, "bin", has_comparison, comparison,
+  prep <- .prepare_app_data(data, arg_list, missing, has_comparison, comparison,
     start, randomize, context, pre, post, pre_comparison, post_comparison
   )
   prepared_data <- prep$prepared_data
