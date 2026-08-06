@@ -126,10 +126,6 @@ NULL
   if (!is.logical(randomize) || length(randomize) != 1) stop("randomize must be a single logical value.")
   # "FLEX" is a third context mode that renders a runtime toggle instead of a fixed on/off state.
   if (!(isTRUE(context) || isFALSE(context) || identical(context, "FLEX"))) stop("context must be TRUE, FALSE, or \"FLEX\".")
-  # pre/post are only used when context is on; reject the silent-drop case so the caller sets context.
-  if (isFALSE(context) && (!is.null(pre) || !is.null(post))) {
-    stop("context must be TRUE or \"FLEX\" when pre/post is supplied.")
-  }
   n_rows <- if (is.data.frame(data)) nrow(data) else length(data)
   if (!is.null(pre) && length(pre) != n_rows) stop("pre must have the same length as data.")
   if (!is.null(post) && length(post) != n_rows) stop("post must have the same length as data.")
@@ -191,11 +187,7 @@ NULL
   if (!"comparison" %in% names(data)) stop("data frame must contain a comparison column.")
 }
 
-.check_comparison_context <- function(pre_comparison, post_comparison, n_rows, context) {
-  # pre/post_comparison are only used when context is on; reject the silent-drop case like pre/post.
-  if (isFALSE(context) && (!is.null(pre_comparison) || !is.null(post_comparison))) {
-    stop("context must be TRUE or \"FLEX\" when pre_comparison/post_comparison is supplied.")
-  }
+.check_comparison_context <- function(pre_comparison, post_comparison, n_rows) {
   # pre/post_comparison are optional; validate length only when the caller supplies them.
   if (!is.null(pre_comparison) && length(pre_comparison) != n_rows) {
     stop("pre_comparison must have the same length as data.")
@@ -623,7 +615,7 @@ NULL
   # Comparison-side context columns mirror the primary text context: caller-supplied pre/post
   # take precedence, otherwise neighbouring rows fill before/after channels.
   n_rows <- nrow(data)
-  .check_comparison_context(pre_comparison, post_comparison, n_rows, context)
+  .check_comparison_context(pre_comparison, post_comparison, n_rows)
   if (!isFALSE(context)) {
     # A resumed session carries the prior save's pre_comparison/post_comparison columns; restore
     # them to the working before_comparison/after_comparison names instead of regenerating, so
@@ -667,6 +659,14 @@ NULL
   # context and writes columns, so context is never acted on before it has been validated.
   .check_arg_names(arg_list)
 
+  # Supplying any pre/post vector means the caller wants context, so switch it on instead of
+  # silently dropping the vectors. "FLEX" keeps priority: it is already a context-on mode.
+  # Resolved here, ahead of validation, and returned so callers store the effective value.
+  if (isFALSE(context) && (!is.null(pre) || !is.null(post) ||
+    !is.null(pre_comparison) || !is.null(post_comparison))) {
+    context <- TRUE
+  }
+
   # Promote raw character vector to the schema-bearing annotation data frame.
   if (is.character(data)) {
     data <- .character_to_data(data, arg_list, missing,
@@ -705,7 +705,7 @@ NULL
     }
   }
 
-  list(prepared_data = prepared_data, factor_levels = factor_levels)
+  list(prepared_data = prepared_data, factor_levels = factor_levels, context = context)
 }
 
 # ============================================================================ #
@@ -810,19 +810,23 @@ NULL
 #' @param context Context display mode. \code{TRUE} always shows the
 #'   preceding/following texts, \code{FALSE} (default) never shows them,
 #'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
-#'   coding.
+#'   coding. Supplying any of \code{pre}, \code{post},
+#'   \code{pre_comparison} or \code{post_comparison} upgrades
+#'   \code{FALSE} to \code{TRUE}.
 #' @param missing Character vector of labels for missing/not-applicable
 #'   values. Default \code{c("Not applicable")}.
 #' @param pre Optional character vector of texts to prepend as context
-#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
+#'   (one per row). Turns context on automatically when
+#'   \code{context = FALSE}.
 #' @param post Optional character vector of texts to append as context
-#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
+#'   (one per row). Turns context on automatically when
+#'   \code{context = FALSE}.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
-#'   text.
+#'   text. Turns context on automatically when \code{context = FALSE}.
 #' @param post_comparison Optional context-after vector for the comparison
-#'   text.
+#'   text. Turns context on automatically when \code{context = FALSE}.
 #' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
@@ -886,7 +890,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     data            = prepared_data$data,
     original_data   = prepared_data$original_data,
     start_val       = prepared_data$start_val,
-    context         = context,
+    context         = prep$context,
     classifications = factor_levels,
     missing         = missing,
     original_name   = original_name,
@@ -1076,20 +1080,24 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #' @param context Context display mode. \code{TRUE} always shows the
 #'   preceding/following texts, \code{FALSE} (default) never shows them,
 #'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
-#'   coding.
+#'   coding. Supplying any of \code{pre}, \code{post},
+#'   \code{pre_comparison} or \code{post_comparison} upgrades
+#'   \code{FALSE} to \code{TRUE}.
 #' @param missing Single label for missing/not-applicable values. Binary
 #'   mode uses one shared missing button per variable, so exactly one
 #'   label is allowed. Default \code{"Not applicable"}.
 #' @param pre Optional character vector of texts to prepend as context
-#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
+#'   (one per row). Turns context on automatically when
+#'   \code{context = FALSE}.
 #' @param post Optional character vector of texts to append as context
-#'   (one per row). Requires \code{context = TRUE} or \code{"FLEX"}.
+#'   (one per row). Turns context on automatically when
+#'   \code{context = FALSE}.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
-#'   text.
+#'   text. Turns context on automatically when \code{context = FALSE}.
 #' @param post_comparison Optional context-after vector for the comparison
-#'   text.
+#'   text. Turns context on automatically when \code{context = FALSE}.
 #' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
@@ -1165,7 +1173,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     data            = prepared_data$data,
     original_data   = prepared_data$original_data,
     start_val       = prepared_data$start_val,
-    context         = context,
+    context         = prep$context,
     classifications = factor_levels,
     missing         = missing,
     original_name   = original_name,
