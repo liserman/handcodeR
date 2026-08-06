@@ -4,6 +4,9 @@
 #' @importFrom stats setNames
 NULL
 
+# Single source for the citation shown on exit (modal and console). Keep in sync with inst/CITATION.
+.CITATION <- "Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR"
+
 # ============================================================================ #
 # Quicksave Setup                                                              #
 # ---------------------------------------------------------------------------- #
@@ -435,7 +438,7 @@ NULL
         shiny::tags$small(
           style = "color:#64748b;",
           shiny::p("Your data was returned to the R workspace."),
-          "Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR"
+          .CITATION
         )
       ),
       title = "Data saved",
@@ -868,7 +871,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_categorial_app(app_data)
   }
-  message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
+  message("\nYour data was returned to the R workspace.\n\n", .CITATION)
   result
 }
 
@@ -1179,7 +1182,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_binary_app(app_data)
   }
-  message("\nYour data was returned to the R workspace.\n\nPlease cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR")
+  message("\nYour data was returned to the R workspace.\n\n", .CITATION)
   result
 }
 
