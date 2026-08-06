@@ -436,8 +436,7 @@ NULL
       original_data          = values$original_data,
       current_ids            = values$data$id,
       annotations            = values$annotations,
-      notes                  = if (app_data$add_notes) values$notes else NULL,
-      add_notes              = app_data$add_notes,
+      notes                  = if (app_data$notes) values$notes else NULL,
       extra_cleanup_function = extra_cleanup_function
     )
   }
@@ -518,7 +517,7 @@ NULL
         values$annotations[[var_name]][values$counter] <- input[[input_id]]
       }
     }
-    if (app_data$add_notes && !is.null(input$note_text)) {
+    if (app_data$notes && !is.null(input$note_text)) {
       values$notes[values$counter] <- input$note_text
     }
   }
@@ -529,7 +528,7 @@ NULL
       current_val <- .get_current_value(values, var_name, values$counter)
       shiny::updateRadioButtons(session, input_id, selected = current_val)
     }
-    if (app_data$add_notes) {
+    if (app_data$notes) {
       shiny::updateTextAreaInput(session, "note_text", value = values$notes[values$counter])
     }
   }
@@ -544,7 +543,7 @@ NULL
 
 #' @noRd
 .gen_output <- function(original_data, current_ids, annotations, notes = NULL,
-                        add_notes = FALSE, extra_cleanup_function = NULL) {
+                        extra_cleanup_function = NULL) {
   # Merges annotation buffers back into the full original dataset by id, so subsetting from
   # start = "all_empty" or randomize = TRUE never drops rows the user did not see.
   # extra_cleanup_function lets mode-specific runtime columns (e.g. comparison context) be
@@ -559,7 +558,7 @@ NULL
       annotated[[annotation_name]][idx_map[valid_idx]] <- annotations[[annotation_name]][valid_idx]
     }
   }
-  if (add_notes && !is.null(notes)) {
+  if (!is.null(notes)) {
     notes_col <- if ("notes" %in% names(annotated)) as.character(annotated$notes) else rep("", nrow(annotated))
     notes_col[idx_map[valid_idx]] <- notes[valid_idx]
     annotated$notes <- notes_col
@@ -754,7 +753,7 @@ NULL
         if (!is.null(app_data$save_loc)) shiny::actionButton("quicksave", "Quicksave", class = "btn btn-warning"),
         shiny::actionButton("save_exit", "Save and Exit", class = "btn btn-success")
       ),
-      if (app_data$add_notes) {
+      if (app_data$notes) {
         shiny::div(
           style = "margin-top: 20px;",
           shiny::tags$label("Notes", style = "font-weight: 600; color: #1e293b;"),
@@ -890,7 +889,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     classifications = factor_levels,
     missing         = missing,
     original_name   = original_name,
-    add_notes       = has_notes,
+    notes           = has_notes,
     save_loc        = save_loc,
     enable_numeric  = enable_numeric
   )
@@ -1172,7 +1171,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     multifactorial  = multifactorial,
     enable_numeric  = enable_numeric,
     quickcode       = quickcode,
-    add_notes       = has_notes,
+    notes           = has_notes,
     save_loc        = save_loc
   )
 
@@ -1362,7 +1361,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   # Both closures capture input/session/values/app_data via lexical scope.
   save_current <- function() {
     # Binary choices are written immediately by button events; this hook persists notes if enabled.
-    if (app_data$add_notes && !is.null(input$note_text)) {
+    if (app_data$notes && !is.null(input$note_text)) {
       values$notes[values$counter] <- input$note_text
     }
   }
@@ -1388,7 +1387,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
         safe_id, safe_id, safe_id, add_js
       ))
     }
-    if (app_data$add_notes) {
+    if (app_data$notes) {
       # Notes field follows row navigation to maintain per-row note continuity.
       shiny::updateTextAreaInput(session, "note_text", value = values$notes[values$counter])
     }
