@@ -650,10 +650,10 @@ NULL
 
 .build_app_shell <- function(app_data, title, body_slot, panels_slot,
                              extra_styles = NULL, keyboard_script = NULL) {
-  # Default script adds activeElement guard so Space/Enter don't fire inside notes/input fields.
+  # Default script guards via hcInField() so Space/Enter don't fire while typing in notes/inputs.
   default_script <- paste0(
     "$(document).on('keyup', function(e) {",
-    " if ($(document.activeElement).is('input, textarea')) return;",
+    " if (hcInField()) return;",
     " if (e.key === ' ') { e.preventDefault(); $('#prev').click(); }",
     " if (e.key === 'Enter') $('#next').click();",
     "});"
@@ -700,6 +700,19 @@ NULL
       },
       shiny::uiOutput("context_toggle")
     ),
+    # Shared focus helpers used by every keyboard script below.
+    # hcInField(): true only where a keystroke has its own meaning (typing, dropdown navigation).
+    # Radios and checkboxes are excluded on purpose - clicking one with the mouse leaves it as
+    # document.activeElement, and the shortcuts have to keep working afterwards.
+    # Click blur: a clicked <button> keeps DOM focus, so Space/Enter would re-activate it via the
+    # browser default on top of the #prev/#next shortcut. e.detail > 0 limits this to real mouse
+    # clicks; jQuery-triggered .click() (quickcode, numeric keys) leaves keyboard focus alone.
+    shiny::tags$script(shiny::HTML(paste0(
+      "window.hcInField = function() { return $(document.activeElement).is('",
+      "textarea, select, input:not([type=radio]):not([type=checkbox]):not([type=button]):not([type=submit])",
+      "'); };",
+      "$(document).on('click', 'button', function(e) { if (e.detail > 0) this.blur(); });"
+    ))),
     shiny::tags$script(shiny::HTML(if (!is.null(keyboard_script)) keyboard_script else default_script))
   )
 }
@@ -865,14 +878,14 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   var_names_js <- paste0('["', paste(names(app_data$classifications), collapse = '","'), '"]')
   paste0(
     "$(document).on('keyup', function(e) {",
-    " if ($(document.activeElement).is('input, textarea')) return;",
+    " if (hcInField()) return;",
     " if (e.key === ' ') { e.preventDefault(); $('#prev').click(); }",
     " if (e.key === 'Enter') $('#next').click();",
     "});",
     sprintf('
       var numericVars = %s;
       $(document).on("keydown", function(e) {
-        if ($(document.activeElement).is("input, textarea, select")) return;
+        if (hcInField()) return;
         var num = parseInt(e.key);
         if (!isNaN(num) && num >= 1 && num <= numericVars.length) {
           e.preventDefault();
@@ -1176,7 +1189,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   # quickcode binds 1/2/3 to left/right/missing of the single variable plus auto-advance.
   paste0(
     "$(document).on('keyup', function(e) {",
-    " if ($(document.activeElement).is('input, textarea')) return;",
+    " if (hcInField()) return;",
     " if (e.key === ' ') { e.preventDefault(); $('#prev').click(); }",
     " if (e.key === 'Enter') $('#next').click();",
     "});",
@@ -1184,7 +1197,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
       safe_id_js <- .sanitize_id(names(app_data$classifications)[1])
       sprintf('
         $(document).on("keydown", function(e) {
-          if ($(document.activeElement).is("input, textarea, select")) return;
+          if (hcInField()) return;
           if (e.key === "1") {
             e.preventDefault();
             $("#btn_%s_1").click();
@@ -1205,7 +1218,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
       sprintf('
         var numericVars = %s;
         $(document).on("keydown", function(e) {
-          if ($(document.activeElement).is("input, textarea, select")) return;
+          if (hcInField()) return;
           var num = parseInt(e.key);
           if (!isNaN(num) && num >= 1 && num <= numericVars.length) {
             e.preventDefault();
