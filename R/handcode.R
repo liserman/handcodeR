@@ -5,7 +5,15 @@
 NULL
 
 # Single source for the citation shown on exit (modal and console). Keep in sync with inst/CITATION.
-.CITATION <- "Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. handcodeR: Text annotation app. R package version 0.2.1. https://github.com/liserman/handcodeR"
+# Version is read from DESCRIPTION at call time so it never drifts out of sync.
+.citation <- function() {
+  paste0(
+    "Please cite: Isermann, Lukas and Klingenspohr, Dennis. 2026. ",
+    "handcodeR: Text annotation app. R package version ",
+    getNamespaceVersion("handcodeR"),
+    ". https://github.com/liserman/handcodeR"
+  )
+}
 
 # ============================================================================ #
 # Quicksave Setup                                                              #
@@ -438,7 +446,7 @@ NULL
         shiny::tags$small(
           style = "color:#64748b;",
           shiny::p("Your data was returned to the R workspace."),
-          .CITATION
+          .citation()
         )
       ),
       title = "Data saved",
@@ -645,6 +653,56 @@ NULL
   df
 }
 
+#' @noRd
+.prepare_app_data <- function(data, arg_list, missing, prefix, has_comparison, comparison,
+                              start, randomize, context, pre, post,
+                              pre_comparison, post_comparison) {
+  # Shared prep path for both entry points: promote -> validate -> mutate -> prepare.
+  # .check_common_params() must stay ahead of .init_comparison_context(), which branches on
+  # context and writes columns, so context is never acted on before it has been validated.
+
+  # Promote raw character vector to the schema-bearing annotation data frame.
+  if (is.character(data)) {
+    data <- .character_to_data(data, arg_list, missing,
+      prefix = prefix,
+      comparison = if (has_comparison) comparison else NULL
+    )
+  }
+
+  data <- .relevel_data_factors(data, arg_list, missing)
+
+  if (has_comparison) .check_comparison_col(data)
+
+  .check_common_params(data, start, randomize, context, pre, post)
+
+  if (has_comparison) {
+    data <- .init_comparison_context(data, context, pre_comparison, post_comparison)
+  }
+
+  # Comparison columns are excluded from class-column detection so they aren't treated as
+  # annotation targets by start/randomize logic in .prepare_data().
+  prepared_data <- if (has_comparison) {
+    .prepare_data(data, start, randomize, context, pre, post,
+      extra_exclude = c("comparison", "before_comparison", "after_comparison")
+    )
+  } else {
+    .prepare_data(data, start, randomize, context, pre, post)
+  }
+
+  # Reconstruct the per-variable choice list from factor levels, stripping the empty-string
+  # placeholder and the _missing_ sentinels so only real categories are surfaced to the UI.
+  factor_levels <- list()
+  for (col in prepared_data$class_cols) {
+    if (is.factor(prepared_data$data[[col]])) {
+      lvls <- levels(prepared_data$data[[col]])
+      lvls <- lvls[!grepl("^_.*_$|^$", lvls)]
+      if (length(lvls) > 0) factor_levels[[col]] <- lvls
+    }
+  }
+
+  list(prepared_data = prepared_data, factor_levels = factor_levels)
+}
+
 # ============================================================================ #
 # App Shell Builder                                                            #
 # ---------------------------------------------------------------------------- #
@@ -810,44 +868,11 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     if (has_comparison) .check_comparison_args(comparison, data)
   }
 
-  # Promote raw character vector to the schema-bearing annotation data frame.
-  if (is.character(data)) {
-    data <- .character_to_data(data, arg_list, missing,
-      prefix = "cat",
-      comparison = if (has_comparison) comparison else NULL
-    )
-  }
-
-  data <- .relevel_data_factors(data, arg_list, missing)
-
-  if (has_comparison) .check_comparison_col(data)
-
-  .check_common_params(data, start, randomize, context, pre, post)
-
-  if (has_comparison) {
-    data <- .init_comparison_context(data, context, pre_comparison, post_comparison)
-  }
-
-  # Comparison columns are excluded from class-column detection so they aren't treated as
-  # annotation targets by start/randomize logic in .prepare_data().
-  prepared_data <- if (has_comparison) {
-    .prepare_data(data, start, randomize, context, pre, post,
-      extra_exclude = c("comparison", "before_comparison", "after_comparison")
-    )
-  } else {
-    .prepare_data(data, start, randomize, context, pre, post)
-  }
-
-  # Reconstruct the per-variable choice list from factor levels, stripping the empty-string
-  # placeholder and the _missing_ sentinels so only real categories are surfaced to the UI.
-  factor_levels <- list()
-  for (col in prepared_data$class_cols) {
-    if (is.factor(prepared_data$data[[col]])) {
-      lvls <- levels(prepared_data$data[[col]])
-      lvls <- lvls[!grepl("^_.*_$|^$", lvls)]
-      if (length(lvls) > 0) factor_levels[[col]] <- lvls
-    }
-  }
+  prep <- .prepare_app_data(data, arg_list, missing, "cat", has_comparison, comparison,
+    start, randomize, context, pre, post, pre_comparison, post_comparison
+  )
+  prepared_data <- prep$prepared_data
+  factor_levels <- prep$factor_levels
 
   .check_cat_numeric_param(enable_numeric, factor_levels)
 
@@ -871,7 +896,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_categorial_app(app_data)
   }
-  message("\nYour data was returned to the R workspace.\n\n", .CITATION)
+  message("\nYour data was returned to the R workspace.\n\n", .citation())
   result
 }
 
@@ -1124,41 +1149,11 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
 
   .check_binary_params(missing, multifactorial, enable_numeric, arg_list, quickcode)
 
-  # Promote raw character vector to the schema-bearing annotation data frame.
-  if (is.character(data)) {
-    data <- .character_to_data(data, arg_list, missing,
-      prefix = "bin",
-      comparison = if (has_comparison) comparison else NULL
-    )
-  }
-
-  data <- .relevel_data_factors(data, arg_list, missing)
-
-  if (has_comparison) .check_comparison_col(data)
-
-  if (has_comparison) {
-    data <- .init_comparison_context(data, context, pre_comparison, post_comparison)
-  }
-
-  .check_common_params(data, start, randomize, context, pre, post)
-  prepared_data <- if (has_comparison) {
-    .prepare_data(data, start, randomize, context, pre, post,
-      extra_exclude = c("comparison", "before_comparison", "after_comparison")
-    )
-  } else {
-    .prepare_data(data, start, randomize, context, pre, post)
-  }
-
-  # Reconstruct the per-variable choice list from factor levels, stripping the empty-string
-  # placeholder and the _missing_ sentinels so only real categories are surfaced to the UI.
-  factor_levels <- list()
-  for (col in prepared_data$class_cols) {
-    if (is.factor(prepared_data$data[[col]])) {
-      lvls <- levels(prepared_data$data[[col]])
-      lvls <- lvls[!grepl("^_.*_$|^$", lvls)]
-      if (length(lvls) > 0) factor_levels[[col]] <- lvls
-    }
-  }
+  prep <- .prepare_app_data(data, arg_list, missing, "bin", has_comparison, comparison,
+    start, randomize, context, pre, post, pre_comparison, post_comparison
+  )
+  prepared_data <- prep$prepared_data
+  factor_levels <- prep$factor_levels
 
   # Binary-mode app_data carries extra UI flags: multifactorial, enable_numeric.
   app_data <- list(
@@ -1182,7 +1177,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   } else {
     .run_binary_app(app_data)
   }
-  message("\nYour data was returned to the R workspace.\n\n", .CITATION)
+  message("\nYour data was returned to the R workspace.\n\n", .citation())
   result
 }
 
