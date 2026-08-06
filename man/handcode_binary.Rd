@@ -16,12 +16,11 @@ handcode_binary(
   comparison = NULL,
   pre_comparison = NULL,
   post_comparison = NULL,
-  quicksave = FALSE,
-  add_notes = FALSE,
+  quicksave = NULL,
+  notes = FALSE,
   enable_numeric = FALSE,
   multifactorial = TRUE,
-  quickcode = FALSE,
-  colors = list()
+  quickcode = FALSE
 )
 }
 \arguments{
@@ -52,10 +51,10 @@ mode uses one shared missing button per variable, so exactly one
 label is allowed. Default \code{"Not applicable"}.}
 
 \item{pre}{Optional character vector of texts to prepend as context
-(one per row).}
+(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
 
 \item{post}{Optional character vector of texts to append as context
-(one per row).}
+(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
 
 \item{comparison}{Optional character vector for paired-text comparison
 workflows.}
@@ -66,14 +65,14 @@ text.}
 \item{post_comparison}{Optional context-after vector for the comparison
 text.}
 
-\item{quicksave}{Either \code{FALSE} (default; no Quicksave button is
+\item{quicksave}{Either \code{NULL} (default; no Quicksave button is
 shown) or a character path to an existing directory. When a directory
 is given, a Quicksave button is shown that writes timestamped
 \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
 directory must already exist. Not to be confused with
 \code{quickcode} below.}
 
-\item{add_notes}{Logical. If \code{TRUE}, show a free-text notes input
+\item{notes}{Logical. If \code{TRUE}, show a free-text notes input
 in the UI. Default \code{FALSE}.}
 
 \item{enable_numeric}{Logical. If \code{TRUE}, keys \code{1}-\code{9}
@@ -90,10 +89,6 @@ right value, enforcing a single positive-class assignment per row.}
 mode for one classification variable. Mutually exclusive with
 \code{enable_numeric = TRUE} and \code{multifactorial = FALSE}, and
 limited to a single \code{...} variable. Default \code{FALSE}.}
-
-\item{colors}{Named list with \code{left} and \code{right} hex color
-strings used for the binary buttons. Defaults to
-\code{list(left = "#10b981", right = "#dc2626")}.}
 }
 \value{
 A data frame containing the original texts plus one column per

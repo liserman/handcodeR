@@ -359,7 +359,7 @@ applies to `handcode_binary()`.
 | `comparison`      | `NULL`                | Optional second character vector displayed side-by-side with `data`. Enables comparison mode.                                                                                                                     |
 | `pre_comparison`  | `NULL`                | Per-row previous-text override for the `comparison` vector.                                                                                                                                                       |
 | `post_comparison` | `NULL`                | Per-row next-text override for the `comparison` vector.                                                                                                                                                           |
-| `quicksave`       | `FALSE`               | `FALSE` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically. |
+| `quicksave`       | `NULL`               | `NULL` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically. |
 | `add_notes`       | `FALSE`               | If `TRUE`, render a per-row notes textarea and persist a `notes` column in the output.                                                                                                                            |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, numeric keys `1`–`9` cycle through the radio choices of the variable at that position. At most 9 classification variables supported.                                                                   |
 
@@ -425,7 +425,7 @@ binary_comparison <- handcode_binary(data = wombat_1$text,
 | `missing`         | `c("Not applicable")` | Single missing-value label (binary mode requires exactly one — the UI has one shared `(missing)` button per variable). Stored internally as `_label_`.                                                                                            |
 | `pre`             | `NULL`                | Per-row previous-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                          |
 | `post`            | `NULL`                | Per-row next-text override, length `nrow(data)`. Falls back to neighbouring rows when `NULL` and `context != FALSE`.                                                                                                                              |
-| `quicksave`       | `FALSE`               | `FALSE` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically.                            |
+| `quicksave`       | `NULL`               | `NULL` (no Quicksave button) or a path to an **existing** directory. When a directory is given, a Quicksave button writes `<name>_quicksave_<timestamp>.RData` snapshots there; the directory is never created automatically.                            |
 | `multifactorial`  | `TRUE`                | If `TRUE`, each variable is coded independently. If `FALSE`, selecting the _left_ value on one variable force-sets all other (non-missing) variables to their _right_ value, enforcing a single positive-class assignment per row.                |
 | `enable_numeric`  | `FALSE`               | If `TRUE`, keys `1`–`9` click the left button of the variable at that position (1 = first variable, 2 = second, …). Caps the number of classification variables at 9. Mutually exclusive with `quickcode`.                                        |
 | `quickcode`       | `FALSE`               | If `TRUE`, renders three side-by-side keys (1 = left, 2 = right, 3 = missing) and auto-advances to the next row on selection. Requires exactly one classification variable and `multifactorial = TRUE`. Mutually exclusive with `enable_numeric`. |
@@ -473,7 +473,7 @@ annotated <- handcode(data = sentences,
                       quicksave = "my_saves")
 ```
 
-`quicksave` defaults to `FALSE` (no button, nothing written to disk). If
+`quicksave` defaults to `NULL` (no button, nothing written to disk). If
 the directory does not exist, the call stops with an error rather than
 creating it. To resume from a quicksave file later, load it manually and
 pass it back to `handcode()`:

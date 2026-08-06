@@ -16,8 +16,8 @@ handcode(
   comparison = NULL,
   pre_comparison = NULL,
   post_comparison = NULL,
-  quicksave = FALSE,
-  add_notes = FALSE,
+  quicksave = NULL,
+  notes = FALSE,
   enable_numeric = FALSE
 )
 }
@@ -47,10 +47,10 @@ coding.}
 values. Default \code{c("Not applicable")}.}
 
 \item{pre}{Optional character vector of texts to prepend as context
-(one per row).}
+(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
 
 \item{post}{Optional character vector of texts to append as context
-(one per row).}
+(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
 
 \item{comparison}{Optional character vector for paired-text comparison
 workflows.}
@@ -61,13 +61,13 @@ text.}
 \item{post_comparison}{Optional context-after vector for the comparison
 text.}
 
-\item{quicksave}{Either \code{FALSE} (default; no Quicksave button is
+\item{quicksave}{Either \code{NULL} (default; no Quicksave button is
 shown) or a character path to an existing directory. When a directory
 is given, a Quicksave button is shown that writes timestamped
 \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
 directory must already exist.}
 
-\item{add_notes}{Logical. If \code{TRUE}, show a free-text notes input
+\item{notes}{Logical. If \code{TRUE}, show a free-text notes input
 in the UI. Default \code{FALSE}.}
 
 \item{enable_numeric}{Logical. If \code{TRUE}, keys \code{1}-\code{9}

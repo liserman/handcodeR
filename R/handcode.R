@@ -22,16 +22,17 @@ NULL
 # ============================================================================ #
 
 # CRAN policy forbids writing to user filespace without explicit user direction.
-# The quicksave argument doubles as that direction: FALSE disables it, a directory path enables it
+# The quicksave argument doubles as that direction: NULL disables it, a directory path enables it
 # and names the target. The filename prefix is derived from the data variable name and sanitized
-# for filesystem use. A bare TRUE carries no location and is therefore rejected.
+# for filesystem use. A bare TRUE carries no location and is therefore rejected. FALSE stays
+# accepted as a synonym for NULL so calls written against earlier versions keep working.
 
 .quicksave_setup <- function(quicksave, default_name) {
   if (is.null(quicksave) || isFALSE(quicksave)) {
     return(NULL)
   }
   if (!is.character(quicksave) || length(quicksave) != 1 || !nzchar(trimws(quicksave))) {
-    stop("quicksave must be FALSE or a path to an existing directory.")
+    stop("quicksave must be NULL or a path to an existing directory.")
   }
   dir_out <- normalizePath(trimws(quicksave), mustWork = FALSE)
   if (!dir.exists(dir_out)) {
@@ -822,7 +823,7 @@ NULL
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param quicksave Either \code{FALSE} (default; no Quicksave button is
+#' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
 #'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
@@ -853,7 +854,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      pre = NULL, post = NULL,
                      comparison = NULL,
                      pre_comparison = NULL, post_comparison = NULL,
-                     quicksave = FALSE, notes = FALSE,
+                     quicksave = NULL, notes = FALSE,
                      enable_numeric = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
@@ -1089,7 +1090,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   text.
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text.
-#' @param quicksave Either \code{FALSE} (default; no Quicksave button is
+#' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
 #'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
@@ -1130,7 +1131,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             pre = NULL, post = NULL,
                             comparison = NULL,
                             pre_comparison = NULL, post_comparison = NULL,
-                            quicksave = FALSE, notes = FALSE,
+                            quicksave = NULL, notes = FALSE,
                             enable_numeric = FALSE,
                             multifactorial = TRUE,
                             quickcode = FALSE) {
