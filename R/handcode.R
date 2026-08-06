@@ -262,13 +262,15 @@ NULL
         data$post <- NULL
       }
     } else if (!("before" %in% names(data)) && !("after" %in% names(data))) {
-      # Caller-provided context takes precedence; otherwise context is generated from neighboring rows.
-      if (!is.null(pre) && !is.null(post)) {
-        data$before <- pre
-        data$after <- post
-      } else {
+      # Neighboring rows fill both channels only when the caller supplies neither vector.
+      # Supplying one side means only that side is wanted: the other column is left out
+      # entirely, and the UI renders nothing for a column that isn't there.
+      if (is.null(pre) && is.null(post)) {
         data$before <- c("", data$texts[-nrow(data)])
         data$after <- c(data$texts[-1], "")
+      } else {
+        if (!is.null(pre)) data$before <- pre
+        if (!is.null(post)) data$after <- post
       }
     }
   }
@@ -630,12 +632,13 @@ NULL
         data$post_comparison <- NULL
       }
     } else if (!("before_comparison" %in% names(data)) && !("after_comparison" %in% names(data))) {
-      if (!is.null(pre_comparison) && !is.null(post_comparison)) {
-        data$before_comparison <- pre_comparison
-        data$after_comparison <- post_comparison
-      } else {
+      # Same one-sided rule as .prepare_data(): neighbors only when neither vector is given.
+      if (is.null(pre_comparison) && is.null(post_comparison)) {
         data$before_comparison <- c("", data$comparison[-nrow(data)])
         data$after_comparison <- c(data$comparison[-1], "")
+      } else {
+        if (!is.null(pre_comparison)) data$before_comparison <- pre_comparison
+        if (!is.null(post_comparison)) data$after_comparison <- post_comparison
       }
     }
   }
@@ -812,21 +815,26 @@ NULL
 #'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
 #'   coding. Supplying any of \code{pre}, \code{post},
 #'   \code{pre_comparison} or \code{post_comparison} upgrades
-#'   \code{FALSE} to \code{TRUE}.
+#'   \code{FALSE} to \code{TRUE}; without them, context is taken from the
+#'   neighbouring rows.
 #' @param missing Character vector of labels for missing/not-applicable
 #'   values. Default \code{c("Not applicable")}.
 #' @param pre Optional character vector of texts to prepend as context
 #'   (one per row). Turns context on automatically when
-#'   \code{context = FALSE}.
+#'   \code{context = FALSE}. Supplied without \code{post}, only the
+#'   preceding context is shown.
 #' @param post Optional character vector of texts to append as context
 #'   (one per row). Turns context on automatically when
-#'   \code{context = FALSE}.
+#'   \code{context = FALSE}. Supplied without \code{pre}, only the
+#'   following context is shown.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
-#'   text. Turns context on automatically when \code{context = FALSE}.
+#'   text. Turns context on automatically when \code{context = FALSE}, and
+#'   follows the same one-sided rule as \code{pre}.
 #' @param post_comparison Optional context-after vector for the comparison
-#'   text. Turns context on automatically when \code{context = FALSE}.
+#'   text. Turns context on automatically when \code{context = FALSE}, and
+#'   follows the same one-sided rule as \code{post}.
 #' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
@@ -1082,22 +1090,27 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   and \code{"FLEX"} adds a runtime checkbox to toggle context while
 #'   coding. Supplying any of \code{pre}, \code{post},
 #'   \code{pre_comparison} or \code{post_comparison} upgrades
-#'   \code{FALSE} to \code{TRUE}.
+#'   \code{FALSE} to \code{TRUE}; without them, context is taken from the
+#'   neighbouring rows.
 #' @param missing Single label for missing/not-applicable values. Binary
 #'   mode uses one shared missing button per variable, so exactly one
 #'   label is allowed. Default \code{"Not applicable"}.
 #' @param pre Optional character vector of texts to prepend as context
 #'   (one per row). Turns context on automatically when
-#'   \code{context = FALSE}.
+#'   \code{context = FALSE}. Supplied without \code{post}, only the
+#'   preceding context is shown.
 #' @param post Optional character vector of texts to append as context
 #'   (one per row). Turns context on automatically when
-#'   \code{context = FALSE}.
+#'   \code{context = FALSE}. Supplied without \code{pre}, only the
+#'   following context is shown.
 #' @param comparison Optional character vector for paired-text comparison
 #'   workflows.
 #' @param pre_comparison Optional context-before vector for the comparison
-#'   text. Turns context on automatically when \code{context = FALSE}.
+#'   text. Turns context on automatically when \code{context = FALSE}, and
+#'   follows the same one-sided rule as \code{pre}.
 #' @param post_comparison Optional context-after vector for the comparison
-#'   text. Turns context on automatically when \code{context = FALSE}.
+#'   text. Turns context on automatically when \code{context = FALSE}, and
+#'   follows the same one-sided rule as \code{post}.
 #' @param quicksave Either \code{NULL} (default; no Quicksave button is
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Quicksave button is shown that writes timestamped
