@@ -58,6 +58,7 @@ NULL
     .classification-card { flex: 1 1 0px; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
     .classification-card h5 { color: #1e293b; font-weight: 600; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
     .save-button-container { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
+    .missing-choice { opacity: 0.5; }
   "))
 }
 
@@ -481,10 +482,6 @@ NULL
       var_name <- names(classifications)[i]
       choices <- classifications[[var_name]]
       current_val <- .get_current_value(values, var_name, values$counter)
-      missing_choices <- setNames(
-        .format_NA(app_data$missing),
-        paste0("(", app_data$missing, ")")
-      )
       var_label <- if (isTRUE(app_data$enable_numeric)) paste0(i, ". ", var_name) else var_name
       shiny::div(
         class = "classification-card",
@@ -492,7 +489,13 @@ NULL
         shiny::radioButtons(
           inputId = paste0("class_", var_name),
           label = NULL,
-          choices = c(" " = "", choices, missing_choices),
+          # choiceNames/choiceValues instead of choices: missing labels need markup to be dimmed.
+          choiceNames = c(
+            list(" "),
+            as.list(unname(choices)),
+            lapply(app_data$missing, function(m) shiny::span(class = "missing-choice", m))
+          ),
+          choiceValues = as.list(c("", unname(choices), .format_NA(app_data$missing))),
           selected = current_val
         )
       )
@@ -1364,7 +1367,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
               button_group,
               shiny::actionButton(
                 inputId = paste0("btn_", safe_id, "_missing"),
-                label = "(missing)",
+                label = app_data$missing[1],
                 class = paste(
                   if (comparison_layout) "missing-button w-100" else "missing-button",
                   if (current_val == .format_NA(app_data$missing[1])) "selected" else ""
