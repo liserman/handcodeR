@@ -3,7 +3,7 @@
 #' Shiny-based application for hand-coding text data into predefined
 #' categories. Supports categorial multi-class annotation, binary
 #' two-choice annotation, paired-text comparison workflows, and optional
-#' on-disk quicksave snapshots.
+#' on-disk snapshots.
 #'
 #' @section Main functions:
 #' \itemize{

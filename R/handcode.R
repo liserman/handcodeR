@@ -16,27 +16,27 @@ NULL
 }
 
 # ============================================================================ #
-# Quicksave Setup                                                              #
+# Snapshot Setup                                                               #
 # ---------------------------------------------------------------------------- #
-# Resolves the quicksave argument into a save location for the Quicksave button #
+# Resolves snapshot_dir into a save location for the Save Snapshot button      #
 # ============================================================================ #
 
 # CRAN policy forbids writing to user filespace without explicit user direction.
-# The quicksave argument doubles as that direction: NULL disables it, a directory path enables it
+# The snapshot_dir argument doubles as that direction: NULL disables it, a directory path enables it
 # and names the target. The filename prefix is derived from the data variable name and sanitized
 # for filesystem use. A bare TRUE carries no location and is therefore rejected. FALSE stays
 # accepted as a synonym for NULL so calls written against earlier versions keep working.
 
-.quicksave_setup <- function(quicksave, default_name) {
-  if (is.null(quicksave) || isFALSE(quicksave)) {
+.snapshot_dir_setup <- function(snapshot_dir, default_name) {
+  if (is.null(snapshot_dir) || isFALSE(snapshot_dir)) {
     return(NULL)
   }
-  if (!is.character(quicksave) || length(quicksave) != 1 || !nzchar(trimws(quicksave))) {
-    stop("quicksave must be NULL or a path to an existing directory.")
+  if (!is.character(snapshot_dir) || length(snapshot_dir) != 1 || !nzchar(trimws(snapshot_dir))) {
+    stop("snapshot_dir must be NULL or a path to an existing directory.")
   }
-  dir_out <- normalizePath(trimws(quicksave), mustWork = FALSE)
+  dir_out <- normalizePath(trimws(snapshot_dir), mustWork = FALSE)
   if (!dir.exists(dir_out)) {
-    stop(sprintf("quicksave path does not exist: '%s'", dir_out))
+    stop(sprintf("snapshot_dir path does not exist: '%s'", dir_out))
   }
   list(dir = dir_out, prefix = .sanitize_id(default_name))
 }
@@ -395,25 +395,25 @@ NULL
   })
 }
 
-.setup_quicksave_handler <- function(input, app_data, save_function) {
-  # The Quicksave button is only rendered when quicksave names a directory (app_data$save_loc set),
+.setup_snapshot_handler <- function(input, app_data, save_function) {
+  # The Save Snapshot button is only rendered when snapshot_dir names a directory (app_data$save_loc set),
   # so this observer never fires without a save location.
-  shiny::observeEvent(input$quicksave, {
-    # Quicksave captures current progress without ending the annotation session.
+  shiny::observeEvent(input$save_snapshot, {
+    # Snapshot captures current progress without ending the annotation session.
     annotated <- save_function()
     # Timestamp naming keeps snapshots sortable and avoids overwriting prior checkpoints.
-    quicksave_file <- file.path(
+    snapshot_file <- file.path(
       app_data$save_loc$dir,
-      paste0(app_data$save_loc$prefix, "_quicksave_", as.integer(Sys.time()), ".RData")
+      paste0(app_data$save_loc$prefix, "_snapshot_", as.integer(Sys.time()), ".RData")
     )
     # assign() places the variable in this function's local env so save() can locate it by name.
     assign(app_data$save_loc$prefix, annotated, envir = environment())
     tryCatch(
       {
-        save(list = app_data$save_loc$prefix, file = quicksave_file, envir = environment())
-        shiny::showNotification(paste("Quicksaved:", quicksave_file), type = "message", duration = 3)
+        save(list = app_data$save_loc$prefix, file = snapshot_file, envir = environment())
+        shiny::showNotification(paste("Snapshot saved:", snapshot_file), type = "message", duration = 3)
       },
-      error = function(e) shiny::showNotification(paste("Quicksave failed:", e$message), type = "error")
+      error = function(e) shiny::showNotification(paste("Snapshot failed:", e$message), type = "error")
     )
   })
 }
@@ -436,7 +436,7 @@ NULL
     )
   }
 
-  .setup_quicksave_handler(input, app_data, do_save)
+  .setup_snapshot_handler(input, app_data, do_save)
 
   shiny::observeEvent(input$save_exit, {
     close_state$intentional_close <- TRUE
@@ -754,7 +754,7 @@ NULL
       ),
       shiny::div(
         class = "save-button-container",
-        if (!is.null(app_data$save_loc)) shiny::actionButton("quicksave", "Quicksave", class = "btn btn-warning"),
+        if (!is.null(app_data$save_loc)) shiny::actionButton("save_snapshot", "Save Snapshot", class = "btn btn-warning"),
         shiny::actionButton("save_exit", "Save and Exit", class = "btn btn-success")
       ),
       if (app_data$notes) {
@@ -835,10 +835,10 @@ NULL
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text. Turns context on automatically when \code{context = FALSE}, and
 #'   follows the same one-sided rule as \code{post}.
-#' @param quicksave Either \code{NULL} (default; no Quicksave button is
+#' @param snapshot_dir Either \code{NULL} (default; no Save Snapshot button is
 #'   shown) or a character path to an existing directory. When a directory
-#'   is given, a Quicksave button is shown that writes timestamped
-#'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
+#'   is given, a Save Snapshot button is shown that writes timestamped
+#'   \code{<name>_snapshot_<timestamp>.RData} snapshots there. The
 #'   directory must already exist.
 #' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
@@ -866,15 +866,15 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      pre = NULL, post = NULL,
                      comparison = NULL,
                      pre_comparison = NULL, post_comparison = NULL,
-                     quicksave = NULL, notes = FALSE,
+                     snapshot_dir = NULL, notes = FALSE,
                      enable_numeric = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_cat_session(.interactive(), arg_list, data)
 
-  # CRAN policy: writes to user filespace only when quicksave names an existing directory.
+  # CRAN policy: writes to user filespace only when snapshot_dir names an existing directory.
   # An invalid/non-existent path stops here with a clear message before the app launches.
-  save_loc <- .quicksave_setup(quicksave, original_name)
+  save_loc <- .snapshot_dir_setup(snapshot_dir, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
   # A resumed session's notes column re-activates notes UI even if notes wasn't passed again.
   has_notes <- notes || (is.data.frame(data) && "notes" %in% names(data))
@@ -1111,10 +1111,10 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #' @param post_comparison Optional context-after vector for the comparison
 #'   text. Turns context on automatically when \code{context = FALSE}, and
 #'   follows the same one-sided rule as \code{post}.
-#' @param quicksave Either \code{NULL} (default; no Quicksave button is
+#' @param snapshot_dir Either \code{NULL} (default; no Save Snapshot button is
 #'   shown) or a character path to an existing directory. When a directory
-#'   is given, a Quicksave button is shown that writes timestamped
-#'   \code{<name>_quicksave_<timestamp>.RData} snapshots there. The
+#'   is given, a Save Snapshot button is shown that writes timestamped
+#'   \code{<name>_snapshot_<timestamp>.RData} snapshots there. The
 #'   directory must already exist. Not to be confused with
 #'   \code{quickcode} below.
 #' @param notes Logical. If \code{TRUE}, show a free-text notes input
@@ -1152,7 +1152,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             pre = NULL, post = NULL,
                             comparison = NULL,
                             pre_comparison = NULL, post_comparison = NULL,
-                            quicksave = NULL, notes = FALSE,
+                            snapshot_dir = NULL, notes = FALSE,
                             enable_numeric = FALSE,
                             multifactorial = TRUE,
                             quickcode = FALSE) {
@@ -1160,9 +1160,9 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
   original_name <- deparse(substitute(data))
   .check_bin_session(.interactive(), data)
 
-  # CRAN policy: writes to user filespace only when quicksave names an existing directory.
+  # CRAN policy: writes to user filespace only when snapshot_dir names an existing directory.
   # An invalid/non-existent path stops here with a clear message before the app launches.
-  save_loc <- .quicksave_setup(quicksave, original_name)
+  save_loc <- .snapshot_dir_setup(snapshot_dir, original_name)
   has_comparison <- !is.null(comparison) || (is.data.frame(data) && "comparison" %in% names(data))
   # A resumed session's notes column re-activates notes UI even if notes wasn't passed again.
   has_notes <- notes || (is.data.frame(data) && "notes" %in% names(data))
