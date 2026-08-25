@@ -216,26 +216,26 @@ NULL
   }
 }
 
-.check_binary_params <- function(missing, multifactorial, enable_numeric, arg_list, quickcode) {
+.check_binary_params <- function(missing, multifactorial, keyboard_shortcuts, arg_list, quickcode) {
   # Binary mode uses one shared missing button per variable, so only a single missing label is valid.
   if (length(missing) != 1) stop("missing argument must be a single value in binary annotation.")
   if (!is.logical(multifactorial) || length(multifactorial) != 1) stop("multifactorial must be a single logical value.")
-  if (!is.logical(enable_numeric) || length(enable_numeric) != 1) stop("enable_numeric must be a single logical value.")
+  if (!is.logical(keyboard_shortcuts) || length(keyboard_shortcuts) != 1) stop("keyboard_shortcuts must be a single logical value.")
   # Keys 1–9 map to variables by position; more than 9 would exceed the available key range.
-  if (enable_numeric && length(arg_list) > 9) stop("enable_numeric = TRUE supports at most 9 classification variables.")
+  if (keyboard_shortcuts && length(arg_list) > 9) stop("keyboard_shortcuts = TRUE supports at most 9 classification variables.")
   if (!is.logical(quickcode) || length(quickcode) != 1) stop("quickcode must be a single logical value.")
-  if (quickcode && enable_numeric) stop("quickcode = TRUE and enable_numeric = TRUE are mutually exclusive.")
+  if (quickcode && keyboard_shortcuts) stop("quickcode = TRUE and keyboard_shortcuts = TRUE are mutually exclusive.")
   if (quickcode && !multifactorial) stop("quickcode = TRUE and multifactorial = FALSE are mutually exclusive.")
   if (quickcode && length(arg_list) > 1) stop("quickcode = TRUE supports at most 1 classification variable.")
 }
 
-.check_cat_numeric_param <- function(enable_numeric, arg_list) {
-  if (!is.logical(enable_numeric) || length(enable_numeric) != 1) {
-    stop("enable_numeric must be a single logical value.")
+.check_cat_keyboard_param <- function(keyboard_shortcuts, arg_list) {
+  if (!is.logical(keyboard_shortcuts) || length(keyboard_shortcuts) != 1) {
+    stop("keyboard_shortcuts must be a single logical value.")
   }
   # Keys 1–9 map to variables by position; more than 9 would exceed the available key range.
-  if (enable_numeric && length(arg_list) > 9) {
-    stop("enable_numeric = TRUE supports at most 9 classification variables.")
+  if (keyboard_shortcuts && length(arg_list) > 9) {
+    stop("keyboard_shortcuts = TRUE supports at most 9 classification variables.")
   }
 }
 
@@ -482,7 +482,7 @@ NULL
       var_name <- names(classifications)[i]
       choices <- classifications[[var_name]]
       current_val <- .get_current_value(values, var_name, values$counter)
-      var_label <- if (isTRUE(app_data$enable_numeric)) paste0(i, ". ", var_name) else var_name
+      var_label <- if (isTRUE(app_data$keyboard_shortcuts)) paste0(i, ". ", var_name) else var_name
       shiny::div(
         class = "classification-card",
         shiny::h5(var_label),
@@ -845,7 +845,7 @@ NULL
 #'   directory must already exist.
 #' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
-#' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
+#' @param keyboard_shortcuts Logical. If \code{TRUE}, keys \code{1}-\code{9}
 #'   cycle through the radio choices of the variable at that position
 #'   (at most 9 classification variables). Default \code{FALSE}.
 #'
@@ -855,11 +855,11 @@ NULL
 #'
 #' @examples
 #' \dontrun{
-#'   texts <- c("I love this product", "Worst purchase ever", "It's okay")
-#'   result <- handcode(
-#'     texts,
-#'     sentiment = c("positive", "neutral", "negative")
-#'   )
+#' texts <- c("I love this product", "Worst purchase ever", "It's okay")
+#' result <- handcode(
+#'   texts,
+#'   sentiment = c("positive", "neutral", "negative")
+#' )
 #' }
 #'
 #' @seealso \code{\link{handcode_binary}} for two-choice annotation.
@@ -870,7 +870,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
                      comparison = NULL,
                      pre_comparison = NULL, post_comparison = NULL,
                      snapshot_dir = NULL, notes = FALSE,
-                     enable_numeric = FALSE) {
+                     keyboard_shortcuts = FALSE) {
   arg_list <- list(...)
   original_name <- deparse(substitute(data))
   .check_cat_session(.interactive(), arg_list, data)
@@ -888,26 +888,27 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
     if (has_comparison) .check_comparison_args(comparison, data)
   }
 
-  prep <- .prepare_app_data(data, arg_list, missing, has_comparison, comparison,
+  prep <- .prepare_app_data(
+    data, arg_list, missing, has_comparison, comparison,
     start, randomize, context, pre, post, pre_comparison, post_comparison
   )
   prepared_data <- prep$prepared_data
   factor_levels <- prep$factor_levels
 
-  .check_cat_numeric_param(enable_numeric, factor_levels)
+  .check_cat_keyboard_param(keyboard_shortcuts, factor_levels)
 
   # app_data is the immutable runtime bundle passed into UI/server builders.
   app_data <- list(
-    data            = prepared_data$data,
-    original_data   = prepared_data$original_data,
-    start_val       = prepared_data$start_val,
-    context         = prep$context,
-    classifications = factor_levels,
-    missing         = missing,
-    original_name   = original_name,
-    notes           = has_notes,
-    save_loc        = save_loc,
-    enable_numeric  = enable_numeric
+    data               = prepared_data$data,
+    original_data      = prepared_data$original_data,
+    start_val          = prepared_data$start_val,
+    context            = prep$context,
+    classifications    = factor_levels,
+    missing            = missing,
+    original_name      = original_name,
+    notes              = has_notes,
+    save_loc           = save_loc,
+    keyboard_shortcuts = keyboard_shortcuts
   )
 
   # UI execution is isolated in the app runner; this function only prepares and returns result data.
@@ -922,7 +923,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 
 .build_cat_keyboard_script <- function(app_data) {
   # Keys 1-9 cycle the radio choices of the variable at that position. Only fires outside form
-  # fields. Sibling of .build_binary_keyboard_script(); cap of 9 matches the enable_numeric limit.
+  # fields. Sibling of .build_binary_keyboard_script(); cap of 9 matches the keyboard_shortcuts limit.
   var_names_js <- paste0('["', paste(names(app_data$classifications), collapse = '","'), '"]')
   paste0(
     "$(document).on('keyup', function(e) {",
@@ -959,7 +960,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   .build_app_shell(
     app_data, "handcodeR - Categorial", body_slot,
     shiny::uiOutput("classification_panels"),
-    keyboard_script = if (isTRUE(app_data$enable_numeric)) .build_cat_keyboard_script(app_data) else NULL
+    keyboard_script = if (isTRUE(app_data$keyboard_shortcuts)) .build_cat_keyboard_script(app_data) else NULL
   )
 }
 
@@ -1009,7 +1010,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
   .build_app_shell(app_data, "handcodeR - Comparison", body_slot,
     shiny::uiOutput("classification_panels"),
     extra_styles = .comparison_styles(),
-    keyboard_script = if (isTRUE(app_data$enable_numeric)) .build_cat_keyboard_script(app_data) else NULL
+    keyboard_script = if (isTRUE(app_data$keyboard_shortcuts)) .build_cat_keyboard_script(app_data) else NULL
   )
 }
 
@@ -1122,7 +1123,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   \code{quickcode} below.
 #' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
-#' @param enable_numeric Logical. If \code{TRUE}, keys \code{1}-\code{9}
+#' @param keyboard_shortcuts Logical. If \code{TRUE}, keys \code{1}-\code{9}
 #'   click the left button of the variable at that position (at most 9
 #'   classification variables). Mutually exclusive with
 #'   \code{quickcode = TRUE}. Default \code{FALSE}.
@@ -1132,7 +1133,7 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'   right value, enforcing a single positive-class assignment per row.
 #' @param quickcode Logical. If \code{TRUE}, enable single-key quickcoding
 #'   mode for one classification variable. Mutually exclusive with
-#'   \code{enable_numeric = TRUE} and \code{multifactorial = FALSE}, and
+#'   \code{keyboard_shortcuts = TRUE} and \code{multifactorial = FALSE}, and
 #'   limited to a single \code{...} variable. Default \code{FALSE}.
 #'
 #' @return A data frame containing the original texts plus one column per
@@ -1141,11 +1142,11 @@ handcode <- function(data, ..., start = "first_empty", randomize = FALSE,
 #'
 #' @examples
 #' \dontrun{
-#'   texts <- c("I love this product", "Worst purchase ever", "It's okay")
-#'   result <- handcode_binary(
-#'     texts,
-#'     sentiment = c("positive", "negative")
-#'   )
+#' texts <- c("I love this product", "Worst purchase ever", "It's okay")
+#' result <- handcode_binary(
+#'   texts,
+#'   sentiment = c("positive", "negative")
+#' )
 #' }
 #'
 #' @seealso \code{\link{handcode}} for multi-class categorial annotation.
@@ -1156,7 +1157,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
                             comparison = NULL,
                             pre_comparison = NULL, post_comparison = NULL,
                             snapshot_dir = NULL, notes = FALSE,
-                            enable_numeric = FALSE,
+                            keyboard_shortcuts = FALSE,
                             multifactorial = TRUE,
                             quickcode = FALSE) {
   arg_list <- list(...)
@@ -1176,28 +1177,29 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
     if (has_comparison) .check_comparison_args(comparison, data)
   }
 
-  .check_binary_params(missing, multifactorial, enable_numeric, arg_list, quickcode)
+  .check_binary_params(missing, multifactorial, keyboard_shortcuts, arg_list, quickcode)
 
-  prep <- .prepare_app_data(data, arg_list, missing, has_comparison, comparison,
+  prep <- .prepare_app_data(
+    data, arg_list, missing, has_comparison, comparison,
     start, randomize, context, pre, post, pre_comparison, post_comparison
   )
   prepared_data <- prep$prepared_data
   factor_levels <- prep$factor_levels
 
-  # Binary-mode app_data carries extra UI flags: multifactorial, enable_numeric.
+  # Binary-mode app_data carries extra UI flags: multifactorial, keyboard_shortcuts.
   app_data <- list(
-    data            = prepared_data$data,
-    original_data   = prepared_data$original_data,
-    start_val       = prepared_data$start_val,
-    context         = prep$context,
-    classifications = factor_levels,
-    missing         = missing,
-    original_name   = original_name,
-    multifactorial  = multifactorial,
-    enable_numeric  = enable_numeric,
-    quickcode       = quickcode,
-    notes           = has_notes,
-    save_loc        = save_loc
+    data               = prepared_data$data,
+    original_data      = prepared_data$original_data,
+    start_val          = prepared_data$start_val,
+    context            = prep$context,
+    classifications    = factor_levels,
+    missing            = missing,
+    original_name      = original_name,
+    multifactorial     = multifactorial,
+    keyboard_shortcuts = keyboard_shortcuts,
+    quickcode          = quickcode,
+    notes              = has_notes,
+    save_loc           = save_loc
   )
 
   # Execution delegates to binary app runtime after input normalization is complete.
@@ -1212,7 +1214,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
 
 .build_binary_keyboard_script <- function(app_data) {
   # Keys 1-9 trigger the left-button click for the variable at that position. Only fires
-  # outside form fields. Cap of 9 matches the enable_numeric length limit in handcode_binary().
+  # outside form fields. Cap of 9 matches the keyboard_shortcuts length limit in handcode_binary().
   # quickcode binds 1/2/3 to left/right/missing of the single variable plus auto-advance.
   paste0(
     "$(document).on('keyup', function(e) {",
@@ -1240,7 +1242,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
           }
         });
       ', safe_id_js, safe_id_js, safe_id_js)
-    } else if (app_data$enable_numeric) {
+    } else if (app_data$keyboard_shortcuts) {
       var_names_js <- paste0('["', paste(sapply(names(app_data$classifications), .sanitize_id), collapse = '","'), '"]')
       sprintf('
         var numericVars = %s;
@@ -1295,7 +1297,7 @@ handcode_binary <- function(data, ..., start = "first_empty", randomize = FALSE,
         shiny::isolate({
           choices <- classifications[[var_name]]
           current_val <- .get_current_value(values, var_name, values$counter)
-          panel_label <- if (app_data$enable_numeric) paste0(var_idx, ". ", var_name) else var_name
+          panel_label <- if (app_data$keyboard_shortcuts) paste0(var_idx, ". ", var_name) else var_name
           button_group <- if (app_data$quickcode) {
             shiny::div(
               class = "quickcode-button-group",
