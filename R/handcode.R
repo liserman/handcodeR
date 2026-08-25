@@ -51,7 +51,7 @@ NULL
   # Common styles centralize shared layout tokens so all app modes keep one visual baseline.
   shiny::tags$style(shiny::HTML("
     .app-container { padding: 20px 2.5%; }
-    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; min-height: calc(14.08rem + 10px); display: flex; flex-direction: column; }
+    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 24px 24px; margin-bottom: 20px; min-height: calc(7.04rem + 5px); display: flex; flex-direction: column; resize: vertical; overflow: auto; }
     .current-text { font-size: 1.1rem; line-height: 1.6; color: #1e293b; }
     .context-text { color: #94a3b8; font-size: 0.95rem; }
     .classifications-container { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -720,6 +720,23 @@ NULL
 # Shared fluidPage wrapper consumed by all three build_X_ui functions          #
 # ============================================================================ #
 
+.build_resize_script <- function() {
+  # The drag handle writes an inline height; making the hight persistent across cases and sessions.
+  shiny::tags$script(shiny::HTML(paste0(
+    "$(function() {",
+    "  var box = document.querySelector('.text-display');",
+    "  if (!box || !window.ResizeObserver) return;",
+    "  var stored = localStorage.getItem('handcodeR_text_height');",
+    "  if (stored) box.style.height = stored;",
+    # Guarding on style.height keeps unrelated reflows (window resize, context toggle) from
+    # overwriting the stored value with an empty string.
+    "  new ResizeObserver(function() {",
+    "    if (box.style.height) localStorage.setItem('handcodeR_text_height', box.style.height);",
+    "  }).observe(box);",
+    "});"
+  )))
+}
+
 .build_app_shell <- function(app_data, title, body_slot, panels_slot,
                              extra_styles = NULL, keyboard_script = NULL) {
   # Default script guards via hcInField() so Space/Enter don't fire while typing in notes/inputs.
@@ -785,6 +802,7 @@ NULL
       "'); };",
       "$(document).on('click', 'button', function(e) { if (e.detail > 0) this.blur(); });"
     ))),
+    .build_resize_script(),
     shiny::tags$script(shiny::HTML(if (!is.null(keyboard_script)) keyboard_script else default_script))
   )
 }
