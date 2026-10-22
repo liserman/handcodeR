@@ -216,6 +216,25 @@ data is reached, `next` keeps you on the last row. Your selections are
 saved continuously, so you can simply click `Save and Exit` to return
 your data.
 
+#### Arguments of handcode()
+
+| Argument | Default | Description |
+|----|----|----|
+| `data` | — | Character vector of texts, or a data frame returned by a previous `handcode()` call to resume coding. |
+| `...` | — | One or more named character vectors. Each name becomes a variable, each vector its categories. |
+| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first row not yet fully coded) or `"all_empty"` (only uncoded rows, in their original order). |
+| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
+| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
+| `missing` | `"Not applicable"` | One or more missing categories, shown in gray and returned as `_label_`. |
+| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
+| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
+| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
+| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
+| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
+| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
+| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
+| `keyboard_shortcuts` | `FALSE` | If `TRUE`, keys `1`-`9` cycle through the categories of the variable at that position (max. 9 variables). |
+
 ### quickcode
 
 If you only want to code one variable, `quickcode()` offers a faster way
@@ -258,6 +277,25 @@ The keyboard shortcuts `space` for `previous` and `enter` for `next`
 work just as in `handcode()`. Resuming works the same way as well:
 simply provide the data frame returned by your last call of
 `quickcode()` as `data` input.
+
+#### Arguments of quickcode()
+
+| Argument | Default | Description |
+|----|----|----|
+| `data` | — | Character vector of texts, or a data frame returned by a previous `quickcode()` call to resume coding. |
+| `...` | — | Exactly one named character vector with 2 to 9 categories, mapped to keys `1`-`9`. |
+| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first uncoded row) or `"all_empty"` (only uncoded rows, in their original order). |
+| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
+| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
+| `missing` | `"Not applicable"` | Exactly one missing category, coded with key `0` and returned as `_label_`. |
+| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
+| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
+| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
+| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
+| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
+| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
+| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
+| `advance_delay` | `0.7` | Seconds to wait after a selection before moving on to the next text. `0` moves on immediately. |
 
 #### Beyond the basics
 
@@ -430,43 +468,3 @@ frame as `data` input. The restored object carries the name of your
 load("my_saves/paragraphs_snapshot_1714387234.RData")
 annotated <- handcode(data = paragraphs)
 ```
-
-## Argument overview
-
-### handcode()
-
-| Argument | Default | Description |
-|----|----|----|
-| `data` | — | Character vector of texts, or a data frame returned by a previous `handcode()` call to resume coding. |
-| `...` | — | One or more named character vectors. Each name becomes a variable, each vector its categories. |
-| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first row not yet fully coded) or `"all_empty"` (only uncoded rows, in their original order). |
-| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
-| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
-| `missing` | `"Not applicable"` | One or more missing categories, shown in gray and returned as `_label_`. |
-| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
-| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
-| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
-| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
-| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
-| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
-| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
-| `keyboard_shortcuts` | `FALSE` | If `TRUE`, keys `1`-`9` cycle through the categories of the variable at that position (max. 9 variables). |
-
-### quickcode()
-
-| Argument | Default | Description |
-|----|----|----|
-| `data` | — | Character vector of texts, or a data frame returned by a previous `quickcode()` call to resume coding. |
-| `...` | — | Exactly one named character vector with 2 to 9 categories, mapped to keys `1`-`9`. |
-| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first uncoded row) or `"all_empty"` (only uncoded rows, in their original order). |
-| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
-| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
-| `missing` | `"Not applicable"` | Exactly one missing category, coded with key `0` and returned as `_label_`. |
-| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
-| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
-| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
-| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
-| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
-| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
-| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
-| `advance_delay` | `0.7` | Seconds to wait after a selection before moving on to the next text. `0` moves on immediately. |
