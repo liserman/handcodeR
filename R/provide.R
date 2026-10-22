@@ -50,10 +50,14 @@ NULL
 .common_styles <- function() {
   # Common styles centralize shared layout tokens so all app modes keep one visual baseline.
   # .text-display carries a fixed default height so text length never resizes the box before the
-  # user drags it; long texts scroll instead. The drag handle overrides it via an inline height.
+  # user drags it; long texts scroll instead. The divider below it overrides it via an inline height.
+  # touch-action: none stops touch browsers from scrolling the page instead of dragging the divider.
   shiny::tags$style(shiny::HTML("
     .app-container { padding: 20px 2.5%; }
-    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 24px 24px; margin-bottom: 20px; height: calc(7.04rem + 5px); min-height: calc(7.04rem + 5px); display: flex; flex-direction: column; resize: vertical; overflow: auto; }
+    .text-display { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 24px 24px; height: calc(7.04rem + 5px); min-height: calc(7.04rem + 5px); display: flex; flex-direction: column; overflow: auto; }
+    .text-divider { height: 14px; margin: 3px 0 13px; cursor: row-resize; touch-action: none; display: flex; align-items: center; justify-content: center; }
+    .text-divider::before { content: ''; width: 48px; height: 4px; border-radius: 2px; background: #cbd5e1; }
+    .text-divider:hover::before, .text-divider.dragging::before { background: #2563eb; }
     .current-text { font-size: 1.1rem; line-height: 1.6; color: #1e293b; }
     .context-text { color: #94a3b8; font-size: 0.95rem; }
     .classifications-container { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -596,18 +600,34 @@ NULL
 # ============================================================================ #
 
 .build_resize_script <- function() {
-  # The drag handle writes an inline height; making the hight persistent across cases and sessions.
+  # The divider writes an inline height; storing it keeps the height persistent across cases and sessions.
+  # It is injected here rather than in each .build_*_ui() so all four layouts get it from one place.
   shiny::tags$script(shiny::HTML(paste0(
     "$(function() {",
     "  var box = document.querySelector('.text-display');",
-    "  if (!box || !window.ResizeObserver) return;",
+    "  if (!box) return;",
     "  var stored = localStorage.getItem('handcodeR_text_height');",
     "  if (stored) box.style.height = stored;",
-    # Guarding on style.height keeps unrelated reflows (window resize, context toggle) from
-    # overwriting the stored value with an empty string.
-    "  new ResizeObserver(function() {",
-    "    if (box.style.height) localStorage.setItem('handcodeR_text_height', box.style.height);",
-    "  }).observe(box);",
+    "  var bar = document.createElement('div');",
+    "  bar.className = 'text-divider';",
+    "  box.after(bar);",
+    # Pointer capture keeps the drag alive when the cursor outruns the thin bar; the CSS
+    # min-height clamps the inline value, so no lower bound is needed here.
+    "  bar.addEventListener('pointerdown', function(e) {",
+    "    e.preventDefault();",
+    "    var startY = e.clientY, startH = box.getBoundingClientRect().height;",
+    "    bar.setPointerCapture(e.pointerId);",
+    "    bar.classList.add('dragging');",
+    "    function move(ev) { box.style.height = (startH + ev.clientY - startY) + 'px'; }",
+    "    function up() {",
+    "      bar.removeEventListener('pointermove', move);",
+    "      bar.removeEventListener('pointerup', up);",
+    "      bar.classList.remove('dragging');",
+    "      localStorage.setItem('handcodeR_text_height', box.style.height);",
+    "    }",
+    "    bar.addEventListener('pointermove', move);",
+    "    bar.addEventListener('pointerup', up);",
+    "  });",
     "});"
   )))
 }
