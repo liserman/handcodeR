@@ -19,12 +19,12 @@ p {
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  warning = FALSE,
-  message = FALSE,
-  comment = "#>",
-  fig.path = "man/figures/",
-  out.width = "100%"
+    collapse = TRUE,
+    warning = FALSE,
+    message = FALSE,
+    comment = "#>",
+    fig.path = "man/figures/",
+    out.width = "100%"
 )
 ```
 
@@ -99,23 +99,27 @@ In order to demonstrate the functionality of the package, we use the R-package [
 
 ```{r download data}
 # Install pacman if not already installed
-if(!require(pacman)) install.packages("pacman")
+if (!require(pacman)) install.packages("pacman")
 
 # Use pacman to install and load archiveRetriever
 pacman::p_load(archiveRetriever)
 
 # Download paragraphs of Wikipedia article on Wombats for July 2022 and March 2024
-wombat_1 <- scrape_urls(Urls = "https://web.archive.org/web/20220703070930/https://en.wikipedia.org/wiki/Wombat",
-                        Paths = c(text = "//text()"),
-                        collapse = "//div[@class='mw-body-content mw-content-ltr']//p")
+wombat_1 <- scrape_urls(
+    Urls = "https://web.archive.org/web/20220703070930/https://en.wikipedia.org/wiki/Wombat",
+    Paths = c(text = "//text()"),
+    collapse = "//div[@class='mw-body-content mw-content-ltr']//p"
+)
 
-wombat_2 <- scrape_urls(Urls = "https://web.archive.org/web/20240329193637/https://en.wikipedia.org/wiki/Wombat",
-                        Paths = c(text = "//text()"),
-                        collapse = "//div[@class='mw-content-ltr mw-parser-output']//p")
+wombat_2 <- scrape_urls(
+    Urls = "https://web.archive.org/web/20240329193637/https://en.wikipedia.org/wiki/Wombat",
+    Paths = c(text = "//text()"),
+    collapse = "//div[@class='mw-content-ltr mw-parser-output']//p"
+)
 
 # Delete empty first row
-wombat_1 <- wombat_1[-1,]
-wombat_2 <- wombat_2[-1,]
+wombat_1 <- wombat_1[-1, ]
+wombat_2 <- wombat_2[-1, ]
 
 # Paragraphs we want to annotate
 paragraphs <- wombat_1$text
@@ -131,9 +135,11 @@ The main function of the handcodeR package is `handcode()`. `handcode()` takes e
 We can now use the paragraphs as input in `handcode()` to annotate the individual paragraphs of the Wikipedia article. We will annotate two variables measuring the topic a paragraph talks about and whether the paragraph contains numbers or measurements.
 
 ```{r, eval = FALSE}
-annotated <- handcode(data = paragraphs,
-                      topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
-                      numbers = c("Yes", "No"))
+annotated <- handcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
+    numbers = c("Yes", "No")
+)
 ```
 
 <!-- SCREENSHOT PLACEHOLDER: handcode() with the wombat paragraphs (topic, numbers).
@@ -169,8 +175,10 @@ To facilitate the classification process, `handcode()` takes the keyboard shortc
 If you only want to code one variable, `quickcode()` offers a faster way to do so. Instead of radio buttons, every category of the variable is displayed as its own button with a number key printed underneath. Pressing the number key, or clicking the button, records the category and the app automatically moves on to the next text after a short delay. Only one category can be chosen per text.
 
 ```{r, eval = FALSE}
-quick_annotated <- quickcode(data = paragraphs,
-                             topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"))
+quick_annotated <- quickcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation")
+)
 ```
 
 <!-- SCREENSHOT PLACEHOLDER: quickcode() button grid with the numpad keys.
@@ -204,10 +212,12 @@ The number keys follow the layout of the numpad on your keyboard. Up to five cat
 By default (`context = FALSE`), only the paragraph we are currently coding is displayed. If we want to see not only the paragraph we are currently coding, but also the surrounding paragraphs, we can use the option `context = TRUE`. This gives us our current paragraph alongside its previous and following paragraph. To not generate any confusion about which paragraph is currently evaluated, the surrounding paragraphs are shown in gray. With `context = "FLEX"`, the app displays a checkbox that allows you to switch the context on and off while coding.
 
 ```{r, eval = FALSE}
-annotated <- handcode(data = paragraphs,
-                      topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
-                      numbers = c("Yes", "No"),
-                      context = TRUE)
+annotated <- handcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
+    numbers = c("Yes", "No"),
+    context = TRUE
+)
 ```
 
 <!-- SCREENSHOT PLACEHOLDER: handcode() with context = TRUE on the wombat paragraphs.
@@ -220,11 +230,13 @@ If our text vector does not form a continuous text, but you nonetheless want to 
 previous <- c("", paragraphs[-length(paragraphs)])
 subsequent <- c(paragraphs[-1], "")
 
-annotated <- handcode(data = paragraphs,
-                      topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
-                      numbers = c("Yes", "No"),
-                      pre = previous,
-                      post = subsequent)
+annotated <- handcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
+    numbers = c("Yes", "No"),
+    pre = previous,
+    post = subsequent
+)
 ```
 
 
@@ -233,9 +245,11 @@ annotated <- handcode(data = paragraphs,
 You can also use handcodeR to compare texts against each other. To do so, provide a second text vector as `comparison` input. Each element of `comparison` is displayed side by side with the corresponding element of `data`. Here, we supply the older version of the Wikipedia article as `data` and the newer version as `comparison` to annotate how each paragraph has changed over time.
 
 ```{r, eval = FALSE}
-comparison <- handcode(data = wombat_1$text,
-                       comparison = wombat_2$text,
-                       content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened"))
+comparison <- handcode(
+    data = wombat_1$text,
+    comparison = wombat_2$text,
+    content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened")
+)
 ```
 
 ```{r, echo=FALSE}
@@ -257,10 +271,12 @@ Sometimes, we explicitly want to display texts in a random order to rule out tha
 As a default, both functions display one missing category "Not applicable". In `handcode()`, you can provide a character vector of one or more missing categories you would like to have displayed as `missing`. Missing categories are displayed in gray. In the output these values will be returned with a leading and trailing `_`. As `quickcode()` codes missings with the single key `0`, it only takes one missing category.
 
 ```{r, eval = FALSE}
-annotated <- handcode(data = paragraphs,
-                      topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
-                      numbers = c("Yes", "No"),
-                      missing = c("Not applicable", "Undecided"))
+annotated <- handcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
+    numbers = c("Yes", "No"),
+    missing = c("Not applicable", "Undecided")
+)
 ```
 
 
@@ -269,10 +285,12 @@ annotated <- handcode(data = paragraphs,
 If you want to write down comments or observations alongside your coding, you can set `notes = TRUE`. This adds a text field to the app and an additional `notes` column to the output. The option only needs to be set once at the beginning of a new annotation process. When you resume coding, the information is taken from the data frame provided as `data`. The option works the same way in `quickcode()`.
 
 ```{r, eval = FALSE}
-comparison <- handcode(data = wombat_1$text,
-                       comparison = wombat_2$text,
-                       content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened"),
-                       notes = TRUE)
+comparison <- handcode(
+    data = wombat_1$text,
+    comparison = wombat_2$text,
+    content_changed = c("Unchanged", "Minor changes", "Shortened", "Lengthened"),
+    notes = TRUE
+)
 ```
 
 ```{r, echo=FALSE}
@@ -294,10 +312,12 @@ However you close the app, by clicking `Save and Exit`, closing the browser tab,
 If you additionally want to save your progress to disk while coding, you can provide the path to an existing folder as `snapshot_dir`. The app then displays a `Save Snapshot` button, which writes a time-stamped `.RData` file of your current annotations to that folder without closing the app. The folder is never created automatically.
 
 ```{r, eval = FALSE}
-annotated <- handcode(data = paragraphs,
-                      topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
-                      numbers = c("Yes", "No"),
-                      snapshot_dir = "my_saves")
+annotated <- handcode(
+    data = paragraphs,
+    topic = c("Anatomy", "Behaviour", "Habitat", "Conservation"),
+    numbers = c("Yes", "No"),
+    snapshot_dir = "my_saves"
+)
 ```
 
 To resume from a snapshot, load the file and provide the restored data frame as `data` input. The restored object carries the name of your `data` input.
@@ -306,3 +326,44 @@ To resume from a snapshot, load the file and provide the restored data frame as 
 load("my_saves/paragraphs_snapshot_1714387234.RData")
 annotated <- handcode(data = paragraphs)
 ```
+
+
+## Argument overview
+
+### handcode()
+
+| Argument | Default | Description |
+|---|---|---|
+| `data` | — | Character vector of texts, or a data frame returned by a previous `handcode()` call to resume coding. |
+| `...` | — | One or more named character vectors. Each name becomes a variable, each vector its categories. |
+| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first row not yet fully coded) or `"all_empty"` (only uncoded rows, in their original order). |
+| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
+| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
+| `missing` | `"Not applicable"` | One or more missing categories, shown in gray and returned as `_label_`. |
+| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
+| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
+| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
+| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
+| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
+| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
+| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
+| `keyboard_shortcuts` | `FALSE` | If `TRUE`, keys `1`-`9` cycle through the categories of the variable at that position (max. 9 variables). |
+
+### quickcode()
+
+| Argument | Default | Description |
+|---|---|---|
+| `data` | — | Character vector of texts, or a data frame returned by a previous `quickcode()` call to resume coding. |
+| `...` | — | Exactly one named character vector with 2 to 9 categories, mapped to keys `1`-`9`. |
+| `start` | `"first_empty"` | Row to start at. A row number, `"first_empty"` (first uncoded row) or `"all_empty"` (only uncoded rows, in their original order). |
+| `randomize` | `FALSE` | If `TRUE`, uncoded rows are shown in random order. The output keeps the original row order. |
+| `context` | `FALSE` | `TRUE` always shows the previous and next text, `FALSE` never, `"FLEX"` adds a checkbox to toggle context while coding. |
+| `missing` | `"Not applicable"` | Exactly one missing category, coded with key `0` and returned as `_label_`. |
+| `pre` | `NULL` | Custom previous text per row. Turns context on automatically. |
+| `post` | `NULL` | Custom next text per row. Turns context on automatically. |
+| `comparison` | `NULL` | Second text vector shown side by side with `data`. |
+| `pre_comparison` | `NULL` | Custom previous text per row for `comparison`. Turns context on automatically. |
+| `post_comparison` | `NULL` | Custom next text per row for `comparison`. Turns context on automatically. |
+| `snapshot_dir` | `NULL` | Path to an existing folder. Adds a `Save Snapshot` button that writes `.RData` files there. |
+| `notes` | `FALSE` | If `TRUE`, adds a notes field and a `notes` column to the output. |
+| `advance_delay` | `0.7` | Seconds to wait after a selection before moving on to the next text. `0` moves on immediately. |
