@@ -1,5 +1,4 @@
-#' handcodeR: Text Annotation App
-#'
+#' @description
 #' Shiny-based application for hand-coding text data into predefined
 #' categories. Supports categorial multi-class annotation, single-variable
 #' quickcoding on number keys, paired-text comparison workflows, and optional
@@ -11,14 +10,5 @@
 #'   \item \code{\link{quickcode}}: single-variable quickcoding on number keys
 #' }
 #'
-#' @author
-#' Maintainer: Lukas Isermann \email{lukas.isermann@uni-mannheim.de}
-#' (\href{https://orcid.org/0000-0002-7195-9302}{ORCID})
-#'
-#' Co-Author: Dennis Klingenspohr \email{dennis.klingenspohr@gmail.com}
-#' (\href{https://orcid.org/0009-0000-7876-5634}{ORCID})
-#'
-#' @name handcodeR-package
-#' @aliases handcodeR
 #' @keywords internal
-NULL
+"_PACKAGE"
