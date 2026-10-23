@@ -167,16 +167,21 @@
 #'   shown) or a character path to an existing directory. When a directory
 #'   is given, a Save Snapshot button is shown that writes timestamped
 #'   \code{<name>_snapshot_<timestamp>.RData} snapshots there. The
-#'   directory must already exist.
+#'   directory must already exist. \code{FALSE} is accepted as a synonym
+#'   for \code{NULL}.
 #' @param notes Logical. If \code{TRUE}, show a free-text notes input
 #'   in the UI. Default \code{FALSE}.
 #' @param keyboard_shortcuts Logical. If \code{TRUE}, keys \code{1}-\code{9}
 #'   cycle through the radio choices of the variable at that position
-#'   (at most 9 classification variables). Default \code{FALSE}.
+#'   (at most 9 classification variables), \code{Space} goes to the
+#'   previous and \code{Enter} to the next text. Default \code{FALSE}.
 #'
-#' @return A data frame containing the original texts plus one column per
-#'   classification variable. Closing the app (Save & Exit or otherwise)
-#'   returns the annotated data to the calling R session.
+#' @return A data frame containing the original texts plus one factor
+#'   column per classification variable, and, where used, the
+#'   \code{notes}, \code{pre}/\code{post} and comparison columns, so it can
+#'   be passed back as \code{data} to resume coding. Closing the app
+#'   (Save & Exit or otherwise) returns the annotated data to the calling
+#'   R session.
 #'
 #' @examples
 #' \dontrun{
