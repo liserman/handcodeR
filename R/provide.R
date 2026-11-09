@@ -212,10 +212,15 @@ NULL
     }
   }
   if (randomize && length(class_cols) > 0) {
-    # Randomization only applies to uncoded rows to avoid re-reviewing completed work.
-    empty_rows <- which(apply(data[, class_cols, drop = FALSE], 1, function(x) all(x == "" | is.na(x))))
-    if (length(empty_rows) > 0) data <- data[sample(empty_rows), ]
+    # Randomization only shuffles uncoded rows. Coded rows stay in front in their original order,
+    # so the session starts at the first uncoded row but prev can still reach earlier work.
+    is_empty <- apply(data[, class_cols, drop = FALSE], 1, function(x) all(x == "" | is.na(x)))
+    empty_rows <- which(is_empty)
     start_val <- 1L
+    if (length(empty_rows) > 0) {
+      data <- data[c(which(!is_empty), empty_rows[sample.int(length(empty_rows))]), ]
+      start_val <- sum(!is_empty) + 1L
+    }
   }
   list(data = data, original_data = original_data, start_val = start_val, class_cols = class_cols)
 }
@@ -253,11 +258,19 @@ NULL
 
 .setup_common_outputs <- function(input, output, session, values, app_data) {
   # Progress text and bar share one counter source to avoid inconsistent UI progress states.
+  # all_empty drops already-coded rows from data; counting them as done keeps progress
+  # relative to the full dataset instead of restarting at "1 of <remaining>" on resume.
+  overall_position <- shiny::reactive({
+    n_total <- nrow(values$original_data)
+    c(position = as.integer(values$counter) + n_total - nrow(values$data), total = n_total)
+  })
   output$progress_text <- shiny::renderText({
-    sprintf("Row %d of %d", as.integer(values$counter), as.integer(nrow(values$data)))
+    pos <- overall_position()
+    sprintf("Row %d of %d", pos[["position"]], pos[["total"]])
   })
   shiny::observe({
-    progress <- round((as.integer(values$counter) / as.integer(nrow(values$data))) * 100)
+    pos <- overall_position()
+    progress <- round(pos[["position"]] / pos[["total"]] * 100)
     shinyWidgets::updateProgressBar(session, "progress_bar", value = progress)
   })
   output$current_text <- shiny::renderUI({
