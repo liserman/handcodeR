@@ -16,9 +16,9 @@ handcode(
   comparison = NULL,
   pre_comparison = NULL,
   post_comparison = NULL,
-  quicksave = NULL,
+  snapshot_dir = NULL,
   notes = FALSE,
-  enable_numeric = FALSE
+  keyboard_shortcuts = FALSE
 )
 }
 \arguments{
@@ -41,43 +41,57 @@ order. Default \code{FALSE}.}
 \item{context}{Context display mode. \code{TRUE} always shows the
 preceding/following texts, \code{FALSE} (default) never shows them,
 and \code{"FLEX"} adds a runtime checkbox to toggle context while
-coding.}
+coding. Supplying any of \code{pre}, \code{post},
+\code{pre_comparison} or \code{post_comparison} upgrades
+\code{FALSE} to \code{TRUE}; without them, context is taken from the
+neighbouring rows.}
 
 \item{missing}{Character vector of labels for missing/not-applicable
 values. Default \code{c("Not applicable")}.}
 
 \item{pre}{Optional character vector of texts to prepend as context
-(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
+(one per row). Turns context on automatically when
+\code{context = FALSE}. Supplied without \code{post}, only the
+preceding context is shown.}
 
 \item{post}{Optional character vector of texts to append as context
-(one per row). Requires \code{context = TRUE} or \code{"FLEX"}.}
+(one per row). Turns context on automatically when
+\code{context = FALSE}. Supplied without \code{pre}, only the
+following context is shown.}
 
 \item{comparison}{Optional character vector for paired-text comparison
 workflows.}
 
 \item{pre_comparison}{Optional context-before vector for the comparison
-text.}
+text. Turns context on automatically when \code{context = FALSE}, and
+follows the same one-sided rule as \code{pre}.}
 
 \item{post_comparison}{Optional context-after vector for the comparison
-text.}
+text. Turns context on automatically when \code{context = FALSE}, and
+follows the same one-sided rule as \code{post}.}
 
-\item{quicksave}{Either \code{NULL} (default; no Quicksave button is
+\item{snapshot_dir}{Either \code{NULL} (default; no Save Snapshot button is
 shown) or a character path to an existing directory. When a directory
-is given, a Quicksave button is shown that writes timestamped
-\code{<name>_quicksave_<timestamp>.RData} snapshots there. The
-directory must already exist.}
+is given, a Save Snapshot button is shown that writes timestamped
+\code{<name>_snapshot_<timestamp>.RData} snapshots there. The
+directory must already exist. \code{FALSE} is accepted as a synonym
+for \code{NULL}.}
 
 \item{notes}{Logical. If \code{TRUE}, show a free-text notes input
 in the UI. Default \code{FALSE}.}
 
-\item{enable_numeric}{Logical. If \code{TRUE}, keys \code{1}-\code{9}
+\item{keyboard_shortcuts}{Logical. If \code{TRUE}, keys \code{1}-\code{9}
 cycle through the radio choices of the variable at that position
-(at most 9 classification variables). Default \code{FALSE}.}
+(at most 9 classification variables), \code{Space} goes to the
+previous and \code{Enter} to the next text. Default \code{FALSE}.}
 }
 \value{
-A data frame containing the original texts plus one column per
-  classification variable. Closing the app (Save & Exit or otherwise)
-  returns the annotated data to the calling R session.
+A data frame containing the original texts plus one factor
+  column per classification variable, and, where used, the
+  \code{notes}, \code{pre}/\code{post} and comparison columns, so it can
+  be passed back as \code{data} to resume coding. Closing the app
+  (Save & Exit or otherwise) returns the annotated data to the calling
+  R session.
 }
 \description{
 Launch a Shiny app for hand-coding texts into one or more categorial
@@ -86,14 +100,14 @@ set of allowed categories passed via \code{...}.
 }
 \examples{
 \dontrun{
-  texts <- c("I love this product", "Worst purchase ever", "It's okay")
-  result <- handcode(
-    texts,
-    sentiment = c("positive", "neutral", "negative")
-  )
+texts <- c("I love this product", "Worst purchase ever", "It's okay")
+result <- handcode(
+  texts,
+  sentiment = c("positive", "neutral", "negative")
+)
 }
 
 }
 \seealso{
-\code{\link{handcode_binary}} for two-choice annotation.
+\code{\link{quickcode}} for single-variable quickcoding.
 }
